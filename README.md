@@ -1,7 +1,7 @@
 
-  # Simple mockup website
+  # Mitg mockup website
 
-  This is a code bundle for Simple mockup website. The original project is available at https://www.figma.com/design/I8GRB7e2bpPSPkdHIXWOZY/Simple-mockup-website.
+  This is a code bundle for Mitg mockup website. The original project is available at https://www.figma.com/design/I8GRB7e2bpPSPkdHIXWOZY/Mitg-mockup-website.
 
   ## Running the code
 

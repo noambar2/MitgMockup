@@ -1,11 +1,22 @@
 import { useState, useEffect, useRef } from "react";
-import { Search, Bell, LogOut, Menu, X, ChevronDown, Pencil } from "lucide-react";
+import {
+  Search,
+  Bell,
+  LogOut,
+  Menu,
+  X,
+  ChevronDown,
+  Pencil,
+} from "lucide-react";
+import meitavLogoSvg from '../imports/meitavLogoSvg.svg';
+import logoimg from '../imports/logoimg.png';
 
 // ── Hooks ────────────────────────────────────────────────────────────────────
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(
-    () => typeof window !== "undefined" && window.innerWidth < 768
+    () =>
+      typeof window !== "undefined" && window.innerWidth < 768,
   );
   useEffect(() => {
     const handler = () => setIsMobile(window.innerWidth < 768);
@@ -18,24 +29,20 @@ function useIsMobile() {
 // ── Inline assets ────────────────────────────────────────────────────────────
 
 function MeitavLogo({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 84 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* green checkmark */}
-      <path d="M54 6 L60 13 L72 2" stroke="#69C600" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-      {/* מיטב text in white */}
-      <text x="42" y="38" textAnchor="middle" fill="white"
-        fontFamily="'Noto Sans Hebrew', sans-serif" fontSize="28" fontWeight="700">
-        מיטב
-      </text>
-    </svg>
-  );
+  // return <img src={meitavLogoSvg} alt="מיטב" className={className} />;
+  return <img src={logoimg} alt="מיטב" className={className} />;
 }
 
 function ProfileAvatar({ className }: { className?: string }) {
   return (
-    <div className={`bg-[#008FF0] flex items-center justify-center rounded-full shrink-0 ${className ?? "w-9 h-9"}`}>
+    <div
+      className={`bg-[#008FF0] flex items-center justify-center rounded-full shrink-0 ${className ?? "w-9 h-9"}`}
+    >
       <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
-        <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-5.33 0-8 2.67-8 4v1h16v-1c0-1.33-2.67-4-8-4z" fill="white"/>
+        <path
+          d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-5.33 0-8 2.67-8 4v1h16v-1c0-1.33-2.67-4-8-4z"
+          fill="white"
+        />
       </svg>
     </div>
   );
@@ -63,29 +70,32 @@ const qualityScores = [
 
 const GAUGE_INFO: Record<string, { explanation: string }> = {
   'דפ"ר': {
-    explanation:
-      `המבחנים הפסיכוטכניים בוחנים את יכולות החשיבה שלך על ידי מבחנים כמותיים, מילוליים וזכרוניים. במהלך המבדק הפסיכוטכני שנערך בלשכת הגיוס נקבע ציון הדפ"ר, שנע בין 10 (הציון הנמוך ביותר) ל-90 (הציון הגבוה ביותר) במרווחים של 10 נקודות.`,
+    explanation: `המבחנים הפסיכוטכניים בוחנים את יכולות החשיבה שלך על ידי מבחנים כמותיים, מילוליים וזכרוניים. במהלך המבדק הפסיכוטכני שנערך בלשכת הגיוס נקבע ציון הדפ"ר, שנע בין 10 (הציון הנמוך ביותר) ל-90 (הציון הגבוה ביותר) במרווחים של 10 נקודות.`,
   },
-  "עברית": {
-    explanation:
-      `סימול העברית הינו ציון המשקף את רמת העברית שלך. הציון נקבע על בסיס מבחן הדיבור שביצעת במהלך הראיון האישי. חלק מהמלש"בים יבצעו גם מבחן הבנת הנקרא על מנת לקבוע ציון זה.\n\nציון סימול העברית נע בין 5 (הציון הנמוך ביותר) ל-8 (הציון הגבוה ביותר).\nהסימול, יחד עם נתונים נוספים מהווה סף לקבלת זימון למיון ליחידות המובחרות והינה מרכיב ביציאה לקצונה ובשיבוץ למקצועות מסוימים בצבא.\nסימול העברית משמש אך ורק את המסגרת הצבאית ואינו רלוונטי לאחר השחרור מצה"ל.`,
+  עברית: {
+    explanation: `סימול העברית הינו ציון המשקף את רמת העברית שלך. הציון נקבע על בסיס מבחן הדיבור שביצעת במהלך הראיון האישי. חלק מהמלש"בים יבצעו גם מבחן הבנת הנקרא על מנת לקבוע ציון זה.\n\nציון סימול העברית נע בין 5 (הציון הנמוך ביותר) ל-8 (הציון הגבוה ביותר).\nהסימול, יחד עם נתונים נוספים מהווה סף לקבלת זימון למיון ליחידות המובחרות והינה מרכיב ביציאה לקצונה ובשיבוץ למקצועות מסוימים בצבא.\nסימול העברית משמש אך ורק את המסגרת הצבאית ואינו רלוונטי לאחר השחרור מצה"ל.`,
   },
   "פרופיל רפואי": {
     explanation:
       "הפרופיל הרפואי מסמל את מצבך וכשירותך הרפואית למערכי הצבא השונים ויש לו השפעה על סוג שירותך ואופיו.",
   },
   'יום המא"ה': {
-    explanation:
-      `תפקיד יום המא"ה הוא לבחון את יכולות המלש"בים והמלש"ביות במגוון מיומנויות על מנת להתאים שיבוץ מיטבי המשלב בין צרכי הצבא, יכולות הפרט ורצונותיו.`,
+    explanation: `תפקיד יום המא"ה הוא לבחון את יכולות המלש"בים והמלש"ביות במגוון מיומנויות על מנת להתאים שיבוץ מיטבי המשלב בין צרכי הצבא, יכולות הפרט ורצונותיו.`,
   },
 };
 
 // ── Tooltip (desktop) ────────────────────────────────────────────────────────
 
 function GaugeTooltip({
-  x, y, label, value,
+  x,
+  y,
+  label,
+  value,
 }: {
-  x: number; y: number; label: string; value: number;
+  x: number;
+  y: number;
+  label: string;
+  value: number;
 }) {
   const info = GAUGE_INFO[label];
   if (!info) return null;
@@ -106,11 +116,21 @@ function GaugeTooltip({
     <div
       dir="rtl"
       className="fixed z-[500] pointer-events-none bg-white rounded-[10px] p-4 w-[300px]"
-      style={{ left, top, boxShadow: "0 4px 24px rgba(0,0,0,0.12)" }}
+      style={{
+        left,
+        top,
+        boxShadow: "0 4px 24px rgba(0,0,0,0.12)",
+      }}
     >
       <div className="flex items-baseline gap-1.5 mb-2">
-        <span className="font-bold text-[#171c23] text-[16px]">{label}</span>
-        {value > 0 && <span className="font-bold text-[#008FF0] text-[20px]">{value}</span>}
+        <span className="font-bold text-[#171c23] text-[16px]">
+          {label}
+        </span>
+        {value > 0 && (
+          <span className="font-bold text-[#008FF0] text-[20px]">
+            {value}
+          </span>
+        )}
       </div>
       <p className="text-[#171c23] text-[13px] leading-relaxed whitespace-pre-line">
         {info.explanation}
@@ -122,9 +142,13 @@ function GaugeTooltip({
 // ── Bottom Sheet (mobile) ────────────────────────────────────────────────────
 
 function BottomSheet({
-  label, value, onClose,
+  label,
+  value,
+  onClose,
 }: {
-  label: string; value: number; onClose: () => void;
+  label: string;
+  value: number;
+  onClose: () => void;
 }) {
   const info = GAUGE_INFO[label];
   const [visible, setVisible] = useState(false);
@@ -148,15 +172,23 @@ function BottomSheet({
       />
       <div
         className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl transition-transform duration-300 ease-out"
-        style={{ transform: visible ? "translateY(0)" : "translateY(100%)" }}
+        style={{
+          transform: visible
+            ? "translateY(0)"
+            : "translateY(100%)",
+        }}
       >
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-10 h-1 rounded-full bg-[rgba(23,28,35,0.15)]" />
         </div>
         <div className="flex items-center justify-between px-5 py-3 border-b border-[rgba(23,28,35,0.08)]">
           <div className="flex items-baseline gap-1.5">
-            <span className="font-bold text-[#171c23] text-[18px]">{label}</span>
-            <span className="font-bold text-[#008FF0] text-[22px]">{value}</span>
+            <span className="font-bold text-[#171c23] text-[18px]">
+              {label}
+            </span>
+            <span className="font-bold text-[#008FF0] text-[22px]">
+              {value}
+            </span>
           </div>
           <button
             onClick={handleClose}
@@ -177,14 +209,34 @@ function BottomSheet({
 
 // ── Primitives ───────────────────────────────────────────────────────────────
 
-function SemiGauge({ value, max }: { value: number; max: number }) {
+function SemiGauge({
+  value,
+  max,
+}: {
+  value: number;
+  max: number;
+}) {
   const r = 80;
   const arc = Math.PI * r;
   const fill = (value / max) * arc;
   return (
-    <div className="relative" style={{ width: 180, height: 96 }}>
-      <svg width="180" height="90" viewBox="0 0 180 90" className="block overflow-visible w-[120px] md:w-[180px] mx-auto">
-        <path d="M 10 90 A 80 80 0 0 1 170 90" fill="none" stroke="#F5F6FA" strokeWidth="18" strokeLinecap="round" />
+    <div
+      className="relative"
+      style={{ width: 180, height: 96 }}
+    >
+      <svg
+        width="180"
+        height="90"
+        viewBox="0 0 180 90"
+        className="block overflow-visible w-[120px] md:w-[180px] mx-auto"
+      >
+        <path
+          d="M 10 90 A 80 80 0 0 1 170 90"
+          fill="none"
+          stroke="#F5F6FA"
+          strokeWidth="18"
+          strokeLinecap="round"
+        />
         <path
           d="M 170 90 A 80 80 0 0 0 10 90"
           fill="none"
@@ -195,8 +247,12 @@ function SemiGauge({ value, max }: { value: number; max: number }) {
         />
       </svg>
       <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-center leading-none pb-1">
-        <span className="font-bold text-[#171c23] text-[30px] tracking-tight">{value}</span>
-        <span className="text-[rgba(23,28,35,0.5)] text-[13px]">/{max}</span>
+        <span className="font-bold text-[#171c23] text-[30px] tracking-tight">
+          {value}
+        </span>
+        <span className="text-[rgba(23,28,35,0.5)] text-[13px]">
+          /{max}
+        </span>
       </div>
     </div>
   );
@@ -215,8 +271,15 @@ interface GaugeCardProps {
 }
 
 function GaugeCard({
-  label, value, max,
-  interactive, onMouseMove, onMouseEnter, onMouseLeave, onClick, hovered,
+  label,
+  value,
+  max,
+  interactive,
+  onMouseMove,
+  onMouseEnter,
+  onMouseLeave,
+  onClick,
+  hovered,
 }: GaugeCardProps) {
   return (
     <div
@@ -234,14 +297,24 @@ function GaugeCard({
       onMouseLeave={onMouseLeave}
       onClick={onClick}
     >
-      <p className="font-bold text-[#171c23] text-[18px] text-right w-full">{label}</p>
+      <p className="font-bold text-[#171c23] text-[18px] text-right w-full">
+        {label}
+      </p>
       <SemiGauge value={value} max={max} />
-      <p className="md:hidden text-[#171c23] text-[14px] text-right w-full opacity-70">לחצ/י למידע נוסף</p>
+      <p className="md:hidden text-[#171c23] text-[14px] text-right w-full opacity-70">
+        לחצ/י למידע נוסף
+      </p>
     </div>
   );
 }
 
-function KpiCard({ label, value, subtitle, interactive, onClick }: {
+function KpiCard({
+  label,
+  value,
+  subtitle,
+  interactive,
+  onClick,
+}: {
   label: string;
   value: string | number;
   subtitle?: string;
@@ -253,20 +326,36 @@ function KpiCard({ label, value, subtitle, interactive, onClick }: {
       className={`bg-white rounded-[10px] flex-1 min-w-0 p-5 flex flex-col items-center justify-between gap-2 ${interactive ? "cursor-pointer" : ""}`}
       onClick={onClick}
     >
-      <p className="font-bold text-[#171c23] text-[18px] text-right w-full">{label}</p>
-      <p className="font-black text-[#008ff0] text-[60px] sm:text-[70px] leading-none tracking-tight">{value}</p>
+      <p className="font-bold text-[#171c23] text-[18px] text-right w-full">
+        {label}
+      </p>
+      <p className="font-black text-[#008ff0] text-[60px] sm:text-[70px] leading-none tracking-tight">
+        {value}
+      </p>
       {subtitle && (
-        <p className="text-[#171c23] text-[14px] text-right w-full opacity-70">{subtitle}</p>
+        <p className="text-[#171c23] text-[14px] text-right w-full opacity-70">
+          {subtitle}
+        </p>
       )}
     </div>
   );
 }
 
-function InfoField({ label, value }: { label: string; value: string }) {
+function InfoField({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
   return (
     <div className="flex flex-col items-start">
-      <span className="text-[#171c23] text-[13px] opacity-50 whitespace-nowrap">{label}</span>
-      <span className="text-[#171c23] text-[15px] whitespace-nowrap">{value}</span>
+      <span className="text-[#171c23] text-[13px] opacity-50 whitespace-nowrap">
+        {label}
+      </span>
+      <span className="text-[#171c23] text-[15px] whitespace-nowrap">
+        {value}
+      </span>
     </div>
   );
 }
@@ -274,13 +363,19 @@ function InfoField({ label, value }: { label: string; value: string }) {
 function CardHeader({ title }: { title: string }) {
   return (
     <div className="h-[60px] flex items-center justify-start px-5 border-b border-[rgba(23,28,35,0.05)] shrink-0">
-      <h3 className="font-bold text-[#171c23] text-[18px]">{title}</h3>
+      <h3 className="font-bold text-[#171c23] text-[18px]">
+        {title}
+      </h3>
     </div>
   );
 }
 
 function SubSection({ title }: { title: string }) {
-  return <p className="font-semibold text-[#171c23] text-[15px] mb-3">{title}</p>;
+  return (
+    <p className="font-semibold text-[#171c23] text-[15px] mb-3">
+      {title}
+    </p>
+  );
 }
 
 function EditIconBtn() {
@@ -303,28 +398,45 @@ function RemoveAuthBtn() {
 
 function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const navTabs = ["פניות", "לומדות", "הודעות", "משימות וזימונים", "הזימונים שלי", "פרופיל אישי"];
+  const navTabs = [
+    "פניות",
+    "לומדות",
+    "הודעות",
+    "משימות וזימונים",
+    "הזימונים שלי",
+    "פרופיל אישי",
+  ];
 
   return (
     <header className="sticky top-0 z-50">
       <div className="hidden md:flex bg-[#122736] items-center justify-between px-10 py-1.5">
         {/* Right: logo + main nav */}
         <div className="flex items-center gap-6 text-white text-[15px]">
-          <MeitavLogo className="h-[44px] w-auto" />
+          <MeitavLogo className="h-[32px] pb-2" />
           <span className="flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity">
             תהליך הגיוס <ChevronDown size={14} />
           </span>
-          <span className="cursor-pointer hover:opacity-80 transition-opacity">תפקידים</span>
-          <span className="cursor-pointer hover:opacity-80 transition-opacity">טפסים</span>
-          <span className="cursor-pointer hover:opacity-80 transition-opacity">כתבות</span>
+          <span className="cursor-pointer hover:opacity-80 transition-opacity">
+            תפקידים
+          </span>
+          <span className="cursor-pointer hover:opacity-80 transition-opacity">
+            טפסים
+          </span>
+          <span className="cursor-pointer hover:opacity-80 transition-opacity">
+            כתבות
+          </span>
           <span className="flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity">
             לשכות גיוס <ChevronDown size={14} />
           </span>
         </div>
         {/* Left: utility links */}
         <div className="flex items-center gap-6 text-white text-[15px]">
-          <span className="cursor-pointer hover:opacity-80 transition-opacity">שאלות ותשובות</span>
-          <span className="cursor-pointer hover:opacity-80 transition-opacity">צור קשר</span>
+          <span className="cursor-pointer hover:opacity-80 transition-opacity">
+            שאלות ותשובות
+          </span>
+          <span className="cursor-pointer hover:opacity-80 transition-opacity">
+            צור קשר
+          </span>
           <span className="flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity">
             עברית <ChevronDown size={14} />
           </span>
@@ -354,15 +466,32 @@ function Header() {
             ))}
           </nav>
           <div className="flex items-center gap-4">
-            <LogOut size={17} className="cursor-pointer opacity-80 hover:opacity-100 transition-opacity" />
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className="cursor-pointer opacity-80 hover:opacity-100">
-              <path d="M9 1C4.6 1 1 4.6 1 9s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 3a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm0 10.5a6 6 0 0 1-4.6-2.1C5.6 11.4 7.2 10.5 9 10.5s3.4.9 4.6 2.4A6 6 0 0 1 9 14.5z" fill="white" />
+            <LogOut
+              size={17}
+              className="cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
+            />
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              className="cursor-pointer opacity-80 hover:opacity-100"
+            >
+              <path
+                d="M9 1C4.6 1 1 4.6 1 9s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 3a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm0 10.5a6 6 0 0 1-4.6-2.1C5.6 11.4 7.2 10.5 9 10.5s3.4.9 4.6 2.4A6 6 0 0 1 9 14.5z"
+                fill="white"
+              />
             </svg>
-            <Bell size={17} className="cursor-pointer opacity-80 hover:opacity-100 transition-opacity" />
+            <Bell
+              size={17}
+              className="cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
+            />
             <div className="w-px h-6 bg-white/20 mx-1" />
             <div className="bg-white/20 rounded-full px-4 h-8 flex items-center gap-2 w-[220px]">
               <Search size={15} />
-              <span className="text-white/70 text-[14px]">חיפוש</span>
+              <span className="text-white/70 text-[14px]">
+                חיפוש
+              </span>
             </div>
           </div>
         </div>
@@ -370,8 +499,16 @@ function Header() {
         <div className="md:hidden flex items-center justify-between px-4 h-[64px] bg-[#122736]">
           <div className="flex items-center gap-4">
             <LogOut size={17} />
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 1C4.6 1 1 4.6 1 9s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 3a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm0 10.5a6 6 0 0 1-4.6-2.1C5.6 11.4 7.2 10.5 9 10.5s3.4.9 4.6 2.4A6 6 0 0 1 9 14.5z" fill="white" />
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+            >
+              <path
+                d="M9 1C4.6 1 1 4.6 1 9s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 3a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm0 10.5a6 6 0 0 1-4.6-2.1C5.6 11.4 7.2 10.5 9 10.5s3.4.9 4.6 2.4A6 6 0 0 1 9 14.5z"
+                fill="white"
+              />
             </svg>
             <Bell size={17} />
             <Search size={17} />
@@ -382,7 +519,11 @@ function Header() {
               onClick={() => setMobileOpen(!mobileOpen)}
               className="w-9 h-9 flex items-center justify-center"
             >
-              {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+              {mobileOpen ? (
+                <X size={22} />
+              ) : (
+                <Menu size={22} />
+              )}
             </button>
           </div>
         </div>
@@ -393,7 +534,9 @@ function Header() {
               <button
                 key={tab}
                 className={`w-full text-right px-5 py-3.5 text-[16px] border-b border-white/5 block ${
-                  tab === "פרופיל אישי" ? "bg-white/10 font-semibold" : ""
+                  tab === "פרופיל אישי"
+                    ? "bg-white/10 font-semibold"
+                    : ""
                 }`}
                 onClick={() => setMobileOpen(false)}
               >
@@ -410,7 +553,10 @@ function Header() {
 // ── Quality Section ───────────────────────────────────────────────────────────
 
 function MaahCard({
-  hovered, onMouseEnter, onMouseLeave, onMouseMove,
+  hovered,
+  onMouseEnter,
+  onMouseLeave,
+  onMouseMove,
 }: {
   hovered?: boolean;
   onMouseEnter?: () => void;
@@ -433,20 +579,41 @@ function MaahCard({
       onMouseMove={onMouseMove}
     >
       <div className="flex items-center justify-start gap-2">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" className="shrink-0">
+        <svg
+          width="28"
+          height="28"
+          viewBox="0 0 28 28"
+          fill="none"
+          className="shrink-0"
+        >
           <circle cx="14" cy="14" r="14" fill="#008FF0" />
-          <path d="M8 14l4 4 8-8" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="M8 14l4 4 8-8"
+            stroke="white"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
-        <h3 className="font-bold text-[#171c23] text-[18px]">יום המא"ה (מיון, איתור והתאמה)</h3>
+        <h3 className="font-bold text-[#171c23] text-[18px]">
+          יום המא"ה (מיון, איתור והתאמה)
+        </h3>
       </div>
       <p className="md:hidden text-[#171c23] text-[14px] text-right leading-relaxed">
         {`תפקיד יום המא"ה הוא לבחון את יכולות המלש"בים והמלש"ביות במגוון מיומנויות על מנת להתאים שיבוץ מיטבי.`}
       </p>
       <div className="grid grid-cols-3 gap-x-5 gap-y-4">
         {qualityScores.map((item) => (
-          <div key={item.label} className="flex flex-col items-center min-w-[80px]">
-            <span className="text-[#2f305c] text-[12px] opacity-70 text-center leading-tight">{item.label}</span>
-            <span className="font-semibold text-[#2f305c] text-[20px]">{item.value}</span>
+          <div
+            key={item.label}
+            className="flex flex-col items-center min-w-[80px]"
+          >
+            <span className="text-[#2f305c] text-[12px] opacity-70 text-center leading-tight">
+              {item.label}
+            </span>
+            <span className="font-semibold text-[#2f305c] text-[20px]">
+              {item.value}
+            </span>
           </div>
         ))}
       </div>
@@ -458,36 +625,56 @@ function QualitySection() {
   const isMobile = useIsMobile();
 
   // Desktop tooltip: which card + cursor position
-  const [hoveredCard, setHoveredCard] = useState<{ label: string; value: number } | null>(null);
+  const [hoveredCard, setHoveredCard] = useState<{
+    label: string;
+    value: number;
+  } | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
   // Mobile bottom sheet: which card
-  const [sheetCard, setSheetCard] = useState<{ label: string; value: number } | null>(null);
+  const [sheetCard, setSheetCard] = useState<{
+    label: string;
+    value: number;
+  } | null>(null);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     setTooltipPos({ x: e.clientX, y: e.clientY });
   };
 
   const gaugeProps = (label: string, value: number) => ({
-    label, value,
+    label,
+    value,
     interactive: true,
     hovered: hoveredCard?.label === label,
-    onMouseEnter: () => { if (!isMobile) setHoveredCard({ label, value }); },
+    onMouseEnter: () => {
+      if (!isMobile) setHoveredCard({ label, value });
+    },
     onMouseLeave: () => setHoveredCard(null),
     onMouseMove: handleMouseMove,
-    onClick: () => { if (isMobile) setSheetCard({ label, value }); },
+    onClick: () => {
+      if (isMobile) setSheetCard({ label, value });
+    },
   });
 
   return (
     <section className="px-4 sm:px-6 md:px-10 pt-8 pb-4">
       {/* Desktop tooltip */}
       {!isMobile && hoveredCard && (
-        <GaugeTooltip x={tooltipPos.x} y={tooltipPos.y} label={hoveredCard.label} value={hoveredCard.value} />
+        <GaugeTooltip
+          x={tooltipPos.x}
+          y={tooltipPos.y}
+          label={hoveredCard.label}
+          value={hoveredCard.value}
+        />
       )}
 
       {/* Mobile bottom sheet */}
       {sheetCard && (
-        <BottomSheet label={sheetCard.label} value={sheetCard.value} onClose={() => setSheetCard(null)} />
+        <BottomSheet
+          label={sheetCard.label}
+          value={sheetCard.value}
+          onClose={() => setSheetCard(null)}
+        />
       )}
 
       <div className="text-right mb-1">
@@ -496,14 +683,23 @@ function QualitySection() {
         </h2>
       </div>
       <p className="text-[#171c23] text-[14px] opacity-50 text-right mb-6">
-        שימו לב, נתונים אלו אינם בהכרח סופיים ועשויים להשתנות עד מועד הגיוס
+        שימו לב, נתונים אלו אינם בהכרח סופיים ועשויים להשתנות עד
+        מועד הגיוס
       </p>
 
       <div className="flex flex-col md:flex-row gap-4 items-start">
         <div className="w-full md:flex-[1] md:min-w-0">
           <MaahCard
-            hovered={!isMobile && hoveredCard?.label === 'יום המא"ה'}
-            onMouseEnter={() => { if (!isMobile) setHoveredCard({ label: 'יום המא"ה', value: 0 }); }}
+            hovered={
+              !isMobile && hoveredCard?.label === 'יום המא"ה'
+            }
+            onMouseEnter={() => {
+              if (!isMobile)
+                setHoveredCard({
+                  label: 'יום המא"ה',
+                  value: 0,
+                });
+            }}
             onMouseLeave={() => setHoveredCard(null)}
             onMouseMove={handleMouseMove}
           />
@@ -522,7 +718,10 @@ function QualitySection() {
           {/* Row 2 */}
           <div className="flex gap-4 flex-1">
             <GaugeCard max={8} {...gaugeProps("עברית", 8)} />
-            <GaugeCard max={97} {...gaugeProps("פרופיל רפואי", 97)} />
+            <GaugeCard
+              max={97}
+              {...gaugeProps("פרופיל רפואי", 97)}
+            />
           </div>
         </div>
       </div>
@@ -547,7 +746,10 @@ function PersonalInfoContent() {
           <InfoField label="תאריך לידה" value="01.01.1990" />
         </div>
         <div className="flex flex-wrap gap-5 justify-start">
-          <InfoField label="כתובת" value="באר שבע, רחוב כלנית 32, דירה 5" />
+          <InfoField
+            label="כתובת"
+            value="באר שבע, רחוב כלנית 32, דירה 5"
+          />
           <InfoField label="ארץ לידה" value="-" />
           <InfoField label="אזרחות" value="ישראלית" />
           <InfoField label="רב קו" value="2564376487" />
@@ -558,7 +760,10 @@ function PersonalInfoContent() {
         <div className="flex flex-wrap gap-5">
           <InfoField label="טלפון" value="0500000000" />
           <InfoField label="אימייל" value="israela@gmail.com" />
-          <InfoField label="כתובת למשלוח דואר" value="באר שבע, רחוב כלנית 32, דירה 5" />
+          <InfoField
+            label="כתובת למשלוח דואר"
+            value="באר שבע, רחוב כלנית 32, דירה 5"
+          />
         </div>
       </div>
     </div>
@@ -571,14 +776,23 @@ function EducationContent() {
       <div>
         <SubSection title="תיכון" />
         <div className="flex flex-wrap gap-5 justify-start">
-          <InfoField label="שנת לימודים" value={`התשמ"ט - התשנ"ט`} />
-          <InfoField label="שם המוסד" value={`תיכוני לא מקצועי בחו"ל`} />
+          <InfoField
+            label="שנת לימודים"
+            value={`התשמ"ט - התשנ"ט`}
+          />
+          <InfoField
+            label="שם המוסד"
+            value={`תיכוני לא מקצועי בחו"ל`}
+          />
         </div>
       </div>
       <div>
         <SubSection title="בגרויות" />
         <div className="flex flex-wrap gap-5 justify-start">
-          <InfoField label="5 יחידות לימוד" value="תורת החשמל" />
+          <InfoField
+            label="5 יחידות לימוד"
+            value="תורת החשמל"
+          />
           <InfoField label="5 יחידות לימוד" value="אמנות" />
           <InfoField label="5 יחידות לימוד" value="גיאוגרפיה" />
         </div>
@@ -588,14 +802,26 @@ function EducationContent() {
 }
 
 function ParentEntry({
-  name, relation, id, email, phone, address,
+  name,
+  relation,
+  id,
+  email,
+  phone,
+  address,
 }: {
-  name: string; relation: string; id: string; email: string; phone: string; address: string;
+  name: string;
+  relation: string;
+  id: string;
+  email: string;
+  phone: string;
+  address: string;
 }) {
   return (
     <div className="flex flex-col gap-3 pb-5 border-b border-[rgba(23,28,35,0.05)] last:border-0 last:pb-0">
       <div className="flex items-center gap-2">
-        <p className="font-semibold text-[#171c23] text-[16px]">{name}</p>
+        <p className="font-semibold text-[#171c23] text-[16px]">
+          {name}
+        </p>
         <EditIconBtn />
       </div>
       <div className="flex flex-wrap gap-5">
@@ -620,13 +846,19 @@ function ParentsContent() {
   return (
     <div className="p-5 flex flex-col gap-4">
       <ParentEntry
-        name="דני ישראלית" relation="אב" id="211716293"
-        email="dani@gmail.com" phone="0500000000"
+        name="דני ישראלית"
+        relation="אב"
+        id="211716293"
+        email="dani@gmail.com"
+        phone="0500000000"
         address="באר שבע, רחוב כלנית 32, דירה 5"
       />
       <ParentEntry
-        name="שירי ישראלית" relation="אם" id="211716293"
-        email="shiri@gmail.com" phone="0500000000"
+        name="שירי ישראלית"
+        relation="אם"
+        id="211716293"
+        email="shiri@gmail.com"
+        phone="0500000000"
         address="באר שבע, רחוב כלנית 32, דירה 5"
       />
     </div>
@@ -634,14 +866,24 @@ function ParentsContent() {
 }
 
 function CompanionEntry({
-  role, name, id, email, phone,
+  role,
+  name,
+  id,
+  email,
+  phone,
 }: {
-  role: string; name: string; id: string; email: string; phone: string;
+  role: string;
+  name: string;
+  id: string;
+  email: string;
+  phone: string;
 }) {
   return (
     <div className="flex flex-col gap-3 pb-5 border-b border-[rgba(23,28,35,0.05)] last:border-0 last:pb-0">
       <div className="flex items-center gap-2">
-        <p className="font-semibold text-[#171c23] text-[16px]">{role}</p>
+        <p className="font-semibold text-[#171c23] text-[16px]">
+          {role}
+        </p>
         <EditIconBtn />
       </div>
       <div className="flex flex-wrap gap-5">
@@ -664,8 +906,11 @@ function CompanionsContent() {
   return (
     <div className="p-5">
       <CompanionEntry
-        role="עובדת סוציאלית" name="רונית כץ" id="211716293"
-        email="ronit@gmail.com" phone="0500000000"
+        role="עובדת סוציאלית"
+        name="רונית כץ"
+        id="211716293"
+        email="ronit@gmail.com"
+        phone="0500000000"
       />
     </div>
   );
@@ -675,8 +920,12 @@ function CompanionsCardHeader() {
   return (
     <div className="h-[60px] flex items-center justify-between px-5 border-b border-[rgba(23,28,35,0.05)] shrink-0">
       <div className="flex items-center gap-2">
-        <h3 className="font-bold text-[#171c23] text-[18px]">פרטי מלווים</h3>
-        <p className="text-[#171c23] text-[13px] opacity-50 hidden sm:block">ניתן להוסיף עד שני מלווים</p>
+        <h3 className="font-bold text-[#171c23] text-[18px]">
+          פרטי מלווים
+        </h3>
+        <p className="text-[#171c23] text-[13px] opacity-50 hidden sm:block">
+          ניתן להוסיף עד שני מלווים
+        </p>
       </div>
       <button className="bg-[#008ff0] text-white text-[13px] font-semibold px-4 py-1.5 rounded-full whitespace-nowrap">
         הוספת מלווה
@@ -688,10 +937,26 @@ function CompanionsCardHeader() {
 // ── Personal Section ──────────────────────────────────────────────────────────
 
 const personalSections = [
-  { key: "personal", label: "מידע אישי", Content: PersonalInfoContent },
-  { key: "education", label: "השכלה", Content: EducationContent },
-  { key: "parents", label: "פרטי הורים", Content: ParentsContent },
-  { key: "companions", label: "פרטי מלווים", Content: CompanionsContent },
+  {
+    key: "personal",
+    label: "מידע אישי",
+    Content: PersonalInfoContent,
+  },
+  {
+    key: "education",
+    label: "השכלה",
+    Content: EducationContent,
+  },
+  {
+    key: "parents",
+    label: "פרטי הורים",
+    Content: ParentsContent,
+  },
+  {
+    key: "companions",
+    label: "פרטי מלווים",
+    Content: CompanionsContent,
+  },
 ];
 
 function PersonalSection() {
@@ -730,13 +995,18 @@ function PersonalSection() {
         {personalSections.map(({ key, label, Content }) => {
           const isOpen = openKey === key;
           return (
-            <div key={key} className="bg-white rounded-[10px] overflow-hidden">
+            <div
+              key={key}
+              className="bg-white rounded-[10px] overflow-hidden"
+            >
               {/* Header row — always visible */}
               <button
                 onClick={() => setOpenKey(isOpen ? null : key)}
                 className="w-full h-[64px] flex items-center justify-between px-5"
               >
-                <span className="font-bold text-[#171c23] text-[17px]">{label}</span>
+                <span className="font-bold text-[#171c23] text-[17px]">
+                  {label}
+                </span>
                 <ChevronDown
                   size={20}
                   className={`text-[#171c23] transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
@@ -749,7 +1019,9 @@ function PersonalSection() {
                     <>
                       {/* Mobile companions header: no title (already in accordion button) */}
                       <div className="flex items-center justify-between px-5 py-3 border-b border-[rgba(23,28,35,0.05)]">
-                        <p className="text-[#171c23] text-[13px] opacity-50">ניתן להוסיף עד שני מלווים</p>
+                        <p className="text-[#171c23] text-[13px] opacity-50">
+                          ניתן להוסיף עד שני מלווים
+                        </p>
                         <button className="bg-[#008ff0] text-white text-[13px] font-semibold px-4 py-1.5 rounded-full whitespace-nowrap">
                           הוספת מלווה
                         </button>
