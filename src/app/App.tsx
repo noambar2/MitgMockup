@@ -7,6 +7,7 @@ import {
   X,
   ChevronDown,
   Pencil,
+  Info,
 } from "lucide-react";
 import meitavLogoSvg from '../imports/meitavLogoSvg.svg';
 import logoimg from '../imports/logoimg.png';
@@ -262,6 +263,7 @@ interface GaugeCardProps {
   label: string;
   value: number;
   max: number;
+  display?: "gauge" | "number";
   interactive?: boolean;
   onMouseMove?: (e: React.MouseEvent) => void;
   onMouseEnter?: () => void;
@@ -274,6 +276,7 @@ function GaugeCard({
   label,
   value,
   max,
+  display = "gauge",
   interactive,
   onMouseMove,
   onMouseEnter,
@@ -283,7 +286,7 @@ function GaugeCard({
 }: GaugeCardProps) {
   return (
     <div
-      className={`bg-white rounded-[10px] flex-1 min-w-0 p-5 flex flex-col items-center gap-2 transition-all duration-200 select-none ${interactive ? "cursor-pointer" : ""}`}
+      className={`bg-white rounded-[10px] flex-1 min-w-0 p-5 flex flex-col items-center ${display === "number" ? "justify-between" : ""} gap-2 transition-all duration-200 select-none ${interactive ? "cursor-pointer" : ""}`}
       style={
         hovered
           ? {
@@ -297,10 +300,28 @@ function GaugeCard({
       onMouseLeave={onMouseLeave}
       onClick={onClick}
     >
-      <p className="font-bold text-[#171c23] text-[18px] text-right w-full">
+      <p className="font-bold text-[#171c23] text-[18px] text-right w-full flex items-center gap-1.5">
         {label}
+        <Info
+          size={15}
+          className="hidden md:inline-block shrink-0 opacity-40"
+        />
       </p>
-      <SemiGauge value={value} max={max} />
+      {display === "number" ? (
+        <p className="font-black text-[#008ff0] text-[60px] sm:text-[70px] leading-none tracking-tight">
+          {value}
+        </p>
+      ) : (
+        <SemiGauge value={value} max={max} />
+      )}
+      {display === "number" && (
+        <p
+          aria-hidden
+          className="hidden md:block invisible text-[14px] w-full"
+        >
+          &nbsp;
+        </p>
+      )}
       <p className="md:hidden text-[#171c23] text-[14px] text-right w-full opacity-70">
         לחצ/י למידע נוסף
       </p>
@@ -497,8 +518,22 @@ function Header() {
         </div>
 
         <div className="md:hidden flex items-center justify-between px-4 h-[64px] bg-[#122736]">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="w-9 h-9 flex items-center justify-center"
+            >
+              {mobileOpen ? (
+                <X size={22} />
+              ) : (
+                <Menu size={22} />
+              )}
+            </button>
+            <MeitavLogo className="h-[32px] pb-2" />
+          </div>
           <div className="flex items-center gap-4">
-            <LogOut size={17} />
+            <Search size={17} />
+            <Bell size={17} />
             <svg
               width="18"
               height="18"
@@ -510,21 +545,7 @@ function Header() {
                 fill="white"
               />
             </svg>
-            <Bell size={17} />
-            <Search size={17} />
-          </div>
-          <div className="flex items-center gap-3">
-            <MeitavLogo className="h-[38px] w-auto" />
-            <button
-              onClick={() => setMobileOpen(!mobileOpen)}
-              className="w-9 h-9 flex items-center justify-center"
-            >
-              {mobileOpen ? (
-                <X size={22} />
-              ) : (
-                <Menu size={22} />
-              )}
-            </button>
+            <LogOut size={17} />
           </div>
         </div>
 
@@ -595,8 +616,12 @@ function MaahCard({
             strokeLinejoin="round"
           />
         </svg>
-        <h3 className="font-bold text-[#171c23] text-[18px]">
+        <h3 className="font-bold text-[#171c23] text-[18px] flex items-center gap-1.5">
           יום המא"ה (מיון, איתור והתאמה)
+          <Info
+            size={15}
+            className="hidden md:inline-block shrink-0 opacity-40"
+          />
         </h3>
       </div>
       <p className="md:hidden text-[#171c23] text-[14px] text-right leading-relaxed">
@@ -720,6 +745,7 @@ function QualitySection() {
             <GaugeCard max={8} {...gaugeProps("עברית", 8)} />
             <GaugeCard
               max={97}
+              display="number"
               {...gaugeProps("פרופיל רפואי", 97)}
             />
           </div>
@@ -1043,13 +1069,54 @@ function PersonalSection() {
 
 // ── App ───────────────────────────────────────────────────────────────────────
 
+function getHeroGradientSvg(blueOffsetX: number, blobScale: number, blobOpacityScale: number) {
+  return `
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+  <defs>
+    <filter id="blob-blur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="70" />
+    </filter>
+    <linearGradient id="line-fade-bottom" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient id="line-fade-top" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <g filter="url(#blob-blur)">
+    <ellipse cx="380" cy="530" rx="${250 * blobScale}" ry="${200 * blobScale}" fill="#008FF0" opacity="${0.16 * blobOpacityScale}" />
+    <ellipse cx="${1180 + blueOffsetX}" cy="340" rx="${340 * blobScale}" ry="${270 * blobScale}" fill="#008FF0" opacity="${0.18 * blobOpacityScale}" />
+    <ellipse cx="600" cy="750" rx="${150 * blobScale}" ry="${120 * blobScale}" fill="#69c600" opacity="${0.2 * blobOpacityScale}" />
+  </g>
+  <g stroke-width="140" fill="none">
+    <circle cx="130" cy="520" r="260" stroke="url(#line-fade-bottom)" />
+    <circle cx="${1260 + blueOffsetX}" cy="380" r="260" stroke="url(#line-fade-top)" />
+  </g>
+</svg>`.trim();
+}
+
+function getHeroGradientBg(blueOffsetX: number, blobScale: number, blobOpacityScale: number) {
+  return `url("data:image/svg+xml,${encodeURIComponent(getHeroGradientSvg(blueOffsetX, blobScale, blobOpacityScale))}")`;
+}
+
 export default function App() {
+  const isMobile = useIsMobile();
   return (
     <div
       dir="rtl"
       lang="he"
-      style={{ fontFamily: "'Noto Sans Hebrew', sans-serif" }}
-      className="min-h-screen bg-[#f5f5f7]"
+      style={{
+        fontFamily: "'Noto Sans Hebrew', sans-serif",
+        backgroundColor: "#f5f5f7",
+        backgroundImage: getHeroGradientBg(isMobile ? -200 : 0, isMobile ? 1 : 1.4, isMobile ? 1 : 0.7),
+        backgroundSize: "cover",
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+      }}
+      className="min-h-screen"
     >
       <Header />
       <main>
