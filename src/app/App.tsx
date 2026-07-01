@@ -370,7 +370,7 @@ function InfoField({
   value: string;
 }) {
   return (
-    <div className="flex flex-col items-start">
+    <div className="flex flex-col items-start min-w-[100px]">
       <span className="text-[#171c23] text-[13px] opacity-50 whitespace-nowrap">
         {label}
       </span>
@@ -713,6 +713,27 @@ function QualitySection() {
       </p>
 
       <div className="flex flex-col md:flex-row gap-4 items-start">
+
+        <div className="flex flex-col gap-4 w-full md:flex-[2] md:min-w-0 md:self-stretch">
+          {/* Row 1 */}
+          <div className="flex gap-4 flex-1">
+            <KpiCard
+              label="ימים לגיוס"
+              value={186}
+              subtitle="תאריך גיוס משוער 01.01.2027"
+            />
+            <GaugeCard max={90} {...gaugeProps('דפ"ר', 30)} />
+          </div>
+          {/* Row 2 */}
+          <div className="flex gap-4 flex-1">
+            <GaugeCard max={8} {...gaugeProps("עברית", 8)} />
+            <GaugeCard
+              max={97}
+              display="number"
+              {...gaugeProps("פרופיל רפואי", 97)}
+            />
+          </div>
+        </div>
         <div className="w-full md:flex-[1] md:min-w-0">
           <MaahCard
             hovered={
@@ -729,27 +750,6 @@ function QualitySection() {
             onMouseMove={handleMouseMove}
           />
         </div>
-
-        <div className="flex flex-col gap-4 w-full md:flex-[2] md:min-w-0 md:self-stretch">
-          {/* Row 1 */}
-          <div className="flex gap-4 flex-1">
-            <GaugeCard max={90} {...gaugeProps('דפ"ר', 30)} />
-            <KpiCard
-              label="ימים לגיוס"
-              value={186}
-              subtitle="תאריך גיוס משוער 01.01.2027"
-            />
-          </div>
-          {/* Row 2 */}
-          <div className="flex gap-4 flex-1">
-            <GaugeCard max={8} {...gaugeProps("עברית", 8)} />
-            <GaugeCard
-              max={97}
-              display="number"
-              {...gaugeProps("פרופיל רפואי", 97)}
-            />
-          </div>
-        </div>
       </div>
     </section>
   );
@@ -762,23 +762,25 @@ function PersonalInfoContent() {
     <div className="p-5 flex flex-col gap-6">
       <div>
         <SubSection title="פרטים אישיים" />
+        <div className="flex items-center gap-2 mb-4">
+          <ProfileAvatar className="w-9 h-9" />
+          <InfoField label="שם מלא" value="ישראלה ישראלית" />
+        </div>
         <div className="flex flex-wrap gap-5 justify-start mb-4">
-          <div className="flex items-center gap-2">
-            <ProfileAvatar className="w-9 h-9" />
-            <InfoField label="שם מלא" value="ישראלה ישראלית" />
-          </div>
           <InfoField label="מגדר" value="נקבה" />
           <InfoField label="סטטוס זוגי" value="נשוא/ה" />
           <InfoField label="תאריך לידה" value="01.01.1990" />
         </div>
-        <div className="flex flex-wrap gap-5 justify-start">
+        <div className="flex flex-wrap gap-5 justify-start mb-4">
+          <InfoField label="ארץ לידה" value="-" />
+          <InfoField label="אזרחות" value="ישראלית" />
+          <InfoField label="רב קו" value="2564376487" />
+        </div>
+        <div>
           <InfoField
             label="כתובת"
             value="באר שבע, רחוב כלנית 32, דירה 5"
           />
-          <InfoField label="ארץ לידה" value="-" />
-          <InfoField label="אזרחות" value="ישראלית" />
-          <InfoField label="רב קו" value="2564376487" />
         </div>
       </div>
       <div>
