@@ -11,6 +11,17 @@ import {
 } from "lucide-react";
 import meitavLogoSvg from '../imports/meitavLogoSvg.svg';
 import logoimg from '../imports/logoimg.png';
+import LearningsPage from './components/LearningsPage';
+import TasksAppointmentsPage from './components/TasksAppointmentsPage';
+import MyAppointmentsPage from './components/MyAppointmentsPage';
+import HobbiesQuestionnairePage from './components/HobbiesQuestionnairePage';
+
+type Page =
+  | "profile"
+  | "learnings"
+  | "tasks"
+  | "appointments"
+  | "hobbiesForm";
 
 // ── Hooks ────────────────────────────────────────────────────────────────────
 
@@ -417,7 +428,13 @@ function RemoveAuthBtn() {
 
 // ── Header ───────────────────────────────────────────────────────────────────
 
-function Header() {
+function Header({
+  activePage,
+  onNavigate,
+}: {
+  activePage: Page;
+  onNavigate: (page: Page) => void;
+}) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const navTabs = [
     "פניות",
@@ -427,6 +444,18 @@ function Header() {
     "הזימונים שלי",
     "פרופיל אישי",
   ];
+  const tabToPage: Record<string, Page> = {
+    לומדות: "learnings",
+    "פרופיל אישי": "profile",
+    "משימות וזימונים": "tasks",
+    "הזימונים שלי": "appointments",
+  };
+  const isActiveTab = (tab: string) =>
+    tabToPage[tab] === activePage;
+  const handleTabClick = (tab: string) => {
+    const page = tabToPage[tab];
+    if (page) onNavigate(page);
+  };
 
   return (
     <header className="sticky top-0 z-50">
@@ -476,8 +505,9 @@ function Header() {
             {navTabs.map((tab) => (
               <button
                 key={tab}
+                onClick={() => handleTabClick(tab)}
                 className={`px-4 py-1 rounded text-[15px] whitespace-nowrap transition-colors ${
-                  tab === "פרופיל אישי"
+                  isActiveTab(tab)
                     ? "bg-white/10 font-semibold"
                     : "opacity-80 hover:opacity-100 hover:bg-white/5"
                 }`}
@@ -555,11 +585,14 @@ function Header() {
               <button
                 key={tab}
                 className={`w-full text-right px-5 py-3.5 text-[16px] border-b border-white/5 block ${
-                  tab === "פרופיל אישי"
+                  isActiveTab(tab)
                     ? "bg-white/10 font-semibold"
                     : ""
                 }`}
-                onClick={() => setMobileOpen(false)}
+                onClick={() => {
+                  handleTabClick(tab);
+                  setMobileOpen(false);
+                }}
               >
                 {tab}
               </button>
@@ -1105,6 +1138,7 @@ function getHeroGradientBg(blueOffsetX: number, blobScale: number, blobOpacitySc
 
 export default function App() {
   const isMobile = useIsMobile();
+  const [page, setPage] = useState<Page>("profile");
   return (
     <div
       dir="rtl"
@@ -1120,10 +1154,31 @@ export default function App() {
       }}
       className="min-h-screen"
     >
-      <Header />
+      {/* בתוך השאלון הטאב "משימות וזימונים" נשאר מסומן */}
+      <Header
+        activePage={page === "hobbiesForm" ? "tasks" : page}
+        onNavigate={setPage}
+      />
       <main>
-        <QualitySection />
-        <PersonalSection />
+        {page === "learnings" ? (
+          <LearningsPage />
+        ) : page === "tasks" ? (
+          <TasksAppointmentsPage
+            onViewAllAppointments={() => setPage("appointments")}
+            onOpenTask={() => setPage("hobbiesForm")}
+          />
+        ) : page === "hobbiesForm" ? (
+          <HobbiesQuestionnairePage
+            onExit={() => setPage("tasks")}
+          />
+        ) : page === "appointments" ? (
+          <MyAppointmentsPage />
+        ) : (
+          <>
+            <QualitySection />
+            <PersonalSection />
+          </>
+        )}
       </main>
     </div>
   );
