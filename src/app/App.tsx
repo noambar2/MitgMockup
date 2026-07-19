@@ -311,15 +311,17 @@ function GaugeCard({
       onMouseLeave={onMouseLeave}
       onClick={onClick}
     >
-      <p className="font-bold text-[#171c23] text-[15px] sm:text-[18px] text-right w-full flex items-center gap-1.5">
+      <p className="font-bold text-[#171c23] text-[15px] sm:text-[16px] text-right w-full flex items-center gap-1.5">
         {label}
-        <Info
-          size={15}
-          className="hidden md:inline-block shrink-0 opacity-40"
-        />
+        {interactive && (
+          <Info
+            size={15}
+            className="hidden md:inline-block shrink-0 opacity-40"
+          />
+        )}
       </p>
       {display === "number" ? (
-        <p className="font-black text-[#008ff0] text-[44px] sm:text-[70px] leading-none tracking-tight">
+        <p className="font-black text-[#008ff0] text-[44px] sm:text-[52px] leading-none tracking-tight">
           {value}
         </p>
       ) : (
@@ -333,18 +335,32 @@ function GaugeCard({
           &nbsp;
         </p>
       )}
-      <p className="md:hidden text-[#171c23] text-[12px] sm:text-[14px] text-right w-full opacity-70">
-        לחצ/י למידע נוסף
-      </p>
+      {interactive ? (
+        <p className="md:hidden text-[#171c23] text-[12px] sm:text-[14px] text-right w-full opacity-70">
+          לחצ/י למידע נוסף
+        </p>
+      ) : (
+        <p
+          aria-hidden
+          className="md:hidden invisible text-[12px] sm:text-[14px] w-full"
+        >
+          &nbsp;
+        </p>
+      )}
     </div>
   );
 }
+
+// סגנון "זכוכית" - רקע שקוף למחצה עם טשטוש של הרקע הצבעוני מאחור
+const GLASS_CARD =
+  "bg-white/30 backdrop-blur-lg border border-white/50 shadow-[0_8px_32px_rgba(18,39,54,0.12)]";
 
 function KpiCard({
   label,
   value,
   subtitle,
   valueClassName,
+  glass,
   interactive,
   onClick,
 }: {
@@ -352,19 +368,20 @@ function KpiCard({
   value: string | number;
   subtitle?: string;
   valueClassName?: string;
+  glass?: boolean;
   interactive?: boolean;
   onClick?: () => void;
 }) {
   return (
     <div
-      className={`bg-white rounded-[10px] flex-1 min-w-0 p-5 flex flex-col items-center justify-between gap-2 ${interactive ? "cursor-pointer" : ""}`}
+      className={`${glass ? GLASS_CARD : "bg-white"} rounded-[10px] flex-1 min-w-0 p-5 flex flex-col items-center justify-between gap-2 ${interactive ? "cursor-pointer" : ""}`}
       onClick={onClick}
     >
-      <p className="font-bold text-[#171c23] text-[18px] text-right w-full">
+      <p className="font-bold text-[#171c23] text-[15px] sm:text-[16px] text-right w-full">
         {label}
       </p>
       <p
-        className={`font-black text-[#008ff0] leading-none tracking-tight ${valueClassName ?? "text-[60px] sm:text-[70px]"}`}
+        className={`font-black text-[#008ff0] leading-none tracking-tight ${valueClassName ?? "text-[44px] sm:text-[52px]"}`}
       >
         {value}
       </p>
@@ -384,25 +401,65 @@ function KpiCard({
   );
 }
 
-// כרטיס משולב: ספירה לאחור לגיוס + תאריך משוער (לועזי ועברי)
+// כרטיס משולב: ספירה לאחור לגיוס + תאריך משוער (לועזי ועברי) + שיבוץ חזוי
 function EnlistmentCard({
   days,
   date,
   hebrewDate,
+  assignment,
 }: {
   days: number;
   date: string;
   hebrewDate: string;
+  assignment: string;
 }) {
   return (
-    <div className="bg-white rounded-[10px] col-span-2 min-w-0 flex items-stretch">
-      {/* ימים לגיוס */}
-      <div className="flex-1 min-w-0 p-3 sm:p-5 flex flex-col items-center justify-between gap-2">
-        <p className="font-bold text-[#171c23] text-[15px] sm:text-[18px] text-right w-full">
-          ימים לגיוס
+    <div
+      className={`${GLASS_CARD} rounded-[10px] col-span-2 md:col-span-3 min-w-0 flex flex-col md:flex-row md:items-stretch`}
+    >
+      {/* ימים לגיוס + תאריך משוער */}
+      <div className="flex items-stretch min-w-0 md:flex-[2]">
+        <div className="flex-1 min-w-0 p-3 sm:p-5 flex flex-col items-center justify-between gap-2">
+          <p className="font-bold text-[#171c23] text-[15px] sm:text-[16px] text-center w-full">
+            ימים לגיוס
+          </p>
+          <p className="font-black text-[#008ff0] text-[44px] sm:text-[52px] leading-none tracking-tight">
+            {days}
+          </p>
+          <p
+            aria-hidden
+            className="invisible text-[12px] sm:text-[14px] w-full"
+          >
+            &nbsp;
+          </p>
+        </div>
+
+        {/* קו מפריד עדין */}
+        <div className="w-px bg-[rgba(23,28,35,0.08)] my-4 sm:my-6 shrink-0" />
+
+        <div className="flex-1 min-w-0 p-3 sm:p-5 flex flex-col items-center justify-between gap-2">
+          <p className="font-bold text-[#171c23] text-[15px] sm:text-[16px] text-center w-full">
+            תאריך גיוס משוער
+          </p>
+          <p className="font-black text-[#008ff0] text-[34px] sm:text-[28px] leading-none tracking-tight whitespace-nowrap">
+            {date}
+          </p>
+          <p className="text-[#171c23] text-[13px] sm:text-[15px] opacity-70 whitespace-nowrap">
+            {hebrewDate}
+          </p>
+        </div>
+      </div>
+
+      {/* קו מפריד: אופקי במובייל, אנכי בדסקטופ */}
+      <div className="h-px w-auto mx-4 md:h-auto md:w-px md:mx-0 md:my-6 bg-[rgba(23,28,35,0.08)] shrink-0" />
+
+      {/* שיבוץ חזוי */}
+      <div className="min-w-0 md:flex-[1] p-3 sm:p-5 flex flex-col items-center justify-between gap-2">
+        <p className="font-bold text-[#171c23] text-[15px] sm:text-[16px] text-center w-full">
+          שיבוץ חזוי
         </p>
-        <p className="font-black text-[#008ff0] text-[44px] sm:text-[70px] leading-none tracking-tight">
-          {days}
+        <p className="font-black text-[#008ff0] text-[34px] sm:text-[28px] leading-none tracking-tight text-center">
+          {assignment}
         </p>
         <p
           aria-hidden
@@ -410,30 +467,6 @@ function EnlistmentCard({
         >
           &nbsp;
         </p>
-      </div>
-
-      {/* קו מפריד עדין */}
-      <div className="w-px bg-[rgba(23,28,35,0.08)] my-4 sm:my-6 shrink-0" />
-
-      {/* תאריך גיוס משוער */}
-      <div className="flex-1 min-w-0 p-3 sm:p-5 flex flex-col items-center justify-between gap-2">
-        <p className="font-bold text-[#171c23] text-[15px] sm:text-[18px] text-right w-full">
-          תאריך גיוס משוער
-        </p>
-        {/* <div className="flex flex-col items-center gap-1.5"> */}
-          <p className="font-black text-[#008ff0] text-[26px] sm:text-[40px] leading-none tracking-tight whitespace-nowrap">
-            {date}
-          </p>
-          <p className="text-[#171c23] text-[13px] sm:text-[16px] opacity-70 whitespace-nowrap">
-            {hebrewDate}
-          </p>
-        {/* </div> */}
-        {/* <p
-          aria-hidden
-          className="invisible text-[12px] sm:text-[14px] w-full"
-        >
-          &nbsp;
-        </p> */}
       </div>
     </div>
   );
@@ -687,7 +720,7 @@ function MaahCard({
   const [open, setOpen] = useState(false);
   return (
     <div
-      className="bg-white rounded-[10px] p-5 flex flex-col gap-4 transition-all duration-200"
+      className="bg-white rounded-[10px] p-5 flex flex-col gap-4 transition-all duration-200 md:h-full"
       style={
         hovered
           ? {
@@ -705,7 +738,7 @@ function MaahCard({
         onClick={() => setOpen(!open)}
         className="flex items-center justify-between gap-2 w-full text-right md:pointer-events-none"
       >
-        <h3 className="font-bold text-[#171c23] text-[18px] flex items-center gap-1.5">
+        <h3 className="font-bold text-[#171c23] text-[18px] md:text-[16px] flex items-center gap-1.5">
           יום המא"ה
           <Info
             size={15}
@@ -734,12 +767,12 @@ function MaahCard({
         </div>
       </button>
       <p
-        className={`${open ? "block" : "hidden"} md:hidden text-[#171c23] text-[14px] text-right leading-relaxed`}
+        className={`${open ? "block" : "hidden"} md:block text-[#171c23] text-[14px] text-right leading-relaxed md:opacity-70`}
       >
         {`תפקיד יום המא"ה (מיון, איתור והתאמה) הוא לבחון את יכולות המלש"בים והמלש"ביות במגוון מיומנויות על מנת להתאים שיבוץ מיטבי.`}
       </p>
       <div
-        className={`${open ? "grid" : "hidden"} md:grid grid-cols-3 gap-x-5 gap-y-4`}
+        className={`${open ? "grid" : "hidden"} md:grid grid-cols-3 gap-x-5 gap-y-4 md:flex-1 md:content-evenly`}
       >
         {qualityScores.map((item) => (
           <div
@@ -835,16 +868,10 @@ function QualitySection() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 flex-1">
             <EnlistmentCard
               days={186}
-              date="01.01.2027"
+              date="01.01.27"
               hebrewDate='כ"ב בטבת התשפ"ז'
+              assignment="ע.ח מבצעים אוויר"
             />
-            <div className="col-span-2 md:col-span-1 flex">
-            <KpiCard
-              label="שיבוץ חזוי"
-              value="ע.ח מבצעים אוויר"
-              valueClassName="text-[34px] sm:text-[40px]"
-            />
-            </div>
           </div>
 
           {/* ציונים */}
@@ -867,9 +894,28 @@ function QualitySection() {
               display="number"
               {...gaugeProps("פרופיל רפואי", 97)}
             />
+            {/* ציונים ללא מידע נוסף (לא אינטראקטיביים) */}
+            <GaugeCard
+              max={5}
+              display="number"
+              label="קשיי הסתגלות"
+              value={2}
+            />
+            <GaugeCard
+              max={5}
+              display="number"
+              label="קשב מתמשך"
+              value={3}
+            />
+            <GaugeCard
+              max={5}
+              display="number"
+              label="התאמה לקצונה"
+              value={4}
+            />
           </div>
         </div>
-        <div className="w-full md:flex-[1] md:min-w-0">
+        <div className="w-full md:flex-[1] md:min-w-0 md:self-stretch">
           <MaahCard
             hovered={
               !isMobile && hoveredCard?.label === 'יום המא"ה'
