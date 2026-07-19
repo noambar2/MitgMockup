@@ -367,8 +367,8 @@ export default function HobbiesQuestionnairePage({
   const showProgress = step === 1 || step === 2;
 
   return (
-    // גובה מינימלי של אזור התוכן, כדי שכפתורי הניווט הדביקים יישבו בתחתית המסך
-    <section className="bg-white px-4 sm:px-6 md:px-10 pt-6 flex flex-col min-h-[calc(100dvh-64px)] md:min-h-[calc(100dvh-98px)]">
+    // ה-section נמתח (flex-1) עד תחתית הדף, כך שכפתורי הניווט הדביקים תמיד בתחתית המסך
+    <section className="bg-white px-4 sm:px-6 md:px-10 pt-6 flex flex-col flex-1">
       {/* Breadcrumbs */}
       <nav className="flex items-center gap-1.5 text-[14px] mb-4">
         <button

@@ -1152,14 +1152,14 @@ export default function App() {
         backgroundPosition: "center",
         backgroundAttachment: "fixed",
       }}
-      className="min-h-screen"
+      className="min-h-[100dvh] flex flex-col"
     >
       {/* בתוך השאלון הטאב "משימות וזימונים" נשאר מסומן */}
       <Header
         activePage={page === "hobbiesForm" ? "tasks" : page}
         onNavigate={setPage}
       />
-      <main>
+      <main className="flex-1 flex flex-col">
         {page === "learnings" ? (
           <LearningsPage />
         ) : page === "tasks" ? (
