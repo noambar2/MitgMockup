@@ -8,6 +8,7 @@ import {
   ChevronDown,
   Pencil,
   Info,
+  Settings,
 } from "lucide-react";
 import meitavLogoSvg from '../imports/meitavLogoSvg.svg';
 import logoimg from '../imports/logoimg.png';
@@ -15,13 +16,22 @@ import LearningsPage from './components/LearningsPage';
 import TasksAppointmentsPage from './components/TasksAppointmentsPage';
 import MyAppointmentsPage from './components/MyAppointmentsPage';
 import HobbiesQuestionnairePage from './components/HobbiesQuestionnairePage';
+import SettingsPage from './components/SettingsPage';
+import MessagesPage from './components/MessagesPage';
+import NotificationsPanel, {
+  notifications,
+  type AppNotification,
+} from './components/NotificationsPanel';
+import { GLASS_CARD } from './components/ui/utils';
 
 type Page =
   | "profile"
   | "learnings"
   | "tasks"
   | "appointments"
-  | "hobbiesForm";
+  | "hobbiesForm"
+  | "settings"
+  | "messages";
 
 // ── Hooks ────────────────────────────────────────────────────────────────────
 
@@ -351,9 +361,6 @@ function GaugeCard({
   );
 }
 
-// סגנון "זכוכית" - רקע שקוף למחצה עם טשטוש של הרקע הצבעוני מאחור
-const GLASS_CARD =
-  "bg-white/30 backdrop-blur-lg border border-white/50 shadow-[0_8px_32px_rgba(18,39,54,0.12)]";
 
 function KpiCard({
   label,
@@ -535,6 +542,50 @@ function Header({
   onNavigate: (page: Page) => void;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [readIds, setReadIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const unreadCount = notifications.filter(
+    (n) => !readIds.has(n.id),
+  ).length;
+
+  const toggleNotifications = () => {
+    setNotifOpen(!notifOpen);
+    setMobileOpen(false);
+  };
+
+  const handleNotificationAction = (
+    notification: AppNotification,
+  ) => {
+    setReadIds(
+      (prev) => new Set([...prev, notification.id]),
+    );
+    if (notification.targetPage) {
+      onNavigate(notification.targetPage);
+    }
+    setNotifOpen(false);
+  };
+
+  const markAllRead = () =>
+    setReadIds(new Set(notifications.map((n) => n.id)));
+
+  // פעמון עם באדג' של מספר ההתראות שלא נקראו
+  const BellButton = ({ size = 17 }: { size?: number }) => (
+    <button
+      onClick={toggleNotifications}
+      className="relative flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity"
+      aria-label="התראות"
+    >
+      <Bell size={size} />
+      {unreadCount > 0 && (
+        <span className="absolute -top-1.5 -left-1.5 min-w-[16px] h-4 px-0.5 rounded-full bg-[#e03c3c] text-white text-[10px] font-bold flex items-center justify-center leading-none">
+          {unreadCount}
+        </span>
+      )}
+    </button>
+  );
+
   const navTabs = [
     "פניות",
     "לומדות",
@@ -548,6 +599,7 @@ function Header({
     "פרופיל אישי": "profile",
     "משימות וזימונים": "tasks",
     "הזימונים שלי": "appointments",
+    הודעות: "messages",
   };
   const isActiveTab = (tab: string) =>
     tabToPage[tab] === activePage;
@@ -632,10 +684,18 @@ function Header({
                 fill="white"
               />
             </svg>
-            <Bell
-              size={17}
-              className="cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
-            />
+            <BellButton />
+            <button
+              onClick={() => onNavigate("settings")}
+              className={`flex items-center justify-center transition-opacity ${
+                activePage === "settings"
+                  ? "opacity-100"
+                  : "opacity-80 hover:opacity-100"
+              }`}
+              aria-label="הגדרות"
+            >
+              <Settings size={17} />
+            </button>
             <div className="w-px h-6 bg-white/20 mx-1" />
             <div className="bg-white/20 rounded-full px-4 h-8 flex items-center gap-2 w-[220px]">
               <Search size={15} />
@@ -662,7 +722,14 @@ function Header({
           </div>
           <div className="flex items-center gap-4">
             <Search size={17} />
-            <Bell size={17} />
+            <BellButton />
+            <button
+              onClick={() => onNavigate("settings")}
+              className="flex items-center justify-center"
+              aria-label="הגדרות"
+            >
+              <Settings size={17} />
+            </button>
             <svg
               width="18"
               height="18"
@@ -678,8 +745,29 @@ function Header({
           </div>
         </div>
 
+        {notifOpen && (
+          <>
+            {/* שכבה שקופה לסגירת הפאנל בלחיצה מחוץ לו */}
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => setNotifOpen(false)}
+            />
+            <div className="absolute top-full z-50 mt-2 inset-x-4 md:inset-x-auto md:left-10 md:w-[400px]">
+              <NotificationsPanel
+                readIds={readIds}
+                onMarkAllRead={markAllRead}
+                onAction={handleNotificationAction}
+                onViewAll={() => {
+                  setNotifOpen(false);
+                  onNavigate("messages");
+                }}
+              />
+            </div>
+          </>
+        )}
+
         {mobileOpen && (
-          <div className="md:hidden absolute top-full inset-x-0 z-50 border-t border-white/10 bg-[#122736] shadow-[0_12px_24px_rgba(0,0,0,0.25)]">
+          <div className="md:hidden flex flex-col-reverse absolute top-full inset-x-0 z-50 border-t border-white/10 bg-[#122736] shadow-[0_12px_24px_rgba(0,0,0,0.25)]">
             {navTabs.map((tab) => (
               <button
                 key={tab}
@@ -940,39 +1028,35 @@ function QualitySection() {
 
 function PersonalInfoContent() {
   return (
-    <div className="p-5 flex flex-col gap-6">
-      <div>
-        <SubSection title="פרטים אישיים" />
-        <div className="flex items-center gap-2 mb-4">
-          <ProfileAvatar className="w-9 h-9" />
-          <InfoField label="שם מלא" value="ישראלה ישראלית" />
-        </div>
-        <div className="flex flex-wrap gap-5 justify-start mb-4">
-          <InfoField label="מגדר" value="נקבה" />
-          <InfoField label="סטטוס זוגי" value="נשוא/ה" />
-          <InfoField label="תאריך לידה" value="01.01.1990" />
-        </div>
-        <div className="flex flex-wrap gap-5 justify-start mb-4">
-          <InfoField label="ארץ לידה" value="-" />
-          <InfoField label="אזרחות" value="ישראלית" />
-          <InfoField label="רב קו" value="2564376487" />
-        </div>
-        <div>
-          <InfoField
-            label="כתובת"
-            value="באר שבע, רחוב כלנית 32, דירה 5"
-          />
-        </div>
+    <div className="p-5 flex flex-col gap-5">
+      {/* גריד אחיד של 6 עמודות - השדות צמודים יותר, גולשים לשורה הבאה */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-x-5 gap-y-4">
+        <InfoField label="שם מלא" value="ישראלה ישראלית" />
+        <InfoField label="מגדר" value="נקבה" />
+        <InfoField label="סטטוס זוגי" value="נשוא/ה" />
+        <InfoField label="תאריך לידה" value="01.01.1990" />
+        <InfoField label="ארץ לידה" value="-" />
+        <InfoField label="אזרחות" value="ישראלית" />
+        <InfoField label="רב קו" value="2564376487" />
       </div>
-      <div>
+      <div className="pt-4 border-t border-[rgba(23,28,35,0.05)]">
         <SubSection title="דרכים ליצירת קשר" />
-        <div className="flex flex-wrap gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-x-5 gap-y-4">
           <InfoField label="טלפון" value="0500000000" />
           <InfoField label="אימייל" value="israela@gmail.com" />
-          <InfoField
-            label="כתובת למשלוח דואר"
-            value="באר שבע, רחוב כלנית 32, דירה 5"
-          />
+          {/* כתובות ארוכות - תופסות 2 עמודות כדי שלא יתנגשו */}
+          <div className="col-span-2">
+            <InfoField
+              label="כתובת"
+              value="באר שבע, רחוב כלנית 32, דירה 5"
+            />
+          </div>
+          <div className="col-span-2">
+            <InfoField
+              label="כתובת למשלוח דואר"
+              value="באר שבע, רחוב כלנית 32, דירה 5"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -981,8 +1065,9 @@ function PersonalInfoContent() {
 
 function EducationContent() {
   return (
-    <div className="p-5 flex flex-col gap-5">
-      <div>
+    // בדסקטופ: תיכון ובגרויות זה לצד זה עם קו מפריד
+    <div className="p-5 grid md:grid-cols-2 gap-5 md:gap-0">
+      <div className="md:pl-5 md:border-l md:border-[rgba(23,28,35,0.08)]">
         <SubSection title="תיכון" />
         <div className="flex flex-wrap gap-5 justify-start">
           <InfoField
@@ -995,18 +1080,48 @@ function EducationContent() {
           />
         </div>
       </div>
-      <div>
+      <div className="md:pr-5">
         <SubSection title="בגרויות" />
-        <div className="flex flex-wrap gap-5 justify-start">
-          <InfoField
-            label="5 יחידות לימוד"
-            value="תורת החשמל"
-          />
-          <InfoField label="5 יחידות לימוד" value="אמנות" />
-          <InfoField label="5 יחידות לימוד" value="גיאוגרפיה" />
+        <div className="flex flex-wrap gap-2">
+          {[
+            { subject: "תורת החשמל", units: 5 },
+            { subject: "אמנות", units: 5 },
+            { subject: "גיאוגרפיה", units: 5 },
+          ].map(({ subject, units }) => (
+            <div
+              key={subject}
+              className="flex items-center gap-1.5 bg-white border border-[rgba(0,143,240,0.35)] rounded-full px-3.5 py-1.5"
+            >
+              <span className="text-[#171c23] text-[14px] font-semibold whitespace-nowrap">
+                {subject}
+              </span>
+              <span className="text-[#008ff0] text-[13px] font-bold whitespace-nowrap">
+                · {units} יח"ל
+              </span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
+  );
+}
+
+// תג סטטוס הרשאה ירוק קומפקטי (במקום שדה לייבל/ערך)
+function AuthStatusBadge() {
+  return (
+    <span
+      className="flex items-center gap-1.5 text-[12px] font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap"
+      style={{
+        backgroundColor: "rgba(105,198,0,0.12)",
+        color: "#4e9400",
+      }}
+    >
+      <span
+        className="w-1.5 h-1.5 rounded-full shrink-0"
+        style={{ backgroundColor: "#69c600" }}
+      />
+      הרשאה מאושרת
+    </span>
   );
 }
 
@@ -1026,26 +1141,31 @@ function ParentEntry({
   address: string;
 }) {
   return (
-    <div className="flex flex-col gap-3 pb-5 border-b border-[rgba(23,28,35,0.05)] last:border-0 last:pb-0">
-      <div className="flex items-center gap-2">
-        <p className="font-semibold text-[#171c23] text-[16px]">
-          {name}
-        </p>
-        <EditIconBtn />
+    // רצועה אופקית: כותרת עם פעולות, ומתחתיה כל השדות בשורה אחת רחבה
+    <div className="flex flex-col gap-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-1 min-w-0">
+          <p className="font-semibold text-[#171c23] text-[16px] truncate">
+            <span className="opacity-50 font-normal text-[14px]">
+              {relation} · {" "}
+            </span>
+            {name}
+          </p>
+          <AuthStatusBadge />
+        </div>
+        <div className="flex items-center gap-1">
+          <EditIconBtn />
+          <RemoveAuthBtn />
+        </div>
       </div>
-      <div className="flex flex-wrap gap-5">
-        <InfoField label="שם מלא" value={name} />
-        <InfoField label="קרבה" value={relation} />
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-x-5 gap-y-4">
         <InfoField label="תעודת זהות" value={id} />
-      </div>
-      <div className="flex flex-wrap gap-5">
         <InfoField label="טלפון" value={phone} />
         <InfoField label="אימייל" value={email} />
-        <InfoField label="כתובת מגורים" value={address} />
-      </div>
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <RemoveAuthBtn />
-        <InfoField label="סטטוס הרשאה" value="מאושרת" />
+        {/* כתובת ארוכה - תופסת 2 עמודות כדי שלא תתנגש */}
+        <div className="col-span-2">
+          <InfoField label="כתובת מגורים" value={address} />
+        </div>
       </div>
     </div>
   );
@@ -1053,7 +1173,7 @@ function ParentEntry({
 
 function ParentsContent() {
   return (
-    <div className="p-5 flex flex-col gap-4">
+    <div className="p-5 flex flex-col gap-5">
       <ParentEntry
         name="דני ישראלית"
         relation="אב"
@@ -1062,14 +1182,16 @@ function ParentsContent() {
         phone="0500000000"
         address="באר שבע, רחוב כלנית 32, דירה 5"
       />
-      <ParentEntry
-        name="שירי ישראלית"
-        relation="אם"
-        id="211716293"
-        email="shiri@gmail.com"
-        phone="0500000000"
-        address="באר שבע, רחוב כלנית 32, דירה 5"
-      />
+      <div className="pt-5 border-t border-[rgba(23,28,35,0.05)]">
+        <ParentEntry
+          name="שירי ישראלית"
+          relation="אם"
+          id="211716293"
+          email="shiri@gmail.com"
+          phone="0500000000"
+          address="באר שבע, רחוב כלנית 32, דירה 5"
+        />
+      </div>
     </div>
   );
 }
@@ -1088,24 +1210,26 @@ function CompanionEntry({
   phone: string;
 }) {
   return (
-    <div className="flex flex-col gap-3 pb-5 border-b border-[rgba(23,28,35,0.05)] last:border-0 last:pb-0">
-      <div className="flex items-center gap-2">
-        <p className="font-semibold text-[#171c23] text-[16px]">
-          {role}
-        </p>
-        <EditIconBtn />
+    <div className="flex flex-col gap-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2 min-w-0">
+          <p className="font-semibold text-[#171c23] text-[16px] truncate">
+            <span className="opacity-50 font-normal text-[14px]">
+              {role} · {" "}
+            </span>
+            {name}
+          </p>
+          <AuthStatusBadge />
+        </div>
+        <div className="flex items-center gap-2">
+          <EditIconBtn />
+          <RemoveAuthBtn />
+        </div>
       </div>
-      <div className="flex flex-wrap gap-5">
-        <InfoField label="שם מלא" value={name} />
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-x-5 gap-y-4">
         <InfoField label="תעודת זהות" value={id} />
-      </div>
-      <div className="flex flex-wrap gap-5">
         <InfoField label="טלפון" value={phone} />
         <InfoField label="אימייל" value={email} />
-      </div>
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <RemoveAuthBtn />
-        <InfoField label="סטטוס הרשאה" value="מאושרת" />
       </div>
     </div>
   );
@@ -1179,21 +1303,22 @@ function PersonalSection() {
         </h2>
       </div>
 
-      {/* Desktop: 2-column grid */}
-      <div className="hidden md:grid grid-cols-2 gap-5">
-        <div className="bg-white rounded-[10px] flex flex-col">
+      {/* Desktop: כרטיסים ברוחב מלא בגובה טבעי - אין שטחים מתים,
+          וכל כרטיס (למשל מלווים) יכול לגדול בחופשיות */}
+      <div className="hidden md:flex flex-col gap-5">
+        <div className="bg-white rounded-[10px]">
           <CardHeader title="מידע אישי" />
           <PersonalInfoContent />
         </div>
-        <div className="bg-white rounded-[10px] flex flex-col">
+        <div className="bg-white rounded-[10px]">
           <CardHeader title="השכלה" />
           <EducationContent />
         </div>
-        <div className="bg-white rounded-[10px] flex flex-col">
+        <div className="bg-white rounded-[10px]">
           <CardHeader title="פרטי הורים" />
           <ParentsContent />
         </div>
-        <div className="bg-white rounded-[10px] flex flex-col">
+        <div className="bg-white rounded-[10px]">
           <CompanionsCardHeader />
           <CompanionsContent />
         </div>
@@ -1321,6 +1446,10 @@ export default function App() {
           />
         ) : page === "appointments" ? (
           <MyAppointmentsPage />
+        ) : page === "settings" ? (
+          <SettingsPage />
+        ) : page === "messages" ? (
+          <MessagesPage />
         ) : (
           <>
             <QualitySection />

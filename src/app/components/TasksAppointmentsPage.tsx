@@ -4,6 +4,7 @@ import {
   Clock,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   MapPin,
   CalendarPlus,
   Navigation,
@@ -12,6 +13,8 @@ import {
   CalendarClock,
   X,
   Send,
+  FileText,
+  Upload,
 } from "lucide-react";
 import { format } from "date-fns";
 import { he } from "date-fns/locale";
@@ -34,6 +37,22 @@ const tasks: Task[] = [
     timeLeft: "נותרו 3 ימים למילוי",
   },
 ];
+
+interface DocumentItem {
+  id: string;
+  name: string;
+}
+
+const documentsTask = {
+  id: "documents",
+  name: "השלמת מסמכים",
+  description:
+    "לא מצאנו מספר מסמכים המקושרים לשאלון רפואי שלך. אנא וודאו שכל המסמכים עודכנו במערכת. סמנו את המסמכים שכבר הועלו:",
+  documents: [
+    { id: "optometrist", name: "בדיקת אופטומטריסט עדכנית" },
+    { id: "other-medical", name: "בדיקה רפואית אחרת" },
+  ] as DocumentItem[],
+};
 
 export interface Appointment {
   id: string;
@@ -179,6 +198,128 @@ function TaskCard({
         />
       </span>
     </button>
+  );
+}
+
+// ── Documents task card ──────────────────────────────────────────────────────
+
+function DocumentsTaskCard() {
+  const [open, setOpen] = useState(false);
+  const [uploaded, setUploaded] = useState<
+    Record<string, boolean>
+  >({});
+
+  const total = documentsTask.documents.length;
+  const uploadedCount = documentsTask.documents.filter(
+    (doc) => uploaded[doc.id],
+  ).length;
+  const allUploaded = uploadedCount === total;
+
+  const toggleDoc = (id: string) =>
+    setUploaded((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  return (
+    <div className="bg-white rounded-[10px] transition-all duration-200 border border-transparent hover:[box-shadow:0_0_20px_0_rgba(0,143,240,0.25)] hover:border-[rgba(0,143,240,0.2)]">
+      {/* Header row - toggles the checklist */}
+      <button
+        onClick={() => setOpen(!open)}
+        className="group p-5 flex items-center justify-between gap-4 text-right w-full cursor-pointer"
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="bg-[rgba(0,143,240,0.1)] w-10 h-10 rounded-full flex items-center justify-center shrink-0">
+            <FileText size={18} className="text-[#008ff0]" />
+          </div>
+          <div className="flex flex-col items-start gap-1 min-w-0">
+            <h3 className="font-bold text-[#171c23] text-[18px] truncate">
+              {documentsTask.name}
+            </h3>
+            {allUploaded ? (
+              <span className="flex items-center gap-1.5 text-[13px] font-semibold text-[#4e9400]">
+                <Check size={13} className="shrink-0" />
+                כל המסמכים סומנו כהועלו
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 text-[13px] font-semibold text-[#e07000]">
+                <Clock size={13} className="shrink-0" />
+                {total - uploadedCount} מתוך {total} מסמכים
+                ממתינים להעלאה
+              </span>
+            )}
+          </div>
+        </div>
+        <span className="flex items-center gap-1 text-[#008ff0] text-[14px] font-semibold whitespace-nowrap shrink-0">
+          {open ? "סגירה" : "לפרטי המשימה"}
+          <ChevronDown
+            size={16}
+            className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          />
+        </span>
+      </button>
+
+      {/* Expanded checklist */}
+      {open && (
+        <div className="px-5 pb-5 border-t border-[rgba(23,28,35,0.05)]">
+          <p className="text-[#171c23] text-[14px] text-right leading-relaxed opacity-70 pt-4 mb-4">
+            {documentsTask.description}
+          </p>
+          <div className="flex flex-col gap-2">
+            {documentsTask.documents.map((doc) => {
+              const isUploaded = !!uploaded[doc.id];
+              return (
+                <button
+                  key={doc.id}
+                  onClick={() => toggleDoc(doc.id)}
+                  className={`flex items-center justify-between gap-3 rounded-[8px] px-4 py-3 text-right transition-colors border ${
+                    isUploaded
+                      ? "bg-[rgba(105,198,0,0.08)] border-[rgba(105,198,0,0.25)]"
+                      : "bg-[#f5f6fa] border-transparent hover:border-[rgba(0,143,240,0.2)]"
+                  }`}
+                >
+                  <span className="flex items-center gap-3 min-w-0">
+                    {/* Checkbox */}
+                    <span
+                      className={`w-5 h-5 rounded-[6px] flex items-center justify-center shrink-0 border transition-colors ${
+                        isUploaded
+                          ? "bg-[#69c600] border-[#69c600]"
+                          : "bg-white border-[rgba(23,28,35,0.25)]"
+                      }`}
+                    >
+                      {isUploaded && (
+                        <Check size={13} className="text-white" />
+                      )}
+                    </span>
+                    <span
+                      className={`text-[14px] font-semibold truncate ${
+                        isUploaded
+                          ? "text-[#4e9400]"
+                          : "text-[#171c23]"
+                      }`}
+                    >
+                      {doc.name}
+                    </span>
+                  </span>
+                  <span
+                    className={`text-[13px] font-semibold whitespace-nowrap shrink-0 ${
+                      isUploaded
+                        ? "text-[#4e9400]"
+                        : "text-[#171c23] opacity-50"
+                    }`}
+                  >
+                    {isUploaded ? "הקובץ הועלה" : "טרם הועלה"}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex justify-end mt-4 pt-4 border-t border-[rgba(23,28,35,0.05)]">
+            <button className="flex items-center gap-1.5 bg-[#008ff0] text-white text-[14px] font-semibold px-6 py-2 rounded-full whitespace-nowrap transition-colors hover:bg-[#0080d6]">
+              <Upload size={14} className="shrink-0" />
+              השלמת חוסרים
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -538,6 +679,7 @@ export default function TasksAppointmentsPage({
             onClick={() => onOpenTask?.(task.id)}
           />
         ))}
+        <DocumentsTaskCard />
       </div>
 
       {/* Upcoming appointments only, 3 nearest */}
