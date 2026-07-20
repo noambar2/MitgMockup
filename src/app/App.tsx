@@ -593,7 +593,7 @@ function Header({
       </div>
 
       <div
-        className="text-white"
+        className="text-white relative"
         style={{
           background:
             "linear-gradient(-11.751deg, rgb(36,83,119) 6%, rgb(19,131,208) 48%, rgb(0,143,240) 102%, rgb(93,184,245) 113%)",
@@ -679,7 +679,7 @@ function Header({
         </div>
 
         {mobileOpen && (
-          <div className="md:hidden border-t border-white/10 bg-[#122736]">
+          <div className="md:hidden absolute top-full inset-x-0 z-50 border-t border-white/10 bg-[#122736] shadow-[0_12px_24px_rgba(0,0,0,0.25)]">
             {navTabs.map((tab) => (
               <button
                 key={tab}
