@@ -839,7 +839,7 @@ function Header({
               </div>
               </div>
               <button
-                className=" flex items-center gap-1.5 text-[14px] font-semibold opacity-80 hover:opacity-100 transition-opacity"
+                className=" flex flex-row-reverse items-center gap-1.5 text-[14px] font-semibold opacity-80 hover:opacity-100 transition-opacity"
                 onClick={() => {
                   setMobileOpen(false);
                   setLogoutOpen(true);
