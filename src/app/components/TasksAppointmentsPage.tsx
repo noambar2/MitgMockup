@@ -15,6 +15,8 @@ import {
   Send,
   FileText,
   Upload,
+  Download,
+  Info,
 } from "lucide-react";
 import { format } from "date-fns";
 import { he } from "date-fns/locale";
@@ -61,11 +63,40 @@ export interface Appointment {
   date: string;
   time: string;
   location: string;
+  /** מידע מפורט על הזימון (יכול להיות ארוך) - מוצג בחלון פרטי הזימון */
+  details?: string;
+  /** האם קיים צו דיגיטלי להורדה */
+  digitalOrder?: boolean;
   /** מספר הפעמים שהזימון הוזז (עד 2) */
   rescheduleCount?: number;
   /** לזימונים קודמים בלבד */
   attended?: boolean;
 }
+
+const TZAV_RISHON_DETAILS = `הינך מזומן/ת לצו ראשון. נא להביא עמך:
+1. הצו שקיבלת בדואר.
+2. תעודה מזהה (תעודת זהות, דרכון בתוקף, רישיון נהיגה).
+3. יש להגיע ערוך/ה לשהייה של כ-5 שעות ולהצטייד עם אוכל ושתייה.
+4. אם טופלת ע"י גורם מקצועי נפשי, יש להביא עמך חוות דעת מגורם מטפל (פסיכולוג, פסיכיאטר, עובד סוציאלי).
+5. במידה ועברת אבחון דידקטי / פסיכודידקטי / נוירולוגי / ועדת אפיון זכאות, יש להביא עמך עותק מודפס שלהם.
+6. יש להגיע לאחר ביצוע שאלונים ברשת - שאלון רפואי ושאלון אימות נתונים.
+
+מסמכים רפואיים אשר יש להעביר למיטב דרך אתר מתגייסים טרם ההתייצבות ובנוסף להביא עמך לצו (במידה והנך מטופל/ת בלבד):
+1. במידה וקיימת בעיה רפואית כרונית - חוות דעת מרופא מומחה המפרטת את פרטי המחלה, תופעותיה והתרופות אותן אתה נוטל.
+2. הטופס הרפואי שקיבלת בצו כאשר הוא חתום על ידי רופא משפחה (לא ניתן להתחיל את הליכי המיון ללא מסמך זה מלא וחתום).
+3. במידה ואינך מעוניין/ת בבדיקת אשכים ע"י רופא בלשכת הגיוס - יש להציג תוצאת בדיקת אשכים שבוצעה ע"י רופא משפחה.
+4. תוצאות בדיקת שתן עדכנית מקופ"ח לצו הראשון (עדכנית עד 3 חודשים מיום הצו).
+5. אם קיים קוצר ראיה (-4 ומעלה) ו/או קיים צילינדר מעל 2 - יש לצרף בדיקת רופא עיניים ובדיקת קרקעית העין (פונדוס).
+
+מסמכים בתחום בריאות הנפש אשר יש להעביר טרם ההתייצבות ובנוסף להביא עמך לצו:
+1. סיכום טיפול ממטפל - פסיכותרפיסט / פסיכולוג / עובד סוציאלי (במידה והינך מטופל/ת או טופלת בעבר).
+2. חוות דעת תפקודית ממסגרת לימודית או ממקום עבודה.
+3. במידה וטופלת / אושפזת / אובחנת או יש ברשותך מסמכים אודות אפיון ליווי וזכאות / אבחון הפרעה התפתחותית / אוטיזם / סיכום טיפול אחר רלוונטי - הנך מתבקש/ת להציגם.
+
+מסמכים נוספים אשר יש להעביר טרם ההתייצבות או להביא עמך לצו:
+1. מרשם לתרופות אבחנת קשב קבועות (במידה והינך נוטל/ת, לא מומלץ לקחת את התרופה בבוקר הצו, אלא להביא עמך ללשכת הגיוס וליטול אותה טרם ביצוע המבחן).
+
+את כל המסמכים יש להעלות באתר מיטב עד 5 ימים טרם ההתייצבות בכתובת mitgaisim.idf.il. כמו כן, יש להביאם ביום ההתייצבות. בהצלחה!`;
 
 export const upcomingAppointments: Appointment[] = [
   {
@@ -84,6 +115,8 @@ export const upcomingAppointments: Appointment[] = [
     date: "09.08.2026",
     time: "08:30",
     location: "לשכת גיוס באר שבע",
+    details: TZAV_RISHON_DETAILS,
+    digitalOrder: true,
     rescheduleCount: 1,
   },
   {
@@ -93,6 +126,14 @@ export const upcomingAppointments: Appointment[] = [
     date: "02.09.2026",
     time: "09:00",
     location: "לשכת גיוס תל השומר",
+    details: `יום המא"ה (מיון, איתור והתאמה) נועד לבחון את יכולותיך במגוון מיומנויות לצורך התאמת שיבוץ מיטבי.
+
+נא להביא עמך:
+1. תעודה מזהה (תעודת זהות / דרכון בתוקף).
+2. משקפיים / עדשות מגע במידה והנך משתמש/ת בהם.
+3. אוכל ושתייה - היום אורך מספר שעות.
+
+מומלץ להשלים את לומדת ההכנה ליום המא"ה באתר מתגייסים לפני ההגעה, כדי להגיע מוכן/ה יותר.`,
     rescheduleCount: 2,
   },
   {
@@ -102,6 +143,12 @@ export const upcomingAppointments: Appointment[] = [
     date: "21.09.2026",
     time: "10:15",
     location: "מרפאת לשכת גיוס באר שבע",
+    details: `זימון לבדיקות רפואיות משלימות להשלמת הפרופיל הרפואי.
+
+נא להביא עמך:
+1. תעודה מזהה.
+2. כל מסמך רפואי רלוונטי שטרם הועלה למערכת.
+3. רשימת תרופות קבועות (במידה והנך נוטל/ת).`,
     rescheduleCount: 0,
   },
 ];
@@ -544,6 +591,167 @@ function RescheduleDialog({
   );
 }
 
+// ── Appointment details dialog / bottom sheet ────────────────────────────────
+
+function AppointmentDetailsDialog({
+  appointment,
+  past,
+  confirmed,
+  onConfirm,
+  onClose,
+}: {
+  appointment: Appointment;
+  past: boolean;
+  confirmed: boolean;
+  onConfirm: () => void;
+  onClose: () => void;
+}) {
+  const isMobile = useIsMobile();
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const t = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(t);
+  }, []);
+
+  const handleClose = () => {
+    setVisible(false);
+    setTimeout(onClose, 280);
+  };
+
+  const content = (
+    <div className="flex flex-col flex-1 min-h-0" dir="rtl">
+      {/* Header */}
+      <div className="flex flex-col gap-2.5 px-5 py-4 border-b border-[rgba(23,28,35,0.08)] shrink-0">
+        {/* שם הזימון + סגירה */}
+        <div className="flex items-start justify-between gap-3">
+          <span className="font-bold text-[#171c23] text-[18px] min-w-0">
+            {appointment.name}
+          </span>
+          <button
+            onClick={handleClose}
+            className="w-8 h-8 flex items-center justify-center text-[#171c23] opacity-60 hover:opacity-100 shrink-0 -mt-1"
+          >
+            <X size={20} />
+          </button>
+        </div>
+        {/* תאריך + הוספה ליומן */}
+        <div className="flex items-center justify-between gap-3">
+          <span className="flex items-center gap-2 text-[#171c23] text-[14px] min-w-0">
+            <CalendarDays
+              size={15}
+              className="text-[#008ff0] shrink-0"
+            />
+            {appointment.day}, {appointment.date} | {appointment.time}
+          </span>
+          {!past && (
+            <button className="flex items-center gap-1 text-[#008ff0] text-[13px] font-semibold whitespace-nowrap shrink-0 opacity-80 hover:opacity-100 hover:underline">
+              <CalendarPlus size={13} className="shrink-0" />
+              הוספה ליומן
+            </button>
+          )}
+        </div>
+        {/* מיקום + ניווט */}
+        <div className="flex items-center justify-between gap-3">
+          <span className="flex items-center gap-2 text-[#171c23] text-[14px] min-w-0">
+            <MapPin
+              size={15}
+              className="text-[#008ff0] shrink-0"
+            />
+            {appointment.location}
+          </span>
+          {!past && (
+            <button className="flex items-center gap-1 text-[#008ff0] text-[13px] font-semibold whitespace-nowrap shrink-0 opacity-80 hover:opacity-100 hover:underline">
+              <Navigation size={13} className="shrink-0" />
+              ניווט
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* גוף - מידע הזימון (נגלל) */}
+      <div className="px-5 py-4 overflow-y-auto flex-1 min-h-0">
+        <p className="text-[#171c23] text-[14px] text-right leading-relaxed whitespace-pre-line">
+          {appointment.details}
+        </p>
+      </div>
+
+      {/* פעולות - מיושרות לשמאל */}
+      {!past && (
+        <div className="flex flex-wrap items-center justify-end gap-2 px-5 py-4 border-t border-[rgba(23,28,35,0.08)] shrink-0">
+          {appointment.digitalOrder && (
+            <button className="flex items-center gap-1.5 bg-[rgba(0,143,240,0.1)] text-[#008ff0] text-[13px] font-semibold px-5 py-2 rounded-full whitespace-nowrap transition-colors hover:bg-[rgba(0,143,240,0.18)]">
+              <Download size={15} className="shrink-0" />
+              הורדת צו דיגיטלי
+            </button>
+          )}
+          <button
+            onClick={onConfirm}
+            className={`flex items-center gap-1.5 text-[13px] font-semibold px-5 py-2 rounded-full whitespace-nowrap transition-colors ${
+              confirmed
+                ? "bg-[rgba(105,198,0,0.12)] text-[#4e9400]"
+                : "bg-[#008ff0] text-white hover:bg-[#0080d6]"
+            }`}
+          >
+            {confirmed && <Check size={15} className="shrink-0" />}
+            {confirmed ? "הגעה אושרה" : "אישור הגעה"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  if (isMobile) {
+    return (
+      <div className="fixed inset-0 z-[400]" dir="rtl">
+        <div
+          className="absolute inset-0 bg-black/20 transition-opacity duration-300"
+          style={{ opacity: visible ? 1 : 0 }}
+          onClick={handleClose}
+        />
+        <div
+          className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl transition-transform duration-300 ease-out flex flex-col max-h-[90vh]"
+          style={{
+            transform: visible
+              ? "translateY(0)"
+              : "translateY(100%)",
+          }}
+        >
+          <div className="flex justify-center pt-3 pb-1 shrink-0">
+            <div className="w-10 h-1 rounded-full bg-[rgba(23,28,35,0.15)]" />
+          </div>
+          {content}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-[400] flex items-center justify-center p-4"
+      dir="rtl"
+    >
+      <div
+        className="absolute inset-0 bg-black/20 transition-opacity duration-300"
+        style={{ opacity: visible ? 1 : 0 }}
+        onClick={handleClose}
+      />
+      <div
+        className="relative bg-white rounded-[14px] w-full max-w-[560px] max-h-[85vh] flex flex-col transition-all duration-300"
+        style={{
+          opacity: visible ? 1 : 0,
+          transform: visible
+            ? "translateY(0) scale(1)"
+            : "translateY(12px) scale(0.98)",
+          boxShadow: "0 12px 48px rgba(0,0,0,0.18)",
+        }}
+      >
+        {content}
+      </div>
+    </div>
+  );
+}
+
 // ── Appointment card ─────────────────────────────────────────────────────────
 
 export function AppointmentCard({
@@ -555,6 +763,7 @@ export function AppointmentCard({
 }) {
   const [confirmed, setConfirmed] = useState(false);
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [rescheduleCount, setRescheduleCount] = useState(
     appointment.rescheduleCount ?? 0,
   );
@@ -573,6 +782,16 @@ export function AppointmentCard({
             )
           }
           onClose={() => setRescheduleOpen(false)}
+        />
+      )}
+
+      {detailsOpen && (
+        <AppointmentDetailsDialog
+          appointment={appointment}
+          past={past}
+          confirmed={confirmed}
+          onConfirm={() => setConfirmed(!confirmed)}
+          onClose={() => setDetailsOpen(false)}
         />
       )}
 
@@ -632,8 +851,30 @@ export function AppointmentCard({
         </div>
       </div>
 
+      {/* תצוגה מקדימה של מידע הזימון + כפתור לפרטים המלאים */}
+      {appointment.details && (
+        <div className="flex flex-col gap-1.5">
+          <p className="text-[#171c23] text-[13px] text-right leading-relaxed opacity-60 line-clamp-2">
+            {appointment.details}
+          </p>
+          <button
+            onClick={() => setDetailsOpen(true)}
+            className="self-start flex items-center gap-1 text-[#008ff0] text-[13px] font-semibold hover:underline"
+          >
+            <Info size={14} className="shrink-0" />
+            פרטי הזימון המלאים
+          </button>
+        </div>
+      )}
+
       {!past && (
         <div className="flex flex-wrap items-center justify-end gap-2 mt-auto pt-3 border-t border-[rgba(23,28,35,0.05)]">
+          {appointment.digitalOrder && (
+            <button className="flex items-center gap-1.5 bg-[rgba(0,143,240,0.1)] text-[#008ff0] text-[13px] font-semibold px-5 py-1.5 rounded-full whitespace-nowrap transition-colors hover:bg-[rgba(0,143,240,0.18)]">
+              <Download size={14} className="shrink-0" />
+              הורדת צו דיגיטלי
+            </button>
+          )}
           <button
             onClick={() => setRescheduleOpen(true)}
             className="flex items-center gap-1.5 bg-[rgba(0,143,240,0.1)] text-[#008ff0] text-[13px] font-semibold px-5 py-1.5 rounded-full whitespace-nowrap transition-colors hover:bg-[rgba(0,143,240,0.18)]"

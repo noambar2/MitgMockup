@@ -9,6 +9,7 @@ import {
   Pencil,
   Info,
   Settings,
+  User,
 } from "lucide-react";
 import meitavLogoSvg from '../imports/meitavLogoSvg.svg';
 import logoimg from '../imports/logoimg.png';
@@ -102,7 +103,7 @@ const GAUGE_INFO: Record<string, { explanation: string }> = {
       "הפרופיל הרפואי מסמל את מצבך וכשירותך הרפואית למערכי הצבא השונים ויש לו השפעה על סוג שירותך ואופיו.",
   },
   'יום המא"ה': {
-    explanation: `תפקיד יום המא"ה הוא לבחון את יכולות המלש"בים והמלש"ביות במגוון מיומנויות על מנת להתאים שיבוץ מיטבי המשלב בין צרכי הצבא, יכולות הפרט ורצונותיו.`,
+    explanation: `תפקיד יום המא"ה  (מיון, איתור והתאמה) הוא לבחון את יכולות המלש"בים והמלש"ביות במגוון מיומנויות על מנת להתאים שיבוץ מיטבי המשלב בין צרכי הצבא, יכולות הפרט ורצונותיו.`,
   },
 };
 
@@ -532,6 +533,73 @@ function RemoveAuthBtn() {
   );
 }
 
+// ── Logout confirmation dialog ────────────────────────────────────────────────
+
+function LogoutConfirmDialog({
+  onClose,
+}: {
+  onClose: () => void;
+}) {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const t = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(t);
+  }, []);
+
+  const handleClose = () => {
+    setVisible(false);
+    setTimeout(onClose, 280);
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[600] flex items-center justify-center p-4"
+      dir="rtl"
+    >
+      <div
+        className="absolute inset-0 bg-black/30 transition-opacity duration-300"
+        style={{ opacity: visible ? 1 : 0 }}
+        onClick={handleClose}
+      />
+      <div
+        className="relative bg-white rounded-[16px] w-full max-w-[380px] p-6 flex flex-col items-center text-center transition-all duration-300"
+        style={{
+          opacity: visible ? 1 : 0,
+          transform: visible
+            ? "translateY(0) scale(1)"
+            : "translateY(12px) scale(0.98)",
+          boxShadow: "0 12px 48px rgba(0,0,0,0.18)",
+        }}
+      >
+        <div className="w-14 h-14 rounded-full bg-[rgba(0,143,240,0.1)] flex items-center justify-center mb-4">
+          <LogOut size={24} className="text-[#008ff0]" />
+        </div>
+        <h3 className="font-bold text-[#171c23] text-[19px] mb-1.5">
+          התנתקות מהמערכת
+        </h3>
+        <p className="text-[#171c23] text-[14px] opacity-60 mb-6">
+          האם ברצונך להתנתק מהאזור האישי?
+        </p>
+        <div className="flex gap-3 w-full">
+          <button
+            onClick={handleClose}
+            className="flex-1 bg-[#f5f6fa] text-[#171c23] text-[15px] font-semibold py-2.5 rounded-full transition-colors hover:bg-[rgba(23,28,35,0.08)]"
+          >
+            ביטול
+          </button>
+          <button
+            onClick={handleClose}
+            className="flex-1 bg-[#008ff0] text-white text-[15px] font-semibold py-2.5 rounded-full transition-colors hover:bg-[#0080d6]"
+          >
+            התנתקות
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Header ───────────────────────────────────────────────────────────────────
 
 function Header({
@@ -543,6 +611,7 @@ function Header({
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
   const [readIds, setReadIds] = useState<Set<string>>(
     () => new Set(),
   );
@@ -668,23 +737,6 @@ function Header({
             ))}
           </nav>
           <div className="flex items-center gap-4">
-            <LogOut
-              size={17}
-              className="cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
-            />
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
-              fill="none"
-              className="cursor-pointer opacity-80 hover:opacity-100"
-            >
-              <path
-                d="M9 1C4.6 1 1 4.6 1 9s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 3a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm0 10.5a6 6 0 0 1-4.6-2.1C5.6 11.4 7.2 10.5 9 10.5s3.4.9 4.6 2.4A6 6 0 0 1 9 14.5z"
-                fill="white"
-              />
-            </svg>
-            <BellButton />
             <button
               onClick={() => onNavigate("settings")}
               className={`flex items-center justify-center transition-opacity ${
@@ -696,12 +748,29 @@ function Header({
             >
               <Settings size={17} />
             </button>
-            <div className="w-px h-6 bg-white/20 mx-1" />
+            <BellButton />
             <div className="bg-white/20 rounded-full px-4 h-8 flex items-center gap-2 w-[220px]">
               <Search size={15} />
               <span className="text-white/70 text-[14px]">
                 חיפוש
               </span>
+            </div>
+            <div className="w-px h-6 bg-white/20 mx-1" />
+            {/* בלוק משתמש: אייקון (בקצה שמאל), שם, התנתקות */}
+            <div dir="rtl" className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                <User size={17} />
+              </div>
+              <span className="text-[14px] font-semibold whitespace-nowrap">
+                ישראלה ישראלית
+              </span>
+              <button
+                aria-label="התנתקות"
+                onClick={() => setLogoutOpen(true)}
+                className="flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity"
+              >
+                <LogOut size={17} />
+              </button>
             </div>
           </div>
         </div>
@@ -730,18 +799,6 @@ function Header({
             >
               <Settings size={17} />
             </button>
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
-              fill="none"
-            >
-              <path
-                d="M9 1C4.6 1 1 4.6 1 9s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 3a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm0 10.5a6 6 0 0 1-4.6-2.1C5.6 11.4 7.2 10.5 9 10.5s3.4.9 4.6 2.4A6 6 0 0 1 9 14.5z"
-                fill="white"
-              />
-            </svg>
-            <LogOut size={17} />
           </div>
         </div>
 
@@ -767,26 +824,56 @@ function Header({
         )}
 
         {mobileOpen && (
-          <div className="md:hidden flex flex-col-reverse absolute top-full inset-x-0 z-50 border-t border-white/10 bg-[#122736] shadow-[0_12px_24px_rgba(0,0,0,0.25)]">
-            {navTabs.map((tab) => (
+          <div className="md:hidden absolute top-full inset-x-0 z-50 border-t border-white/10 bg-[#122736] shadow-[0_12px_24px_rgba(0,0,0,0.25)]">
+            {/* בלוק משתמש: אייקון (בקצה שמאל), שם, התנתקות */}
+            <div
+              dir="rtl"
+              className="flex items-center justify-between gap-2 w-full px-5 py-4 border-b border-white/10"
+            >
+              <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                <User size={19} />
+              </div>
+              <div className="text-[16px] font-semibold">
+                ישראלה ישראלית
+              </div>
+              </div>
               <button
-                key={tab}
-                className={`w-full text-right px-5 py-3.5 text-[16px] border-b border-white/5 block ${
-                  isActiveTab(tab)
-                    ? "bg-white/10 font-semibold"
-                    : ""
-                }`}
+                className=" flex items-center gap-1.5 text-[14px] font-semibold opacity-80 hover:opacity-100 transition-opacity"
                 onClick={() => {
-                  handleTabClick(tab);
                   setMobileOpen(false);
+                  setLogoutOpen(true);
                 }}
               >
-                {tab}
+                <LogOut size={17} />
+                התנתקות
               </button>
-            ))}
+            </div>
+            <div className="flex flex-col-reverse">
+              {navTabs.map((tab) => (
+                <button
+                  key={tab}
+                  className={`w-full text-right px-5 py-3.5 text-[16px] border-b border-white/5 block ${
+                    isActiveTab(tab)
+                      ? "bg-white/10 font-semibold"
+                      : ""
+                  }`}
+                  onClick={() => {
+                    handleTabClick(tab);
+                    setMobileOpen(false);
+                  }}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
+
+      {logoutOpen && (
+        <LogoutConfirmDialog onClose={() => setLogoutOpen(false)} />
+      )}
     </header>
   );
 }
@@ -854,8 +941,9 @@ function MaahCard({
           />
         </div>
       </button>
+      {/* טקסט ההסבר - רק במובייל (בדסקטופ יש אייקון מידע + טולטיפ בריחוף) */}
       <p
-        className={`${open ? "block" : "hidden"} md:block text-[#171c23] text-[14px] text-right leading-relaxed md:opacity-70`}
+        className={`${open ? "block" : "hidden"} md:hidden text-[#171c23] text-[14px] text-right leading-relaxed`}
       >
         {`תפקיד יום המא"ה (מיון, איתור והתאמה) הוא לבחון את יכולות המלש"בים והמלש"ביות במגוון מיומנויות על מנת להתאים שיבוץ מיטבי.`}
       </p>
@@ -946,27 +1034,18 @@ function QualitySection() {
         מועד הגיוס
       </p>
 
-      <div className="flex flex-col md:flex-row gap-4 items-start">
+      <div className="flex flex-col gap-4">
+        {/* נתוני גיוס - רוחב מלא */}
+        <EnlistmentCard
+          days={186}
+          date="01.01.27"
+          hebrewDate='כ"ב בטבת התשפ"ז'
+          assignment="ע.ח מבצעים אוויר"
+        />
 
-        <div className="flex flex-col gap-4 w-full md:flex-[2] md:min-w-0 md:self-stretch">
-          {/* נתוני גיוס */}
-          {/* <h3 className="font-bold text-[#122736] text-[20px] tracking-tight text-right">
-            נתוני גיוס<span className="text-[#69c600]">.</span>
-          </h3> */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 flex-1">
-            <EnlistmentCard
-              days={186}
-              date="01.01.27"
-              hebrewDate='כ"ב בטבת התשפ"ז'
-              assignment="ע.ח מבצעים אוויר"
-            />
-          </div>
-
-          {/* ציונים */}
-          {/* <h3 className="font-bold text-[#122736] text-[20px] tracking-tight text-right mt-2">
-            ציונים<span className="text-[#69c600]">.</span>
-          </h3> */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-4 flex-1">
+        {/* ציונים (2 שורות) + יום המא"ה בצד, באותו גובה */}
+        <div className="flex flex-col md:flex-row gap-4 items-stretch">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 w-full md:flex-[2] md:min-w-0">
             <GaugeCard
               max={90}
               display="number"
@@ -1002,22 +1081,22 @@ function QualitySection() {
               value={4}
             />
           </div>
-        </div>
-        <div className="w-full md:flex-[1] md:min-w-0 md:self-stretch">
-          <MaahCard
-            hovered={
-              !isMobile && hoveredCard?.label === 'יום המא"ה'
-            }
-            onMouseEnter={() => {
-              if (!isMobile)
-                setHoveredCard({
-                  label: 'יום המא"ה',
-                  value: 0,
-                });
-            }}
-            onMouseLeave={() => setHoveredCard(null)}
-            onMouseMove={handleMouseMove}
-          />
+          <div className="w-full md:flex-[1] md:min-w-0">
+            <MaahCard
+              hovered={
+                !isMobile && hoveredCard?.label === 'יום המא"ה'
+              }
+              onMouseEnter={() => {
+                if (!isMobile)
+                  setHoveredCard({
+                    label: 'יום המא"ה',
+                    value: 0,
+                  });
+              }}
+              onMouseLeave={() => setHoveredCard(null)}
+              onMouseMove={handleMouseMove}
+            />
+          </div>
         </div>
       </div>
     </section>
