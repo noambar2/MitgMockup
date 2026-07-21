@@ -2162,7 +2162,7 @@ function Frame32() {
   return (
     <div className="content-stretch flex items-center justify-center px-[20px] py-[2px] relative rounded-[4px] shrink-0">
       <p className="[word-break:break-word] font-['Noto_Sans_Hebrew_New:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[16px] text-center text-white whitespace-nowrap" dir="auto" style={{ fontVariationSettings: '"wdth" 100' }}>
-        משימות וזימונים
+        משימות
       </p>
     </div>
   );

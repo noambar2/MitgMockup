@@ -659,14 +659,14 @@ function Header({
     "פניות",
     "לומדות",
     "הודעות",
-    "משימות וזימונים",
+    "משימות",
     "הזימונים שלי",
     "פרופיל אישי",
   ];
   const tabToPage: Record<string, Page> = {
     לומדות: "learnings",
     "פרופיל אישי": "profile",
-    "משימות וזימונים": "tasks",
+    "משימות": "tasks",
     "הזימונים שלי": "appointments",
     הודעות: "messages",
   };
@@ -737,6 +737,13 @@ function Header({
             ))}
           </nav>
           <div className="flex items-center gap-4">
+            <div className="bg-white/20 rounded-full px-4 h-8 flex items-center gap-2 w-[220px]">
+              <Search size={15} />
+              <span className="text-white/70 text-[14px]">
+                חיפוש
+              </span>
+            </div>
+            <BellButton />
             <button
               onClick={() => onNavigate("settings")}
               className={`flex items-center justify-center transition-opacity ${
@@ -748,13 +755,6 @@ function Header({
             >
               <Settings size={17} />
             </button>
-            <BellButton />
-            <div className="bg-white/20 rounded-full px-4 h-8 flex items-center gap-2 w-[220px]">
-              <Search size={15} />
-              <span className="text-white/70 text-[14px]">
-                חיפוש
-              </span>
-            </div>
             <div className="w-px h-6 bg-white/20 mx-1" />
             {/* בלוק משתמש: אייקון (בקצה שמאל), שם, התנתקות */}
             <div dir="rtl" className="flex items-center gap-2.5">

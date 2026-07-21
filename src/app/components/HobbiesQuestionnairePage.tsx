@@ -376,7 +376,7 @@ export default function HobbiesQuestionnairePage({
           onClick={onExit}
           className="text-[#008ff0] font-semibold hover:underline underline-offset-4"
         >
-          משימות וזימונים
+          משימות
         </button>
         <ChevronLeft
           size={14}

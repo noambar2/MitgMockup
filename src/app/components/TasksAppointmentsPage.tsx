@@ -910,9 +910,11 @@ export default function TasksAppointmentsPage({
 }) {
   return (
     <section className="px-4 sm:px-6 md:px-10 pt-8 pb-12">
+      <div className="md:max-w-[760px] md:mx-auto">
+
       {/* Tasks */}
       <SectionHeading title="משימות" />
-      <div className="flex flex-col gap-4 mb-10 md:max-w-[560px]">
+      <div className="flex flex-col gap-4 mb-10">
         {tasks.map((task) => (
           <TaskCard
             key={task.id}
@@ -924,7 +926,7 @@ export default function TasksAppointmentsPage({
       </div>
 
       {/* Upcoming appointments only, 3 nearest */}
-      <SectionHeading title="זימונים" />
+      {/* <SectionHeading title="זימונים" />
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-stretch">
         {upcomingAppointments.slice(0, 3).map((appointment) => (
           <AppointmentCard
@@ -945,7 +947,8 @@ export default function TasksAppointmentsPage({
             className="transition-transform duration-200 group-hover:-translate-x-0.5"
           />
         </button>
-      </div>
+      </div> */}
+    </div>
     </section>
   );
 }

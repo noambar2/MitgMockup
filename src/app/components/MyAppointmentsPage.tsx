@@ -8,6 +8,8 @@ import {
 export default function MyAppointmentsPage() {
   return (
     <section className="px-4 sm:px-6 md:px-10 pt-8 pb-12">
+            <div className="md:max-w-[760px] md:mx-auto">
+
       {/* <div className="text-right mb-1">
         <h2 className="font-bold text-[#122736] text-[28px] sm:text-[34px] tracking-tight inline">
           הזימונים שלי<span className="text-[#69c600]">.</span>
@@ -20,7 +22,7 @@ export default function MyAppointmentsPage() {
 
       {/* Upcoming */}
       <SectionHeading title="זימונים עתידיים" />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch mb-10">
+      <div className="grid grid-cols-1 gap-4 items-stretch mb-10">
         {upcomingAppointments.map((appointment) => (
           <AppointmentCard
             key={appointment.id}
@@ -31,7 +33,7 @@ export default function MyAppointmentsPage() {
 
       {/* Past */}
       <SectionHeading title="זימונים קודמים" />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+      <div className="grid grid-cols-1 gap-4 items-stretch">
         {pastAppointments.map((appointment) => (
           <AppointmentCard
             key={appointment.id}
@@ -39,6 +41,7 @@ export default function MyAppointmentsPage() {
             past
           />
         ))}
+      </div>
       </div>
     </section>
   );

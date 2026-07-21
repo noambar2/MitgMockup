@@ -517,7 +517,7 @@
                         <div style={{textAlign: 'center', color: 'white', fontSize: 16, fontFamily: 'Noto Sans Hebrew New', fontWeight: '400', wordWrap: 'break-word'}}>הודעות</div>
                     </div>
                     <div style={{paddingLeft: 20, paddingRight: 20, paddingTop: 2, paddingBottom: 2, borderRadius: 4, justifyContent: 'center', alignItems: 'center', gap: 10, display: 'flex'}}>
-                        <div style={{textAlign: 'center', color: 'white', fontSize: 16, fontFamily: 'Noto Sans Hebrew New', fontWeight: '400', wordWrap: 'break-word'}}>משימות וזימונים</div>
+                        <div style={{textAlign: 'center', color: 'white', fontSize: 16, fontFamily: 'Noto Sans Hebrew New', fontWeight: '400', wordWrap: 'break-word'}}>משימות</div>
                     </div>
                     <div style={{paddingLeft: 20, paddingRight: 20, paddingTop: 2, paddingBottom: 2, borderRadius: 4, justifyContent: 'center', alignItems: 'center', gap: 10, display: 'flex'}}>
                         <div style={{textAlign: 'center', color: 'white', fontSize: 16, fontFamily: 'Noto Sans Hebrew New', fontWeight: '400', wordWrap: 'break-word'}}>הזימונים שלי</div>
