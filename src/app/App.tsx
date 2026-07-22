@@ -18,12 +18,31 @@ import TasksAppointmentsPage from './components/TasksAppointmentsPage';
 import MyAppointmentsPage from './components/MyAppointmentsPage';
 import HobbiesQuestionnairePage from './components/HobbiesQuestionnairePage';
 import SettingsPage from './components/SettingsPage';
-import MessagesPage from './components/MessagesPage';
-import NotificationsPanel, {
-  notifications,
-  type AppNotification,
-} from './components/NotificationsPanel';
+import MessagesPage, {
+  INITIAL_READ_MESSAGE_IDS,
+  INITIAL_ARCHIVED_MESSAGE_IDS,
+  countUnreadMessages,
+} from './components/MessagesPage';
 import { GLASS_CARD } from './components/ui/utils';
+import {
+  Button,
+  Dialog,
+  DialogHeader,
+  IconCircle,
+  StatusBadge,
+  useDialogClose,
+} from './components/primitives';
+import {
+  ContactEditDialog,
+  ParentEditDialog,
+  CompanionWizard,
+  AuthPermissionsBlock,
+  AddCompanionBtn,
+  MAX_COMPANIONS,
+  type ContactInfo,
+  type Parent,
+  type Companion,
+} from './components/PersonalDetailsForms';
 
 type Page =
   | "profile"
@@ -59,7 +78,7 @@ function MeitavLogo({ className }: { className?: string }) {
 function ProfileAvatar({ className }: { className?: string }) {
   return (
     <div
-      className={`bg-[#008FF0] flex items-center justify-center rounded-full shrink-0 ${className ?? "w-9 h-9"}`}
+      className={`bg-[#008ff0] flex items-center justify-center rounded-full shrink-0 ${className ?? "w-9 h-9"}`}
     >
       <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
         <path
@@ -142,7 +161,7 @@ function GaugeTooltip({
       style={{
         left,
         top,
-        boxShadow: "0 4px 24px rgba(0,0,0,0.12)",
+        boxShadow: "0 12px 32px rgba(0,0,0,0.16)",
       }}
     >
       <div className="flex items-baseline gap-1.5 mb-2">
@@ -150,7 +169,7 @@ function GaugeTooltip({
           {label}
         </span>
         {value > 0 && (
-          <span className="font-bold text-[#008FF0] text-[20px]">
+          <span className="font-bold text-[#008ff0] text-[20px]">
             {value}
           </span>
         )}
@@ -174,59 +193,26 @@ function BottomSheet({
   onClose: () => void;
 }) {
   const info = GAUGE_INFO[label];
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const t = requestAnimationFrame(() => setVisible(true));
-    return () => cancelAnimationFrame(t);
-  }, []);
-
-  const handleClose = () => {
-    setVisible(false);
-    setTimeout(onClose, 280);
-  };
-
   return (
-    <div className="fixed inset-0 z-[400]" dir="rtl">
-      <div
-        className="absolute inset-0 bg-black/20 transition-opacity duration-300"
-        style={{ opacity: visible ? 1 : 0 }}
-        onClick={handleClose}
-      />
-      <div
-        className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl transition-transform duration-300 ease-out"
-        style={{
-          transform: visible
-            ? "translateY(0)"
-            : "translateY(100%)",
-        }}
-      >
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 rounded-full bg-[rgba(23,28,35,0.15)]" />
-        </div>
-        <div className="flex items-center justify-between px-5 py-3 border-b border-[rgba(23,28,35,0.08)]">
-          <div className="flex items-baseline gap-1.5">
-            <span className="font-bold text-[#171c23] text-[18px]">
+    <Dialog
+      onClose={onClose}
+      header={
+        <DialogHeader
+          title={
+            <span className="flex items-baseline gap-1.5">
               {label}
+              <span className="font-bold text-[#008ff0] text-[24px]">
+                {value}
+              </span>
             </span>
-            <span className="font-bold text-[#008FF0] text-[22px]">
-              {value}
-            </span>
-          </div>
-          <button
-            onClick={handleClose}
-            className="w-8 h-8 flex items-center justify-center text-[#171c23] opacity-60 hover:opacity-100"
-          >
-            <X size={20} />
-          </button>
-        </div>
-        <div className="px-5 py-5 pb-8">
-          <p className="text-[#171c23] text-[15px] leading-relaxed text-right whitespace-pre-line">
-            {info?.explanation}
-          </p>
-        </div>
-      </div>
-    </div>
+          }
+        />
+      }
+    >
+      <p className="text-[#171c23] text-[15px] leading-relaxed text-right whitespace-pre-line">
+        {info?.explanation}
+      </p>
+    </Dialog>
   );
 }
 
@@ -256,21 +242,21 @@ function SemiGauge({
         <path
           d="M 10 90 A 80 80 0 0 1 170 90"
           fill="none"
-          stroke="#F5F6FA"
+          stroke="#f5f5f7"
           strokeWidth="18"
           strokeLinecap="round"
         />
         <path
           d="M 170 90 A 80 80 0 0 0 10 90"
           fill="none"
-          stroke="#008FF0"
+          stroke="#008ff0"
           strokeWidth="18"
           strokeLinecap="round"
           strokeDasharray={`${fill} ${arc}`}
         />
       </svg>
       <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-center leading-none pb-1">
-        <span className="font-bold text-[#171c23] text-[30px] tracking-tight">
+        <span className="font-bold text-[#171c23] text-[28px] tracking-tight">
           {value}
         </span>
         <span className="text-[rgba(23,28,35,0.5)] text-[13px]">
@@ -347,13 +333,13 @@ function GaugeCard({
         </p>
       )}
       {interactive ? (
-        <p className="md:hidden text-[#171c23] text-[12px] sm:text-[14px] text-right w-full opacity-70">
+        <p className="md:hidden text-[#171c23] text-[13px] sm:text-[14px] text-right w-full opacity-70">
           לחצ/י למידע נוסף
         </p>
       ) : (
         <p
           aria-hidden
-          className="md:hidden invisible text-[12px] sm:text-[14px] w-full"
+          className="md:hidden invisible text-[13px] sm:text-[14px] w-full"
         >
           &nbsp;
         </p>
@@ -436,7 +422,7 @@ function EnlistmentCard({
           </p>
           <p
             aria-hidden
-            className="invisible text-[12px] sm:text-[14px] w-full"
+            className="invisible text-[13px] sm:text-[14px] w-full"
           >
             &nbsp;
           </p>
@@ -471,7 +457,7 @@ function EnlistmentCard({
         </p>
         <p
           aria-hidden
-          className="invisible text-[12px] sm:text-[14px] w-full"
+          className="invisible text-[13px] sm:text-[14px] w-full"
         >
           &nbsp;
         </p>
@@ -517,22 +503,6 @@ function SubSection({ title }: { title: string }) {
   );
 }
 
-function EditIconBtn() {
-  return (
-    <div className="bg-[rgba(0,143,240,0.1)] w-8 h-8 rounded-full flex items-center justify-center shrink-0">
-      <Pencil size={11} className="text-[#008ff0]" />
-    </div>
-  );
-}
-
-function RemoveAuthBtn() {
-  return (
-    <button className="bg-[rgba(0,143,240,0.1)] text-[#008ff0] text-[14px] font-semibold px-4 py-1.5 rounded-full whitespace-nowrap">
-      הסרת הרשאה
-    </button>
-  );
-}
-
 // ── Logout confirmation dialog ────────────────────────────────────────────────
 
 function LogoutConfirmDialog({
@@ -540,62 +510,42 @@ function LogoutConfirmDialog({
 }: {
   onClose: () => void;
 }) {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const t = requestAnimationFrame(() => setVisible(true));
-    return () => cancelAnimationFrame(t);
-  }, []);
-
-  const handleClose = () => {
-    setVisible(false);
-    setTimeout(onClose, 280);
-  };
-
   return (
-    <div
-      className="fixed inset-0 z-[600] flex items-center justify-center p-4"
-      dir="rtl"
+    <Dialog
+      onClose={onClose}
+      width={380}
+      bodyClassName="px-6 pt-6 pb-2"
+      footer={<LogoutActions />}
     >
-      <div
-        className="absolute inset-0 bg-black/30 transition-opacity duration-300"
-        style={{ opacity: visible ? 1 : 0 }}
-        onClick={handleClose}
-      />
-      <div
-        className="relative bg-white rounded-[16px] w-full max-w-[380px] p-6 flex flex-col items-center text-center transition-all duration-300"
-        style={{
-          opacity: visible ? 1 : 0,
-          transform: visible
-            ? "translateY(0) scale(1)"
-            : "translateY(12px) scale(0.98)",
-          boxShadow: "0 12px 48px rgba(0,0,0,0.18)",
-        }}
-      >
-        <div className="w-14 h-14 rounded-full bg-[rgba(0,143,240,0.1)] flex items-center justify-center mb-4">
-          <LogOut size={24} className="text-[#008ff0]" />
-        </div>
-        <h3 className="font-bold text-[#171c23] text-[19px] mb-1.5">
+      <div className="flex flex-col items-center text-center">
+        <IconCircle size={56} className="mb-4">
+          <LogOut size={24} />
+        </IconCircle>
+        <h3 className="font-bold text-[#171c23] text-[20px] mb-1.5">
           התנתקות מהמערכת
         </h3>
-        <p className="text-[#171c23] text-[14px] opacity-60 mb-6">
+        <p className="text-[#171c23] text-[14px] opacity-60">
           האם ברצונך להתנתק מהאזור האישי?
         </p>
-        <div className="flex gap-3 w-full">
-          <button
-            onClick={handleClose}
-            className="flex-1 bg-[#f5f6fa] text-[#171c23] text-[15px] font-semibold py-2.5 rounded-full transition-colors hover:bg-[rgba(23,28,35,0.08)]"
-          >
-            ביטול
-          </button>
-          <button
-            onClick={handleClose}
-            className="flex-1 bg-[#008ff0] text-white text-[15px] font-semibold py-2.5 rounded-full transition-colors hover:bg-[#0080d6]"
-          >
-            התנתקות
-          </button>
-        </div>
       </div>
+    </Dialog>
+  );
+}
+
+function LogoutActions() {
+  const close = useDialogClose();
+  return (
+    <div className="flex gap-3 w-full">
+      <Button
+        variant="ghost"
+        onClick={close}
+        className="flex-1 justify-center"
+      >
+        ביטול
+      </Button>
+      <Button onClick={close} className="flex-1 justify-center">
+        התנתקות
+      </Button>
     </div>
   );
 }
@@ -605,50 +555,33 @@ function LogoutConfirmDialog({
 function Header({
   activePage,
   onNavigate,
+  unreadCount,
 }: {
   activePage: Page;
   onNavigate: (page: Page) => void;
+  /** מספר ההודעות שלא נקראו - לבאדג' בפעמון */
+  unreadCount: number;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
-  const [readIds, setReadIds] = useState<Set<string>>(
-    () => new Set(),
-  );
-  const unreadCount = notifications.filter(
-    (n) => !readIds.has(n.id),
-  ).length;
 
-  const toggleNotifications = () => {
-    setNotifOpen(!notifOpen);
-    setMobileOpen(false);
-  };
-
-  const handleNotificationAction = (
-    notification: AppNotification,
-  ) => {
-    setReadIds(
-      (prev) => new Set([...prev, notification.id]),
-    );
-    if (notification.targetPage) {
-      onNavigate(notification.targetPage);
-    }
-    setNotifOpen(false);
-  };
-
-  const markAllRead = () =>
-    setReadIds(new Set(notifications.map((n) => n.id)));
-
-  // פעמון עם באדג' של מספר ההתראות שלא נקראו
+  // פעמון עם באדג' - מוביל ישירות לעמוד ההודעות
   const BellButton = ({ size = 17 }: { size?: number }) => (
     <button
-      onClick={toggleNotifications}
-      className="relative flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity"
-      aria-label="התראות"
+      onClick={() => {
+        setMobileOpen(false);
+        onNavigate("messages");
+      }}
+      className={`relative flex items-center justify-center transition-opacity ${
+        activePage === "messages"
+          ? "opacity-100"
+          : "opacity-80 hover:opacity-100"
+      }`}
+      aria-label="הודעות"
     >
       <Bell size={size} />
       {unreadCount > 0 && (
-        <span className="absolute -top-1.5 -left-1.5 min-w-[16px] h-4 px-0.5 rounded-full bg-[#e03c3c] text-white text-[10px] font-bold flex items-center justify-center leading-none">
+        <span className="absolute -top-1.5 -left-1.5 min-w-[16px] h-4 px-0.5 rounded-full bg-[#c43c3c] text-white text-[10px] font-bold flex items-center justify-center leading-none">
           {unreadCount}
         </span>
       )}
@@ -658,7 +591,6 @@ function Header({
   const navTabs = [
     "פניות",
     "לומדות",
-    "הודעות",
     "משימות",
     "הזימונים שלי",
     "פרופיל אישי",
@@ -668,7 +600,6 @@ function Header({
     "פרופיל אישי": "profile",
     "משימות": "tasks",
     "הזימונים שלי": "appointments",
-    הודעות: "messages",
   };
   const isActiveTab = (tab: string) =>
     tabToPage[tab] === activePage;
@@ -802,29 +733,8 @@ function Header({
           </div>
         </div>
 
-        {notifOpen && (
-          <>
-            {/* שכבה שקופה לסגירת הפאנל בלחיצה מחוץ לו */}
-            <div
-              className="fixed inset-0 z-40"
-              onClick={() => setNotifOpen(false)}
-            />
-            <div className="absolute top-full z-50 mt-2 inset-x-4 md:inset-x-auto md:left-10 md:w-[400px]">
-              <NotificationsPanel
-                readIds={readIds}
-                onMarkAllRead={markAllRead}
-                onAction={handleNotificationAction}
-                onViewAll={() => {
-                  setNotifOpen(false);
-                  onNavigate("messages");
-                }}
-              />
-            </div>
-          </>
-        )}
-
         {mobileOpen && (
-          <div className="md:hidden absolute top-full inset-x-0 z-50 border-t border-white/10 bg-[#122736] shadow-[0_12px_24px_rgba(0,0,0,0.25)]">
+          <div className="md:hidden absolute top-full inset-x-0 z-50 border-t border-white/10 bg-[#122736] shadow-[0_12px_32px_rgba(0,0,0,0.16)]">
             {/* בלוק משתמש: אייקון (בקצה שמאל), שם, התנתקות */}
             <div
               dir="rtl"
@@ -922,19 +832,9 @@ function MaahCard({
         </h3>
         <div className="flex items-center gap-2 shrink-0">
           {/* תג סטטוס "הושלם" - באותו סגנון של כרטיסיות הלומדות */}
-          <span
-            className="flex items-center gap-1.5 text-[13px] font-semibold px-3 py-1 rounded-full whitespace-nowrap"
-            style={{
-              backgroundColor: "rgba(105,198,0,0.12)",
-              color: "#4e9400",
-            }}
-          >
-            <span
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{ backgroundColor: "#69c600" }}
-            />
+          <StatusBadge variant="success" dot>
             הושלם
-          </span>
+          </StatusBadge>
           <ChevronDown
             size={20}
             className={`md:hidden shrink-0 text-[#171c23] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
@@ -955,10 +855,10 @@ function MaahCard({
             key={item.label}
             className="flex flex-col items-center min-w-[80px]"
           >
-            <span className="text-[#2f305c] text-[12px] opacity-70 text-center leading-tight">
+            <span className="text-[#122736] text-[13px] opacity-70 text-center leading-tight">
               {item.label}
             </span>
-            <span className="font-semibold text-[#2f305c] text-[20px]">
+            <span className="font-semibold text-[#122736] text-[20px]">
               {item.value}
             </span>
           </div>
@@ -1105,7 +1005,13 @@ function QualitySection() {
 
 // ── Personal Detail Cards ─────────────────────────────────────────────────────
 
-function PersonalInfoContent() {
+function PersonalInfoContent({
+  contact,
+  onEditContact,
+}: {
+  contact: ContactInfo;
+  onEditContact: () => void;
+}) {
   return (
     <div className="p-5 flex flex-col gap-5">
       {/* גריד אחיד של 6 עמודות - השדות צמודים יותר, גולשים לשורה הבאה */}
@@ -1119,21 +1025,29 @@ function PersonalInfoContent() {
         <InfoField label="רב קו" value="2564376487" />
       </div>
       <div className="pt-4 border-t border-[rgba(23,28,35,0.05)]">
-        <SubSection title="דרכים ליצירת קשר" />
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <p className="font-semibold text-[#171c23] text-[15px]">
+            דרכים ליצירת קשר
+          </p>
+          <button
+            onClick={onEditContact}
+            className="flex items-center gap-1 text-[#008ff0] text-[13px] font-semibold hover:underline"
+          >
+            <Pencil size={13} className="shrink-0" />
+            עריכה
+          </button>
+        </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-x-5 gap-y-4">
-          <InfoField label="טלפון" value="0500000000" />
-          <InfoField label="אימייל" value="israela@gmail.com" />
+          <InfoField label="טלפון" value={contact.phone} />
+          <InfoField label="אימייל" value={contact.email} />
           {/* כתובות ארוכות - תופסות 2 עמודות כדי שלא יתנגשו */}
           <div className="col-span-2">
-            <InfoField
-              label="כתובת"
-              value="באר שבע, רחוב כלנית 32, דירה 5"
-            />
+            <InfoField label="כתובת" value={contact.address} />
           </div>
           <div className="col-span-2">
             <InfoField
               label="כתובת למשלוח דואר"
-              value="באר שבע, רחוב כלנית 32, דירה 5"
+              value={contact.mailingAddress}
             />
           </div>
         </div>
@@ -1186,149 +1100,179 @@ function EducationContent() {
 }
 
 // תג סטטוס הרשאה ירוק קומפקטי (במקום שדה לייבל/ערך)
-function AuthStatusBadge() {
-  return (
-    <span
-      className="flex items-center gap-1.5 text-[12px] font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap"
-      style={{
-        backgroundColor: "rgba(105,198,0,0.12)",
-        color: "#4e9400",
-      }}
-    >
-      <span
-        className="w-1.5 h-1.5 rounded-full shrink-0"
-        style={{ backgroundColor: "#69c600" }}
-      />
-      הרשאה מאושרת
-    </span>
-  );
-}
-
-function ParentEntry({
+/** כותרת רשומה: שם + תפקיד מימין, כפתור עריכה משמאל */
+function EntryHeader({
+  prefix,
   name,
-  relation,
-  id,
-  email,
-  phone,
-  address,
+  onEdit,
 }: {
+  prefix: string;
   name: string;
-  relation: string;
-  id: string;
-  email: string;
-  phone: string;
-  address: string;
+  onEdit: () => void;
 }) {
   return (
-    // רצועה אופקית: כותרת עם פעולות, ומתחתיה כל השדות בשורה אחת רחבה
-    <div className="flex flex-col gap-3">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-1 min-w-0">
-          <p className="font-semibold text-[#171c23] text-[16px] truncate">
-            <span className="opacity-50 font-normal text-[14px]">
-              {relation} · {" "}
-            </span>
-            {name}
-          </p>
-          <AuthStatusBadge />
-        </div>
-        <div className="flex items-center gap-1">
-          <EditIconBtn />
-          <RemoveAuthBtn />
-        </div>
-      </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-x-5 gap-y-4">
-        <InfoField label="תעודת זהות" value={id} />
-        <InfoField label="טלפון" value={phone} />
-        <InfoField label="אימייל" value={email} />
-        {/* כתובת ארוכה - תופסת 2 עמודות כדי שלא תתנגש */}
-        <div className="col-span-2">
-          <InfoField label="כתובת מגורים" value={address} />
-        </div>
-      </div>
+    <div className="flex items-start justify-between gap-2">
+      <p className="font-semibold text-[#171c23] text-[16px] truncate min-w-0">
+        <span className="opacity-50 font-normal text-[14px]">
+          {prefix} ·{" "}
+        </span>
+        {name}
+      </p>
+      <button
+        onClick={onEdit}
+        className="flex items-center gap-1 text-[#008ff0] text-[13px] font-semibold hover:underline shrink-0"
+      >
+        <Pencil size={13} className="shrink-0" />
+        עריכה
+      </button>
     </div>
   );
 }
 
-function ParentsContent() {
+function ParentEntry({
+  parent,
+  onEdit,
+  onToggleAuth,
+}: {
+  parent: Parent;
+  onEdit: () => void;
+  onToggleAuth: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-3">
+      <EntryHeader
+        prefix={parent.relation}
+        name={parent.name}
+        onEdit={onEdit}
+      />
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-x-5 gap-y-4">
+        <InfoField label="תעודת זהות" value={parent.nationalId} />
+        <InfoField label="טלפון" value={parent.phone} />
+        <InfoField label="אימייל" value={parent.email} />
+        {/* כתובת ארוכה - תופסת 2 עמודות כדי שלא תתנגש */}
+        <div className="col-span-2">
+          <InfoField label="כתובת מגורים" value={parent.address} />
+        </div>
+      </div>
+      <AuthPermissionsBlock
+        authorized={parent.authorized}
+        onToggle={onToggleAuth}
+      />
+    </div>
+  );
+}
+
+function ParentsContent({
+  parents,
+  onEdit,
+  onToggleAuth,
+}: {
+  parents: Parent[];
+  onEdit: (p: Parent) => void;
+  onToggleAuth: (id: string) => void;
+}) {
   return (
     <div className="p-5 flex flex-col gap-5">
-      <ParentEntry
-        name="דני ישראלית"
-        relation="אב"
-        id="211716293"
-        email="dani@gmail.com"
-        phone="0500000000"
-        address="באר שבע, רחוב כלנית 32, דירה 5"
-      />
-      <div className="pt-5 border-t border-[rgba(23,28,35,0.05)]">
-        <ParentEntry
-          name="שירי ישראלית"
-          relation="אם"
-          id="211716293"
-          email="shiri@gmail.com"
-          phone="0500000000"
-          address="באר שבע, רחוב כלנית 32, דירה 5"
-        />
-      </div>
+      {parents.map((parent, i) => (
+        <div
+          key={parent.id}
+          className={
+            i > 0
+              ? "pt-5 border-t border-[rgba(23,28,35,0.05)]"
+              : ""
+          }
+        >
+          <ParentEntry
+            parent={parent}
+            onEdit={() => onEdit(parent)}
+            onToggleAuth={() => onToggleAuth(parent.id)}
+          />
+        </div>
+      ))}
     </div>
   );
 }
 
 function CompanionEntry({
-  role,
-  name,
-  id,
-  email,
-  phone,
+  companion,
+  onEdit,
+  onToggleAuth,
 }: {
-  role: string;
-  name: string;
-  id: string;
-  email: string;
-  phone: string;
+  companion: Companion;
+  onEdit: () => void;
+  onToggleAuth: () => void;
 }) {
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2 min-w-0">
-          <p className="font-semibold text-[#171c23] text-[16px] truncate">
-            <span className="opacity-50 font-normal text-[14px]">
-              {role} · {" "}
-            </span>
-            {name}
-          </p>
-          <AuthStatusBadge />
-        </div>
-        <div className="flex items-center gap-2">
-          <EditIconBtn />
-          <RemoveAuthBtn />
-        </div>
-      </div>
+      <EntryHeader
+        prefix={companion.type}
+        name={`${companion.firstName} ${companion.lastName}`}
+        onEdit={onEdit}
+      />
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-x-5 gap-y-4">
-        <InfoField label="תעודת זהות" value={id} />
-        <InfoField label="טלפון" value={phone} />
-        <InfoField label="אימייל" value={email} />
+        <InfoField
+          label="תעודת זהות"
+          value={companion.nationalId}
+        />
+        <InfoField label="טלפון" value={companion.phone} />
+        <InfoField label="אימייל" value={companion.email} />
       </div>
-    </div>
-  );
-}
-
-function CompanionsContent() {
-  return (
-    <div className="p-5">
-      <CompanionEntry
-        role="עובדת סוציאלית"
-        name="רונית כץ"
-        id="211716293"
-        email="ronit@gmail.com"
-        phone="0500000000"
+      <AuthPermissionsBlock
+        authorized={companion.authorized}
+        onToggle={onToggleAuth}
       />
     </div>
   );
 }
 
-function CompanionsCardHeader() {
+function CompanionsContent({
+  companions,
+  onEdit,
+  onToggleAuth,
+}: {
+  companions: Companion[];
+  onEdit: (c: Companion) => void;
+  onToggleAuth: (id: string) => void;
+}) {
+  if (companions.length === 0) {
+    return (
+      <div className="p-5">
+        <p className="text-[#171c23] text-[14px] opacity-60 text-center py-4">
+          טרם הוספת מלווים. ניתן להוסיף עד {MAX_COMPANIONS} מלווים
+          שיוכלו לסייע לך בהליך הגיוס.
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div className="p-5 flex flex-col gap-5">
+      {companions.map((companion, i) => (
+        <div
+          key={companion.id}
+          className={
+            i > 0
+              ? "pt-5 border-t border-[rgba(23,28,35,0.05)]"
+              : ""
+          }
+        >
+          <CompanionEntry
+            companion={companion}
+            onEdit={() => onEdit(companion)}
+            onToggleAuth={() => onToggleAuth(companion.id)}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function CompanionsCardHeader({
+  count,
+  onAdd,
+}: {
+  count: number;
+  onAdd: () => void;
+}) {
   return (
     <div className="h-[60px] flex items-center justify-between px-5 border-b border-[rgba(23,28,35,0.05)] shrink-0">
       <div className="flex items-center gap-2">
@@ -1336,43 +1280,134 @@ function CompanionsCardHeader() {
           פרטי מלווים
         </h3>
         <p className="text-[#171c23] text-[13px] opacity-50 hidden sm:block">
-          ניתן להוסיף עד שני מלווים
+          {count} מתוך {MAX_COMPANIONS} מלווים
         </p>
       </div>
-      <button className="bg-[#008ff0] text-white text-[13px] font-semibold px-4 py-1.5 rounded-full whitespace-nowrap">
-        הוספת מלווה
-      </button>
+      <AddCompanionBtn
+        disabled={count >= MAX_COMPANIONS}
+        onClick={onAdd}
+      />
     </div>
   );
 }
 
 // ── Personal Section ──────────────────────────────────────────────────────────
 
+const INITIAL_CONTACT: ContactInfo = {
+  phone: "0500000000",
+  email: "israela@gmail.com",
+  address: "באר שבע, רחוב כלנית 32, דירה 5",
+  mailingAddress: "באר שבע, רחוב כלנית 32, דירה 5",
+};
+
+const INITIAL_PARENTS: Parent[] = [
+  {
+    id: "father",
+    relation: "אב",
+    name: "דני ישראלית",
+    nationalId: "211716293",
+    phone: "0500000000",
+    email: "dani@gmail.com",
+    address: "באר שבע, רחוב כלנית 32, דירה 5",
+    authorized: true,
+  },
+  {
+    id: "mother",
+    relation: "אם",
+    name: "שירי ישראלית",
+    nationalId: "211716293",
+    phone: "0500000000",
+    email: "shiri@gmail.com",
+    address: "באר שבע, רחוב כלנית 32, דירה 5",
+    authorized: true,
+  },
+];
+
+const INITIAL_COMPANIONS: Companion[] = [
+  {
+    id: "ronit",
+    type: "עובד/ת סוציאלי/ת",
+    firstName: "רונית",
+    lastName: "כץ",
+    nationalId: "211716293",
+    phone: "0500000000",
+    email: "ronit@gmail.com",
+    authorized: true,
+  },
+];
+
 const personalSections = [
-  {
-    key: "personal",
-    label: "מידע אישי",
-    Content: PersonalInfoContent,
-  },
-  {
-    key: "education",
-    label: "השכלה",
-    Content: EducationContent,
-  },
-  {
-    key: "parents",
-    label: "פרטי הורים",
-    Content: ParentsContent,
-  },
-  {
-    key: "companions",
-    label: "פרטי מלווים",
-    Content: CompanionsContent,
-  },
+  { key: "personal", label: "מידע אישי" },
+  { key: "education", label: "השכלה" },
+  { key: "parents", label: "פרטי הורים" },
+  { key: "companions", label: "פרטי מלווים" },
 ];
 
 function PersonalSection() {
   const [openKey, setOpenKey] = useState<string | null>(null);
+
+  // ── נתונים ניתנים לעריכה ──
+  const [contact, setContact] =
+    useState<ContactInfo>(INITIAL_CONTACT);
+  const [parents, setParents] =
+    useState<Parent[]>(INITIAL_PARENTS);
+  const [companions, setCompanions] = useState<Companion[]>(
+    INITIAL_COMPANIONS,
+  );
+
+  // ── חלונות עריכה ──
+  const [contactOpen, setContactOpen] = useState(false);
+  const [editingParent, setEditingParent] =
+    useState<Parent | null>(null);
+  /** null = סגור, "new" = הוספה, אובייקט = עריכה */
+  const [companionForm, setCompanionForm] = useState<
+    Companion | "new" | null
+  >(null);
+
+  const saveParent = (updated: Parent) =>
+    setParents((list) =>
+      list.map((p) => (p.id === updated.id ? updated : p)),
+    );
+  const toggleParentAuth = (id: string) =>
+    setParents((list) =>
+      list.map((p) =>
+        p.id === id ? { ...p, authorized: !p.authorized } : p,
+      ),
+    );
+
+  const saveCompanion = (updated: Companion) =>
+    setCompanions((list) =>
+      list.some((c) => c.id === updated.id)
+        ? list.map((c) => (c.id === updated.id ? updated : c))
+        : [...list, updated],
+    );
+  const toggleCompanionAuth = (id: string) =>
+    setCompanions((list) =>
+      list.map((c) =>
+        c.id === id ? { ...c, authorized: !c.authorized } : c,
+      ),
+    );
+
+  const personalContent = (
+    <PersonalInfoContent
+      contact={contact}
+      onEditContact={() => setContactOpen(true)}
+    />
+  );
+  const parentsContent = (
+    <ParentsContent
+      parents={parents}
+      onEdit={setEditingParent}
+      onToggleAuth={toggleParentAuth}
+    />
+  );
+  const companionsContent = (
+    <CompanionsContent
+      companions={companions}
+      onEdit={setCompanionForm}
+      onToggleAuth={toggleCompanionAuth}
+    />
+  );
 
   return (
     <section className="px-4 sm:px-6 md:px-10 py-6 pb-12">
@@ -1387,7 +1422,7 @@ function PersonalSection() {
       <div className="hidden md:flex flex-col gap-5">
         <div className="bg-white rounded-[10px]">
           <CardHeader title="מידע אישי" />
-          <PersonalInfoContent />
+          {personalContent}
         </div>
         <div className="bg-white rounded-[10px]">
           <CardHeader title="השכלה" />
@@ -1395,17 +1430,20 @@ function PersonalSection() {
         </div>
         <div className="bg-white rounded-[10px]">
           <CardHeader title="פרטי הורים" />
-          <ParentsContent />
+          {parentsContent}
         </div>
         <div className="bg-white rounded-[10px]">
-          <CompanionsCardHeader />
-          <CompanionsContent />
+          <CompanionsCardHeader
+            count={companions.length}
+            onAdd={() => setCompanionForm("new")}
+          />
+          {companionsContent}
         </div>
       </div>
 
       {/* Mobile: accordion */}
       <div className="md:hidden flex flex-col gap-3">
-        {personalSections.map(({ key, label, Content }) => {
+        {personalSections.map(({ key, label }) => {
           const isOpen = openKey === key;
           return (
             <div
@@ -1417,7 +1455,7 @@ function PersonalSection() {
                 onClick={() => setOpenKey(isOpen ? null : key)}
                 className="w-full h-[64px] flex items-center justify-between px-5"
               >
-                <span className="font-bold text-[#171c23] text-[17px]">
+                <span className="font-bold text-[#171c23] text-[18px]">
                   {label}
                 </span>
                 <ChevronDown
@@ -1428,21 +1466,26 @@ function PersonalSection() {
               {/* Expanded content — same card */}
               {isOpen && (
                 <div className="border-t border-[rgba(23,28,35,0.05)]">
-                  {key === "companions" ? (
+                  {key === "personal" && personalContent}
+                  {key === "education" && <EducationContent />}
+                  {key === "parents" && parentsContent}
+                  {key === "companions" && (
                     <>
                       {/* Mobile companions header: no title (already in accordion button) */}
                       <div className="flex items-center justify-between px-5 py-3 border-b border-[rgba(23,28,35,0.05)]">
                         <p className="text-[#171c23] text-[13px] opacity-50">
-                          ניתן להוסיף עד שני מלווים
+                          {companions.length} מתוך {MAX_COMPANIONS}{" "}
+                          מלווים
                         </p>
-                        <button className="bg-[#008ff0] text-white text-[13px] font-semibold px-4 py-1.5 rounded-full whitespace-nowrap">
-                          הוספת מלווה
-                        </button>
+                        <AddCompanionBtn
+                          disabled={
+                            companions.length >= MAX_COMPANIONS
+                          }
+                          onClick={() => setCompanionForm("new")}
+                        />
                       </div>
-                      <CompanionsContent />
+                      {companionsContent}
                     </>
-                  ) : (
-                    <Content />
                   )}
                 </div>
               )}
@@ -1450,6 +1493,31 @@ function PersonalSection() {
           );
         })}
       </div>
+
+      {/* ── חלונות עריכה ── */}
+      {contactOpen && (
+        <ContactEditDialog
+          contact={contact}
+          onSave={setContact}
+          onClose={() => setContactOpen(false)}
+        />
+      )}
+      {editingParent && (
+        <ParentEditDialog
+          parent={editingParent}
+          onSave={saveParent}
+          onClose={() => setEditingParent(null)}
+        />
+      )}
+      {companionForm && (
+        <CompanionWizard
+          companion={
+            companionForm === "new" ? undefined : companionForm
+          }
+          onSave={saveCompanion}
+          onClose={() => setCompanionForm(null)}
+        />
+      )}
     </section>
   );
 }
@@ -1473,8 +1541,8 @@ function getHeroGradientSvg(blueOffsetX: number, blobScale: number, blobOpacityS
     </linearGradient>
   </defs>
   <g filter="url(#blob-blur)">
-    <ellipse cx="380" cy="530" rx="${250 * blobScale}" ry="${200 * blobScale}" fill="#008FF0" opacity="${0.16 * blobOpacityScale}" />
-    <ellipse cx="${1180 + blueOffsetX}" cy="340" rx="${340 * blobScale}" ry="${270 * blobScale}" fill="#008FF0" opacity="${0.18 * blobOpacityScale}" />
+    <ellipse cx="380" cy="530" rx="${250 * blobScale}" ry="${200 * blobScale}" fill="#008ff0" opacity="${0.16 * blobOpacityScale}" />
+    <ellipse cx="${1180 + blueOffsetX}" cy="340" rx="${340 * blobScale}" ry="${270 * blobScale}" fill="#008ff0" opacity="${0.18 * blobOpacityScale}" />
     <ellipse cx="600" cy="750" rx="${150 * blobScale}" ry="${120 * blobScale}" fill="#69c600" opacity="${0.2 * blobOpacityScale}" />
   </g>
   <g stroke-width="140" fill="none">
@@ -1491,6 +1559,19 @@ function getHeroGradientBg(blueOffsetX: number, blobScale: number, blobOpacitySc
 export default function App() {
   const isMobile = useIsMobile();
   const [page, setPage] = useState<Page>("profile");
+
+  // מצב ההודעות מוחזק כאן כדי שהבאדג' בפעמון ישקף הודעות שלא נקראו
+  const [messageReadIds, setMessageReadIds] = useState<Set<string>>(
+    () => new Set(INITIAL_READ_MESSAGE_IDS),
+  );
+  const [messageArchivedIds, setMessageArchivedIds] = useState<
+    Set<string>
+  >(() => new Set(INITIAL_ARCHIVED_MESSAGE_IDS));
+  const unreadMessages = countUnreadMessages(
+    messageReadIds,
+    messageArchivedIds,
+  );
+
   return (
     <div
       dir="rtl"
@@ -1510,6 +1591,7 @@ export default function App() {
       <Header
         activePage={page === "hobbiesForm" ? "tasks" : page}
         onNavigate={setPage}
+        unreadCount={unreadMessages}
       />
       <main className="flex-1 flex flex-col">
         {page === "learnings" ? (
@@ -1526,9 +1608,17 @@ export default function App() {
         ) : page === "appointments" ? (
           <MyAppointmentsPage />
         ) : page === "settings" ? (
-          <SettingsPage />
+          <SettingsPage
+            onNavigateHome={() => setPage("profile")}
+          />
         ) : page === "messages" ? (
-          <MessagesPage />
+          <MessagesPage
+            readIds={messageReadIds}
+            setReadIds={setMessageReadIds}
+            archivedIds={messageArchivedIds}
+            setArchivedIds={setMessageArchivedIds}
+            onNavigateHome={() => setPage("profile")}
+          />
         ) : (
           <>
             <QualitySection />

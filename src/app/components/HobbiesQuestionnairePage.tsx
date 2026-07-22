@@ -1,3 +1,10 @@
+import {
+  Button,
+  IconCircle,
+  FieldLabel as SharedFieldLabel,
+  SelectField,
+  FIELD_CLASS,
+} from "./primitives";
 import { useState } from "react";
 import {
   ChevronDown,
@@ -37,79 +44,9 @@ type YesNo = "כן" | "לא";
 
 // ── Form primitives ──────────────────────────────────────────────────────────
 
+/** בשאלון כל השדות חובה - עטיפה דקה מעל רכיבי המערכת */
 function FieldLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-right font-semibold text-[#171c23] text-[16px] mb-2.5">
-      {children} <span className="text-[#e05252]">*</span>
-    </p>
-  );
-}
-
-function Select({
-  value,
-  placeholder,
-  options,
-  onChange,
-}: {
-  value: string | null;
-  placeholder: string;
-  options: string[];
-  onChange: (value: string) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className={`w-full bg-white border rounded-[10px] px-4 py-3 flex items-center justify-between gap-2 text-right transition-colors ${
-          open
-            ? "border-[#008ff0]"
-            : "border-[rgba(23,28,35,0.12)] hover:border-[rgba(23,28,35,0.25)]"
-        }`}
-      >
-        <span
-          className={`text-[15px] ${value ? "text-[#171c23]" : "text-[rgba(23,28,35,0.4)]"}`}
-        >
-          {value ?? placeholder}
-        </span>
-        <ChevronDown
-          size={18}
-          className={`text-[#171c23] opacity-50 shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-        />
-      </button>
-      {open && (
-        <>
-          <div
-            className="fixed inset-0 z-10"
-            onClick={() => setOpen(false)}
-          />
-          <div
-            className="absolute z-20 top-full mt-1.5 w-full bg-white rounded-[10px] border border-[rgba(23,28,35,0.08)] max-h-56 overflow-y-auto py-1"
-            style={{ boxShadow: "0 8px 28px rgba(0,0,0,0.12)" }}
-          >
-            {options.map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => {
-                  onChange(option);
-                  setOpen(false);
-                }}
-                className={`w-full text-right px-4 py-2.5 text-[15px] transition-colors hover:bg-[rgba(0,143,240,0.06)] ${
-                  option === value
-                    ? "text-[#008ff0] font-semibold"
-                    : "text-[#171c23]"
-                }`}
-              >
-                {option}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
+  return <SharedFieldLabel required>{children}</SharedFieldLabel>;
 }
 
 function YesNoRadio({
@@ -197,14 +134,14 @@ function PrimaryButton({
   disabled?: boolean;
 }) {
   return (
-    <button
+    <Button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="flex items-center gap-1.5 bg-[#008ff0] text-white text-[15px] font-semibold px-8 py-2.5 rounded-full whitespace-nowrap transition-colors hover:bg-[#0080d6] disabled:opacity-40 disabled:cursor-not-allowed"
+      className="!px-8"
     >
       {children}
-    </button>
+    </Button>
   );
 }
 
@@ -251,7 +188,7 @@ function ProgressSteps({ current }: { current: number }) {
 function IntroContent() {
   return (
     <div className="flex flex-col">
-      <h3 className="font-bold text-[#122736] text-[22px] sm:text-[24px] tracking-tight text-right mb-4">
+      <h3 className="font-bold text-[#122736] text-[24px] tracking-tight text-right mb-4">
         שלום ישראלה! ברוכה הבאה לשאלון תחביבים
         <span className="text-[#69c600]">.</span>
       </h3>
@@ -308,9 +245,9 @@ function IntroContent() {
 function SuccessContent() {
   return (
     <div className="flex flex-col items-center gap-4 py-14 text-center">
-      <div className="bg-[rgba(105,198,0,0.12)] w-16 h-16 rounded-full flex items-center justify-center">
-        <Check size={30} className="text-[#69c600]" />
-      </div>
+      <IconCircle size={64} bg="rgba(105,198,0,0.12)" color="#69c600">
+        <Check size={30} />
+      </IconCircle>
       <h3 className="font-bold text-[#122736] text-[24px] tracking-tight">
         השאלון הוגש בהצלחה
         <span className="text-[#69c600]">.</span>
@@ -402,7 +339,7 @@ export default function HobbiesQuestionnairePage({
 
         {step === 1 && (
           <div className="flex flex-col gap-6">
-            <h3 className="font-bold text-[#122736] text-[22px] sm:text-[24px] tracking-tight text-right">
+            <h3 className="font-bold text-[#122736] text-[24px] tracking-tight text-right">
               פנאי ותחביבים
               <span className="text-[#69c600]">.</span>
             </h3>
@@ -411,7 +348,7 @@ export default function HobbiesQuestionnairePage({
               <FieldLabel>
                 מה את/ה אוהב/ת לעשות בשעות הפנאי?
               </FieldLabel>
-              <Select
+              <SelectField
                 value={hobby}
                 placeholder="בחר/י תחביב"
                 options={HOBBY_OPTIONS}
@@ -428,7 +365,7 @@ export default function HobbiesQuestionnairePage({
                   שנות ניסיון ב
                   {hobby === "אחר" ? "תחביב" : hobby}
                 </FieldLabel>
-                <Select
+                <SelectField
                   value={experience}
                   placeholder="בחר/י טווח שנים"
                   options={EXPERIENCE_OPTIONS}
@@ -462,7 +399,7 @@ export default function HobbiesQuestionnairePage({
                     setCounselorYears(e.target.value)
                   }
                   placeholder="הזנ/י מספר שנים"
-                  className="w-full bg-white border border-[rgba(23,28,35,0.12)] rounded-[10px] px-4 py-3 text-right text-[15px] text-[#171c23] placeholder:text-[rgba(23,28,35,0.4)] outline-none transition-colors focus:border-[#008ff0]"
+                  className={FIELD_CLASS}
                 />
               </div>
             )}
@@ -471,7 +408,7 @@ export default function HobbiesQuestionnairePage({
 
         {step === 2 && (
           <div className="flex flex-col gap-6">
-            <h3 className="font-bold text-[#122736] text-[22px] sm:text-[24px] tracking-tight text-right">
+            <h3 className="font-bold text-[#122736] text-[24px] tracking-tight text-right">
               פנאי ותחביבים
               <span className="text-[#69c600]">.</span>
             </h3>
@@ -491,7 +428,7 @@ export default function HobbiesQuestionnairePage({
                 בחר/י את התחומים בהם את/ה שולט/ת וציין/י רמת
                 שליטה
               </FieldLabel>
-              <Select
+              <SelectField
                 value={domain}
                 placeholder="בחר/י תחום"
                 options={DOMAIN_OPTIONS}

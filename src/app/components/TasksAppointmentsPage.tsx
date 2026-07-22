@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useState } from "react";
 import {
   ClipboardList,
   Clock,
@@ -22,7 +22,15 @@ import { format } from "date-fns";
 import { he } from "date-fns/locale";
 import type { DateRange } from "react-day-picker";
 import { Calendar } from "./ui/calendar";
-import { useIsMobile } from "./ui/use-mobile";
+import {
+  Button,
+  Dialog,
+  DialogHeader,
+  IconCircle,
+  StatusBadge,
+  useDialogClose,
+  PAGE_CONTAINER,
+} from "./primitives";
 
 // ── Data ────────────────────────────────────────────────────────────────────
 
@@ -185,6 +193,43 @@ export const pastAppointments: Appointment[] = [
 
 const MAX_RESCHEDULES = 2;
 
+// ── Breadcrumbs ──────────────────────────────────────────────────────────────
+
+export function Breadcrumbs({
+  items,
+}: {
+  /** הפריט האחרון הוא העמוד הנוכחי (ללא onClick) */
+  items: { label: string; onClick?: () => void }[];
+}) {
+  return (
+    <nav className="flex items-center gap-1.5 text-[14px] mb-4">
+      {items.map((item, i) => (
+        <Fragment key={item.label}>
+          {i > 0 && (
+            <ChevronLeft
+              size={14}
+              className="text-[#171c23] opacity-40 shrink-0"
+            />
+          )}
+          {item.onClick ? (
+            <button
+              type="button"
+              onClick={item.onClick}
+              className="text-[#008ff0] font-semibold hover:underline underline-offset-4"
+            >
+              {item.label}
+            </button>
+          ) : (
+            <span className="text-[#171c23] opacity-70">
+              {item.label}
+            </span>
+          )}
+        </Fragment>
+      ))}
+    </nav>
+  );
+}
+
 // ── Section heading ──────────────────────────────────────────────────────────
 
 export function SectionHeading({
@@ -319,13 +364,13 @@ function DocumentsTaskCard() {
                   className={`flex items-center justify-between gap-3 rounded-[8px] px-4 py-3 text-right transition-colors border ${
                     isUploaded
                       ? "bg-[rgba(105,198,0,0.08)] border-[rgba(105,198,0,0.25)]"
-                      : "bg-[#f5f6fa] border-transparent hover:border-[rgba(0,143,240,0.2)]"
+                      : "bg-[#f5f5f7] border-transparent hover:border-[rgba(0,143,240,0.2)]"
                   }`}
                 >
                   <span className="flex items-center gap-3 min-w-0">
                     {/* Checkbox */}
                     <span
-                      className={`w-5 h-5 rounded-[6px] flex items-center justify-center shrink-0 border transition-colors ${
+                      className={`w-5 h-5 rounded-[8px] flex items-center justify-center shrink-0 border transition-colors ${
                         isUploaded
                           ? "bg-[#69c600] border-[#69c600]"
                           : "bg-white border-[rgba(23,28,35,0.25)]"
@@ -359,10 +404,10 @@ function DocumentsTaskCard() {
             })}
           </div>
           <div className="flex justify-end mt-4 pt-4 border-t border-[rgba(23,28,35,0.05)]">
-            <button className="flex items-center gap-1.5 bg-[#008ff0] text-white text-[14px] font-semibold px-6 py-2 rounded-full whitespace-nowrap transition-colors hover:bg-[#0080d6]">
+            <Button>
               <Upload size={14} className="shrink-0" />
               השלמת חוסרים
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -371,6 +416,35 @@ function DocumentsTaskCard() {
 }
 
 // ── Reschedule dialog / bottom sheet ─────────────────────────────────────────
+
+function RescheduleSuccess({
+  rangeLabel,
+}: {
+  rangeLabel: string | null;
+}) {
+  const close = useDialogClose();
+  return (
+    <div className="flex flex-col items-center gap-3 text-center">
+      <IconCircle
+        size={56}
+        bg="rgba(105,198,0,0.12)"
+        color="#69c600"
+      >
+        <Check size={26} />
+      </IconCircle>
+      <p className="font-bold text-[#171c23] text-[18px]">
+        הבקשה נשלחה לאישור
+      </p>
+      <p className="text-[#171c23] text-[14px] opacity-60 max-w-[300px]">
+        ביקשת להזיז את הזימון לטווח {rangeLabel}. נעדכן אותך ברגע
+        שהבקשה תאושר
+      </p>
+      <Button onClick={close} className="mt-2">
+        סגירה
+      </Button>
+    </div>
+  );
+}
 
 function RescheduleDialog({
   appointment,
@@ -383,22 +457,10 @@ function RescheduleDialog({
   onSubmit: (range: DateRange) => void;
   onClose: () => void;
 }) {
-  const isMobile = useIsMobile();
-  const [visible, setVisible] = useState(false);
   const [range, setRange] = useState<DateRange | undefined>();
   const [submitted, setSubmitted] = useState(false);
 
   const maxedOut = rescheduleCount >= MAX_RESCHEDULES;
-
-  useEffect(() => {
-    const t = requestAnimationFrame(() => setVisible(true));
-    return () => cancelAnimationFrame(t);
-  }, []);
-
-  const handleClose = () => {
-    setVisible(false);
-    setTimeout(onClose, 280);
-  };
 
   const handleSubmit = () => {
     if (!range?.from || !range?.to) return;
@@ -411,53 +473,41 @@ function RescheduleDialog({
       ? `${format(range.from, "d.M.yyyy")} - ${format(range.to, "d.M.yyyy")}`
       : null;
 
-  const content = (
-    <div className="flex flex-col" dir="rtl">
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(23,28,35,0.08)]">
-        <div className="flex flex-col text-right">
-          <span className="font-bold text-[#171c23] text-[18px]">
-            הזזת זימון
-          </span>
-          <span className="text-[#171c23] text-[13px] opacity-60">
-            {appointment.name}
-          </span>
-        </div>
-        <button
-          onClick={handleClose}
-          className="w-8 h-8 flex items-center justify-center text-[#171c23] opacity-60 hover:opacity-100 shrink-0"
-        >
-          <X size={20} />
-        </button>
-      </div>
-
-      {submitted ? (
-        /* Success state */
-        <div className="flex flex-col items-center gap-3 px-5 py-10 text-center">
-          <div className="bg-[rgba(105,198,0,0.12)] w-14 h-14 rounded-full flex items-center justify-center">
-            <Check size={26} className="text-[#69c600]" />
+  return (
+    <Dialog
+      onClose={onClose}
+      width={440}
+      title="הזזת זימון"
+      subtitle={appointment.name}
+      bodyClassName={submitted ? "px-5 py-10" : "px-5 py-4"}
+      footer={
+        !submitted && !maxedOut ? (
+          <div className="flex items-center justify-between gap-3 w-full">
+            <span className="text-[#171c23] text-[13px] opacity-60 text-right">
+              {rangeLabel
+                ? `טווח נבחר: ${rangeLabel}`
+                : "טרם נבחר טווח תאריכים"}
+            </span>
+            <Button
+              onClick={handleSubmit}
+              disabled={!range?.from || !range?.to}
+            >
+              <Send size={14} className="shrink-0" />
+              הגשה לאישור
+            </Button>
           </div>
-          <p className="font-bold text-[#171c23] text-[17px]">
-            הבקשה נשלחה לאישור
-          </p>
-          <p className="text-[#171c23] text-[14px] opacity-60 max-w-[300px]">
-            ביקשת להזיז את הזימון לטווח {rangeLabel}. נעדכן אותך
-            ברגע שהבקשה תאושר
-          </p>
-          <button
-            onClick={handleClose}
-            className="mt-2 bg-[#008ff0] text-white text-[14px] font-semibold px-7 py-2 rounded-full transition-colors hover:bg-[#0080d6]"
-          >
-            סגירה
-          </button>
-        </div>
+        ) : undefined
+      }
+    >
+      {submitted ? (
+        <RescheduleSuccess rangeLabel={rangeLabel} />
       ) : (
-        <div className="flex flex-col px-5 py-4 gap-3">
-          {/* Reschedule count */}
+        <div className="flex flex-col gap-3">
+          {/* מונה ההזזות */}
           <div
             className={`flex items-center gap-2 text-[13px] font-semibold rounded-[8px] px-3 py-2 ${
               maxedOut
-                ? "bg-[rgba(224,60,60,0.08)] text-[#c43c3c]"
+                ? "bg-[rgba(196,60,60,0.08)] text-[#c43c3c]"
                 : "bg-[rgba(0,143,240,0.08)] text-[#008ff0]"
             }`}
           >
@@ -470,8 +520,8 @@ function RescheduleDialog({
           {!maxedOut && (
             <>
               <p className="text-[#171c23] text-[14px] text-right">
-                סמנו את טווח התאריכים בו תוכלו להגיע, והבקשה
-                תוגש לאישור
+                סמנו את טווח התאריכים בו תוכלו להגיע, והבקשה תוגש
+                לאישור
               </p>
               <div className="flex justify-center">
                 <Calendar
@@ -506,92 +556,18 @@ function RescheduleDialog({
                   components={{
                     // ב-RTL הספרייה מרנדרת את IconRight בכפתור "חודש קודם" (בימין)
                     // ואת IconLeft בכפתור "חודש הבא" (בשמאל) - החצים מצביעים החוצה
-                    IconLeft: () => (
-                      <ChevronLeft className="size-4" />
-                    ),
-                    IconRight: () => (
-                      <ChevronRight className="size-4" />
-                    ),
+                    IconLeft: () => <ChevronLeft className="size-4" />,
+                    IconRight: () => <ChevronRight className="size-4" />,
                   }}
                 />
-              </div>
-              <div className="flex items-center justify-between gap-3 pt-3 border-t border-[rgba(23,28,35,0.08)]">
-                <span className="text-[#171c23] text-[13px] opacity-60 text-right">
-                  {rangeLabel
-                    ? `טווח נבחר: ${rangeLabel}`
-                    : "טרם נבחר טווח תאריכים"}
-                </span>
-                <button
-                  onClick={handleSubmit}
-                  disabled={!range?.from || !range?.to}
-                  className="flex items-center gap-1.5 bg-[#008ff0] text-white text-[14px] font-semibold px-6 py-2 rounded-full whitespace-nowrap transition-colors hover:bg-[#0080d6] disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
-                >
-                  <Send size={14} className="shrink-0" />
-                  הגשה לאישור
-                </button>
               </div>
             </>
           )}
         </div>
       )}
-    </div>
-  );
-
-  if (isMobile) {
-    /* Bottom sheet */
-    return (
-      <div className="fixed inset-0 z-[400]" dir="rtl">
-        <div
-          className="absolute inset-0 bg-black/20 transition-opacity duration-300"
-          style={{ opacity: visible ? 1 : 0 }}
-          onClick={handleClose}
-        />
-        <div
-          className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl transition-transform duration-300 ease-out max-h-[90vh] overflow-y-auto"
-          style={{
-            transform: visible
-              ? "translateY(0)"
-              : "translateY(100%)",
-          }}
-        >
-          <div className="flex justify-center pt-3 pb-1">
-            <div className="w-10 h-1 rounded-full bg-[rgba(23,28,35,0.15)]" />
-          </div>
-          {content}
-          <div className="pb-6" />
-        </div>
-      </div>
-    );
-  }
-
-  /* Desktop modal */
-  return (
-    <div
-      className="fixed inset-0 z-[400] flex items-center justify-center p-4"
-      dir="rtl"
-    >
-      <div
-        className="absolute inset-0 bg-black/20 transition-opacity duration-300"
-        style={{ opacity: visible ? 1 : 0 }}
-        onClick={handleClose}
-      />
-      <div
-        className="relative bg-white rounded-[14px] w-full max-w-[440px] max-h-[90vh] overflow-y-auto transition-all duration-300"
-        style={{
-          opacity: visible ? 1 : 0,
-          transform: visible
-            ? "translateY(0) scale(1)"
-            : "translateY(12px) scale(0.98)",
-          boxShadow: "0 12px 48px rgba(0,0,0,0.18)",
-        }}
-      >
-        {content}
-      </div>
-    </div>
+    </Dialog>
   );
 }
-
-// ── Appointment details dialog / bottom sheet ────────────────────────────────
 
 function AppointmentDetailsDialog({
   appointment,
@@ -599,156 +575,115 @@ function AppointmentDetailsDialog({
   confirmed,
   onConfirm,
   onClose,
+  onReschedule,
 }: {
   appointment: Appointment;
   past: boolean;
   confirmed: boolean;
   onConfirm: () => void;
   onClose: () => void;
+  onReschedule: () => void;
 }) {
-  const isMobile = useIsMobile();
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const t = requestAnimationFrame(() => setVisible(true));
-    return () => cancelAnimationFrame(t);
-  }, []);
-
-  const handleClose = () => {
-    setVisible(false);
-    setTimeout(onClose, 280);
-  };
-
-  const content = (
-    <div className="flex flex-col flex-1 min-h-0" dir="rtl">
-      {/* Header */}
-      <div className="flex flex-col gap-2.5 px-5 py-4 border-b border-[rgba(23,28,35,0.08)] shrink-0">
-        {/* שם הזימון + סגירה */}
-        <div className="flex items-start justify-between gap-3">
-          <span className="font-bold text-[#171c23] text-[18px] min-w-0">
-            {appointment.name}
-          </span>
-          <button
-            onClick={handleClose}
-            className="w-8 h-8 flex items-center justify-center text-[#171c23] opacity-60 hover:opacity-100 shrink-0 -mt-1"
-          >
-            <X size={20} />
-          </button>
-        </div>
-        {/* תאריך + הוספה ליומן */}
-        <div className="flex items-center justify-between gap-3">
-          <span className="flex items-center gap-2 text-[#171c23] text-[14px] min-w-0">
-            <CalendarDays
-              size={15}
-              className="text-[#008ff0] shrink-0"
-            />
-            {appointment.day}, {appointment.date} | {appointment.time}
-          </span>
-          {!past && (
-            <button className="flex items-center gap-1 text-[#008ff0] text-[13px] font-semibold whitespace-nowrap shrink-0 opacity-80 hover:opacity-100 hover:underline">
-              <CalendarPlus size={13} className="shrink-0" />
-              הוספה ליומן
-            </button>
-          )}
-        </div>
-        {/* מיקום + ניווט */}
-        <div className="flex items-center justify-between gap-3">
-          <span className="flex items-center gap-2 text-[#171c23] text-[14px] min-w-0">
-            <MapPin
-              size={15}
-              className="text-[#008ff0] shrink-0"
-            />
-            {appointment.location}
-          </span>
-          {!past && (
-            <button className="flex items-center gap-1 text-[#008ff0] text-[13px] font-semibold whitespace-nowrap shrink-0 opacity-80 hover:opacity-100 hover:underline">
-              <Navigation size={13} className="shrink-0" />
-              ניווט
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* גוף - מידע הזימון (נגלל) */}
-      <div className="px-5 py-4 overflow-y-auto flex-1 min-h-0">
-        <p className="text-[#171c23] text-[14px] text-right leading-relaxed whitespace-pre-line">
-          {appointment.details}
-        </p>
-      </div>
-
-      {/* פעולות - מיושרות לשמאל */}
-      {!past && (
-        <div className="flex flex-wrap items-center justify-end gap-2 px-5 py-4 border-t border-[rgba(23,28,35,0.08)] shrink-0">
-          {appointment.digitalOrder && (
-            <button className="flex items-center gap-1.5 bg-[rgba(0,143,240,0.1)] text-[#008ff0] text-[13px] font-semibold px-5 py-2 rounded-full whitespace-nowrap transition-colors hover:bg-[rgba(0,143,240,0.18)]">
-              <Download size={15} className="shrink-0" />
-              הורדת צו דיגיטלי
-            </button>
-          )}
-          <button
-            onClick={onConfirm}
-            className={`flex items-center gap-1.5 text-[13px] font-semibold px-5 py-2 rounded-full whitespace-nowrap transition-colors ${
-              confirmed
-                ? "bg-[rgba(105,198,0,0.12)] text-[#4e9400]"
-                : "bg-[#008ff0] text-white hover:bg-[#0080d6]"
-            }`}
-          >
-            {confirmed && <Check size={15} className="shrink-0" />}
-            {confirmed ? "הגעה אושרה" : "אישור הגעה"}
-          </button>
-        </div>
-      )}
-    </div>
-  );
-
-  if (isMobile) {
-    return (
-      <div className="fixed inset-0 z-[400]" dir="rtl">
-        <div
-          className="absolute inset-0 bg-black/20 transition-opacity duration-300"
-          style={{ opacity: visible ? 1 : 0 }}
-          onClick={handleClose}
-        />
-        <div
-          className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl transition-transform duration-300 ease-out flex flex-col max-h-[90vh]"
-          style={{
-            transform: visible
-              ? "translateY(0)"
-              : "translateY(100%)",
-          }}
-        >
-          <div className="flex justify-center pt-3 pb-1 shrink-0">
-            <div className="w-10 h-1 rounded-full bg-[rgba(23,28,35,0.15)]" />
-          </div>
-          {content}
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div
-      className="fixed inset-0 z-[400] flex items-center justify-center p-4"
-      dir="rtl"
+    <Dialog
+      onClose={onClose}
+      width={560}
+      bodyClassName="px-5 py-4"
+      header={
+        <DialogHeader title={appointment.name}>
+          {/* תאריך + הוספה ליומן */}
+          <div className="flex items-center justify-between gap-3">
+            <span className="flex items-center gap-2 text-[#171c23] text-[14px] min-w-0">
+              <CalendarDays
+                size={15}
+                className="text-[#008ff0] shrink-0"
+              />
+              {appointment.day}, {appointment.date} |{" "}
+              {appointment.time}
+            </span>
+            {!past && (
+              <Button variant="link">
+                <CalendarPlus size={13} className="shrink-0" />
+                הוספה ליומן
+              </Button>
+            )}
+          </div>
+          {/* מיקום + ניווט */}
+          <div className="flex items-center justify-between gap-3">
+            <span className="flex items-center gap-2 text-[#171c23] text-[14px] min-w-0">
+              <MapPin
+                size={15}
+                className="text-[#008ff0] shrink-0"
+              />
+              {appointment.location}
+            </span>
+            {!past && (
+              <Button variant="link">
+                <Navigation size={13} className="shrink-0" />
+                ניווט
+              </Button>
+            )}
+          </div>
+          {appointment.digitalOrder && (
+            <div className="flex justify-center pt-1">
+              <Button variant="link">
+                <Download size={15} className="shrink-0" />
+                הורדת צו דיגיטלי
+              </Button>
+            </div>
+          )}
+        </DialogHeader>
+      }
+      footer={
+        !past ? (
+          <DetailsFooter
+            confirmed={confirmed}
+            onConfirm={onConfirm}
+            onReschedule={onReschedule}
+          />
+        ) : undefined
+      }
     >
-      <div
-        className="absolute inset-0 bg-black/20 transition-opacity duration-300"
-        style={{ opacity: visible ? 1 : 0 }}
-        onClick={handleClose}
-      />
-      <div
-        className="relative bg-white rounded-[14px] w-full max-w-[560px] max-h-[85vh] flex flex-col transition-all duration-300"
-        style={{
-          opacity: visible ? 1 : 0,
-          transform: visible
-            ? "translateY(0) scale(1)"
-            : "translateY(12px) scale(0.98)",
-          boxShadow: "0 12px 48px rgba(0,0,0,0.18)",
+      <p className="text-[#171c23] text-[14px] text-right leading-relaxed whitespace-pre-line">
+        {appointment.details}
+      </p>
+    </Dialog>
+  );
+}
+
+/** פעולות הזימון - נפרד כדי שיוכל לסגור את החלון לפני פתיחת חלון ההזזה */
+function DetailsFooter({
+  confirmed,
+  onConfirm,
+  onReschedule,
+}: {
+  confirmed: boolean;
+  onConfirm: () => void;
+  onReschedule: () => void;
+}) {
+  const close = useDialogClose();
+  return (
+    <>
+      <Button
+        variant="tint"
+        size="sm"
+        onClick={() => {
+          close();
+          setTimeout(onReschedule, 280);
         }}
       >
-        {content}
-      </div>
-    </div>
+        <CalendarClock size={14} className="shrink-0" />
+        הזזת זימון
+      </Button>
+      <Button
+        variant={confirmed ? "success" : "primary"}
+        size="sm"
+        onClick={onConfirm}
+      >
+        {confirmed && <Check size={15} className="shrink-0" />}
+        {confirmed ? "הגעה אושרה" : "אישור הגעה"}
+      </Button>
+    </>
   );
 }
 
@@ -770,7 +705,7 @@ export function AppointmentCard({
 
   return (
     <div
-      className={`bg-white rounded-[10px] p-5 flex flex-col gap-3 ${past ? "opacity-80" : ""}`}
+      className={`bg-white rounded-[10px] p-5 flex flex-col gap-2 ${past ? "opacity-80" : ""}`}
     >
       {rescheduleOpen && (
         <RescheduleDialog
@@ -792,6 +727,7 @@ export function AppointmentCard({
           confirmed={confirmed}
           onConfirm={() => setConfirmed(!confirmed)}
           onClose={() => setDetailsOpen(false)}
+          onReschedule={() => setRescheduleOpen(true)}
         />
       )}
 
@@ -800,20 +736,18 @@ export function AppointmentCard({
           {appointment.name}
         </h3>
         {past && (
-          <span
-            className={`flex items-center gap-1.5 text-[13px] font-semibold px-3 py-1 rounded-full whitespace-nowrap shrink-0 ${
-              appointment.attended
-                ? "bg-[rgba(105,198,0,0.12)] text-[#4e9400]"
-                : "bg-[rgba(224,60,60,0.08)] text-[#c43c3c]"
-            }`}
+          <StatusBadge
+            variant={appointment.attended ? "success" : "error"}
+            icon={
+              appointment.attended ? (
+                <Check size={13} className="shrink-0" />
+              ) : (
+                <X size={13} className="shrink-0" />
+              )
+            }
           >
-            {appointment.attended ? (
-              <Check size={13} className="shrink-0" />
-            ) : (
-              <X size={13} className="shrink-0" />
-            )}
             {appointment.attended ? "הגעת" : "לא הגעת"}
-          </span>
+          </StatusBadge>
         )}
       </div>
 
@@ -828,10 +762,10 @@ export function AppointmentCard({
             {appointment.time}
           </p>
           {!past && (
-            <button className="flex items-center gap-1 text-[#008ff0] text-[13px] font-semibold whitespace-nowrap shrink-0 opacity-80 hover:opacity-100 hover:underline">
+            <Button variant="link" className="shrink-0">
               <CalendarPlus size={13} className="shrink-0" />
               הוספה ליומן
-            </button>
+            </Button>
           )}
         </div>
         <div className="flex items-center justify-between gap-3">
@@ -843,10 +777,10 @@ export function AppointmentCard({
             {appointment.location}
           </p>
           {!past && (
-            <button className="flex items-center gap-1 text-[#008ff0] text-[13px] font-semibold whitespace-nowrap shrink-0 opacity-80 hover:opacity-100 hover:underline">
+            <Button variant="link" className="shrink-0">
               <Navigation size={13} className="shrink-0" />
               ניווט
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -857,42 +791,50 @@ export function AppointmentCard({
           <p className="text-[#171c23] text-[13px] text-right leading-relaxed opacity-60 line-clamp-2">
             {appointment.details}
           </p>
-          <button
+          <Button
+            variant="link"
             onClick={() => setDetailsOpen(true)}
-            className="self-start flex items-center gap-1 text-[#008ff0] text-[13px] font-semibold hover:underline"
+            className="self-start"
           >
             <Info size={14} className="shrink-0" />
             פרטי הזימון המלאים
-          </button>
+          </Button>
         </div>
       )}
 
+        {appointment.digitalOrder && (
+      <div className="flex items-center justify-center my-0 pt-2 border-t border-[rgba(23,28,35,0.05)]">
+          <Button variant="link" className="shrink-0">
+            <Download size={14} className="shrink-0" />
+            הורדת צו דיגיטלי
+          </Button>
+        </div>
+        )}
+{/* card outside */}
       {!past && (
         <div className="flex flex-wrap items-center justify-end gap-2 mt-auto pt-3 border-t border-[rgba(23,28,35,0.05)]">
-          {appointment.digitalOrder && (
-            <button className="flex items-center gap-1.5 bg-[rgba(0,143,240,0.1)] text-[#008ff0] text-[13px] font-semibold px-5 py-1.5 rounded-full whitespace-nowrap transition-colors hover:bg-[rgba(0,143,240,0.18)]">
+          {/* {appointment.digitalOrder && (
+            <Button variant="tint" size="sm">
               <Download size={14} className="shrink-0" />
               הורדת צו דיגיטלי
-            </button>
-          )}
-          <button
+            </Button>
+          )} */}
+          <Button
             onClick={() => setRescheduleOpen(true)}
-            className="flex items-center gap-1.5 bg-[rgba(0,143,240,0.1)] text-[#008ff0] text-[13px] font-semibold px-5 py-1.5 rounded-full whitespace-nowrap transition-colors hover:bg-[rgba(0,143,240,0.18)]"
+            variant="tint"
+            size="sm"
           >
             <CalendarClock size={14} className="shrink-0" />
             הזזת זימון
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setConfirmed(!confirmed)}
-            className={`flex items-center gap-1.5 text-[13px] font-semibold px-5 py-1.5 rounded-full whitespace-nowrap transition-colors ${
-              confirmed
-                ? "bg-[rgba(105,198,0,0.12)] text-[#4e9400]"
-                : "bg-[#008ff0] text-white hover:bg-[#0080d6]"
-            }`}
+            variant={confirmed ? "success" : "primary"}
+            size="sm"
           >
             {confirmed && <Check size={14} className="shrink-0" />}
             {confirmed ? "הגעה אושרה" : "אישור הגעה"}
-          </button>
+          </Button>
         </div>
       )}
     </div>
@@ -910,7 +852,7 @@ export default function TasksAppointmentsPage({
 }) {
   return (
     <section className="px-4 sm:px-6 md:px-10 pt-8 pb-12">
-      <div className="md:max-w-[760px] md:mx-auto">
+      <div className={PAGE_CONTAINER}>
 
       {/* Tasks */}
       <SectionHeading title="משימות" />
@@ -927,7 +869,7 @@ export default function TasksAppointmentsPage({
 
       {/* Upcoming appointments only, 3 nearest */}
       {/* <SectionHeading title="זימונים" />
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-stretch">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
         {upcomingAppointments.slice(0, 3).map((appointment) => (
           <AppointmentCard
             key={appointment.id}
@@ -937,16 +879,16 @@ export default function TasksAppointmentsPage({
       </div>
 
       <div className="flex justify-center mt-8">
-        <button
+        <Button
           onClick={onViewAllAppointments}
-          className="group flex items-center gap-1.5 bg-[#008ff0] text-white text-[15px] font-semibold px-7 py-2.5 rounded-full whitespace-nowrap transition-colors hover:bg-[#0080d6]"
+          className="group"
         >
           לצפייה בכל הזימונים
           <ChevronLeft
             size={17}
             className="transition-transform duration-200 group-hover:-translate-x-0.5"
           />
-        </button>
+        </Button>
       </div> */}
     </div>
     </section>

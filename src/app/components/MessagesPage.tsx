@@ -8,8 +8,14 @@ import {
   ChevronDown,
   ArrowUpDown,
   Inbox,
+  CheckCheck,
+  X,
 } from "lucide-react";
-import { SectionHeading } from "./TasksAppointmentsPage";
+import {
+  SectionHeading,
+  Breadcrumbs,
+} from "./TasksAppointmentsPage";
+import { Button, PAGE_CONTAINER } from "./primitives";
 
 // ── Data ────────────────────────────────────────────────────────────────────
 
@@ -96,10 +102,13 @@ function Linkify({ text }: { text: string }) {
 function FilterChip({
   active,
   onClick,
+  count,
   children,
 }: {
   active?: boolean;
   onClick: () => void;
+  /** מספר ההודעות שהסינון הזה יניב */
+  count?: number;
   children: React.ReactNode;
 }) {
   return (
@@ -112,6 +121,13 @@ function FilterChip({
       }`}
     >
       {children}
+      {count !== undefined && (
+        <span
+          className={`text-[13px] font-bold ${active ? "opacity-75" : "opacity-45"}`}
+        >
+          {count}
+        </span>
+      )}
     </button>
   );
 }
@@ -161,7 +177,7 @@ function MessageCard({
           </h3>
         </button>
         <div className="flex items-center gap-2 shrink-0">
-          <span className="flex items-center gap-1 text-[#171c23] text-[12px] opacity-50 whitespace-nowrap">
+          <span className="flex items-center gap-1 text-[#171c23] text-[13px] opacity-50 whitespace-nowrap">
             <Clock size={11} className="shrink-0" />
             {message.timeAgo}
           </span>
@@ -224,16 +240,41 @@ function MessageCard({
 
 type ReadFilter = "all" | "unread" | "read";
 
-export default function MessagesPage() {
-  // "לומדת יום המא"ה" וה"זוזו" טרם נקראו
-  const [readIds, setReadIds] = useState<Set<string>>(
-    () => new Set(["stars-voucher", "companion-approved", "welcome"]),
-  );
+/** הודעות שכבר נקראו בטעינה ראשונה ("זוזו" ולומדת המא"ה טרם נקראו) */
+export const INITIAL_READ_MESSAGE_IDS = [
+  "stars-voucher",
+  "companion-approved",
+  "welcome",
+];
+export const INITIAL_ARCHIVED_MESSAGE_IDS = ["welcome"];
+
+/** מספר ההודעות שלא נקראו ואינן בארכיון - מזין את הבאדג' בפעמון */
+export function countUnreadMessages(
+  readIds: Set<string>,
+  archivedIds: Set<string>,
+) {
+  return messages.filter(
+    (m) => !readIds.has(m.id) && !archivedIds.has(m.id),
+  ).length;
+}
+
+export default function MessagesPage({
+  readIds,
+  setReadIds,
+  archivedIds,
+  setArchivedIds,
+  onNavigateHome,
+}: {
+  readIds: Set<string>;
+  setReadIds: React.Dispatch<React.SetStateAction<Set<string>>>;
+  archivedIds: Set<string>;
+  setArchivedIds: React.Dispatch<
+    React.SetStateAction<Set<string>>
+  >;
+  onNavigateHome?: () => void;
+}) {
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(
     () => new Set(["stars-voucher"]),
-  );
-  const [archivedIds, setArchivedIds] = useState<Set<string>>(
-    () => new Set(["welcome"]),
   );
 
   const [query, setQuery] = useState("");
@@ -290,21 +331,78 @@ export default function MessagesPage() {
     query,
   ]);
 
-  const unreadCount = messages.filter(
-    (m) => !readIds.has(m.id) && !archivedIds.has(m.id),
+  /** ההודעות בתצוגה הנוכחית (תיבה/ארכיון) שתואמות את החיפוש - בסיס לספירות */
+  const scopeList = useMemo(() => {
+    const q = query.trim();
+    return messages.filter(
+      (m) =>
+        archivedIds.has(m.id) === showArchive &&
+        (q === "" ||
+          m.title.includes(q) ||
+          m.content.includes(q)),
+    );
+  }, [archivedIds, showArchive, query]);
+
+  /** ספירות לצ'יפים - כל ספירה מתעלמת מהסינון שלה עצמה כדי שתהיה שימושית */
+  const counts = useMemo(() => {
+    const byFavorite = onlyFavorites
+      ? scopeList.filter((m) => favoriteIds.has(m.id))
+      : scopeList;
+    const q = query.trim();
+    return {
+      all: byFavorite.length,
+      unread: byFavorite.filter((m) => !readIds.has(m.id)).length,
+      read: byFavorite.filter((m) => readIds.has(m.id)).length,
+      favorites: scopeList.filter((m) => favoriteIds.has(m.id))
+        .length,
+      archived: messages.filter(
+        (m) =>
+          archivedIds.has(m.id) &&
+          (q === "" ||
+            m.title.includes(q) ||
+            m.content.includes(q)),
+      ).length,
+    };
+  }, [
+    scopeList,
+    onlyFavorites,
+    favoriteIds,
+    readIds,
+    archivedIds,
+    query,
+  ]);
+
+  /** כמה מההודעות המוצגות טרם נקראו - לכפתור "סימון הכל כנקרא" */
+  const unreadVisible = visibleMessages.filter(
+    (m) => !readIds.has(m.id),
   ).length;
+
+  const markVisibleAsRead = () =>
+    setReadIds(
+      (prev) =>
+        new Set([...prev, ...visibleMessages.map((m) => m.id)]),
+    );
+
+  const searching = query.trim() !== "";
+  const filtersActive =
+    searching || onlyFavorites || readFilter !== "all";
+
+  const clearFilters = () => {
+    setQuery("");
+    setOnlyFavorites(false);
+    setReadFilter("all");
+  };
 
   return (
     <section className="px-4 sm:px-6 md:px-10 pt-8 pb-12">
-      <div className="md:max-w-[760px] md:mx-auto">
-        <SectionHeading
-          title="הודעות"
-          subtitle={
-            unreadCount > 0
-              ? `${unreadCount} הודעות שטרם נקראו`
-              : "כל ההודעות נקראו"
-          }
+      <div className={PAGE_CONTAINER}>
+        <Breadcrumbs
+          items={[
+            { label: "אזור אישי", onClick: onNavigateHome },
+            { label: "הודעות" },
+          ]}
         />
+        <SectionHeading title="הודעות" />
 
         {/* חיפוש וסינונים */}
         <div className="flex flex-col gap-3 mb-5">
@@ -319,24 +417,36 @@ export default function MessagesPage() {
               placeholder="חיפוש בהודעות"
               className="flex-1 bg-transparent outline-none text-[14px] text-[#171c23] placeholder:opacity-40"
             />
+            {searching && (
+              <button
+                onClick={() => setQuery("")}
+                aria-label="ניקוי חיפוש"
+                className="w-5 h-5 flex items-center justify-center rounded-full bg-[rgba(23,28,35,0.08)] text-[#171c23] opacity-60 hover:opacity-100 shrink-0"
+              >
+                <X size={12} />
+              </button>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {/* סינון נקראו/לא נקראו */}
             <FilterChip
               active={readFilter === "all"}
               onClick={() => setReadFilter("all")}
+              count={counts.all}
             >
               הכל
             </FilterChip>
             <FilterChip
               active={readFilter === "unread"}
               onClick={() => setReadFilter("unread")}
+              count={counts.unread}
             >
               לא נקראו
             </FilterChip>
             <FilterChip
               active={readFilter === "read"}
               onClick={() => setReadFilter("read")}
+              count={counts.read}
             >
               נקראו
             </FilterChip>
@@ -344,6 +454,7 @@ export default function MessagesPage() {
             <FilterChip
               active={onlyFavorites}
               onClick={() => setOnlyFavorites(!onlyFavorites)}
+              count={counts.favorites}
             >
               <Star
                 size={13}
@@ -361,6 +472,7 @@ export default function MessagesPage() {
             <FilterChip
               active={showArchive}
               onClick={() => setShowArchive(!showArchive)}
+              count={counts.archived}
             >
               <Archive size={13} className="shrink-0" />
               ארכיון
@@ -368,22 +480,68 @@ export default function MessagesPage() {
           </div>
         </div>
 
+        {/* שורת תוצאות: כמה מוצגות + סימון הכל כנקרא */}
+        {visibleMessages.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-3 px-1">
+            <p className="text-[#171c23] text-[13px] opacity-60">
+              {searching ? (
+                <>
+                  נמצאו {visibleMessages.length} תוצאות עבור "
+                  {query.trim()}"
+                </>
+              ) : (
+                <>
+                  מוצגות {visibleMessages.length} מתוך{" "}
+                  {counts.all} הודעות
+                  {showArchive ? " בארכיון" : ""}
+                </>
+              )}
+            </p>
+            {unreadVisible > 0 && (
+              <button
+                onClick={markVisibleAsRead}
+                className="flex items-center gap-1 text-[#008ff0] text-[13px] font-semibold hover:underline"
+              >
+                <CheckCheck size={14} className="shrink-0" />
+                סימון הכל כנקרא ({unreadVisible})
+              </button>
+            )}
+          </div>
+        )}
+
         {/* רשימת הודעות */}
         {visibleMessages.length === 0 ? (
           <div className="bg-white rounded-[10px] p-10 flex flex-col items-center gap-3 text-center">
             <div className="bg-[rgba(0,143,240,0.08)] w-14 h-14 rounded-full flex items-center justify-center">
-              <Inbox size={24} className="text-[#008ff0]" />
+              {searching ? (
+                <Search size={24} className="text-[#008ff0]" />
+              ) : (
+                <Inbox size={24} className="text-[#008ff0]" />
+              )}
             </div>
             <p className="font-bold text-[#171c23] text-[16px]">
-              {showArchive
-                ? "הארכיון ריק"
-                : "לא נמצאו הודעות"}
+              {searching
+                ? `לא נמצאו תוצאות עבור "${query.trim()}"`
+                : filtersActive
+                  ? "אין הודעות שתואמות את הסינון"
+                  : showArchive
+                    ? "הארכיון ריק"
+                    : "אין הודעות"}
             </p>
-            <p className="text-[#171c23] text-[14px] opacity-60">
-              {query.trim()
-                ? "נסו לשנות את החיפוש או הסינון"
-                : "הודעות חדשות יופיעו כאן"}
+            <p className="text-[#171c23] text-[14px] opacity-60 max-w-[340px]">
+              {searching
+                ? "נסו מילת חיפוש אחרת, או נקו את החיפוש כדי לראות את כל ההודעות"
+                : filtersActive
+                  ? "נסו לשנות את הסינון כדי לראות הודעות נוספות"
+                  : showArchive
+                    ? "הודעות שתעבירו לארכיון יופיעו כאן"
+                    : "הודעות חדשות יופיעו כאן"}
             </p>
+            {filtersActive && (
+              <Button onClick={clearFilters} className="mt-1">
+                ניקוי חיפוש וסינון
+              </Button>
+            )}
           </div>
         ) : (
           <div className="flex flex-col gap-3">

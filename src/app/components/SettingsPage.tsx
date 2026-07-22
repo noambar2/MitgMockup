@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { Check } from "lucide-react";
-import { SectionHeading } from "./TasksAppointmentsPage";
+import {
+  SectionHeading,
+  Breadcrumbs,
+} from "./TasksAppointmentsPage";
+import { Button, PAGE_CONTAINER } from "./primitives";
 import { GLASS_CARD } from "./ui/utils";
 
 // ── Data ────────────────────────────────────────────────────────────────────
@@ -89,7 +93,11 @@ function Toggle({
 
 // ── Page ────────────────────────────────────────────────────────────────────
 
-export default function SettingsPage() {
+export default function SettingsPage({
+  onNavigateHome,
+}: {
+  onNavigateHome?: () => void;
+}) {
   // כל ההגדרות מאושרות כברירת מחדל
   const [enabled, setEnabled] = useState<Record<string, boolean>>(
     () =>
@@ -114,7 +122,13 @@ export default function SettingsPage() {
   return (
     <section className="px-4 sm:px-6 md:px-10 pt-8 pb-12">
       {/* בדסקטופ העמודה ממורכזת - טופס צר בעמודה אחת נעים יותר לעין במרכז */}
-      <div className="md:max-w-[640px] md:mx-auto">
+      <div className={PAGE_CONTAINER}>
+        <Breadcrumbs
+          items={[
+            { label: "אזור אישי", onClick: onNavigateHome },
+            { label: "הגדרות" },
+          ]}
+        />
         <SectionHeading title="הגדרות" />
 
         <div className="flex flex-col gap-5">
@@ -159,12 +173,7 @@ export default function SettingsPage() {
                 ההגדרות נשמרו בהצלחה
               </span>
             )}
-            <button
-              onClick={handleSave}
-              className="bg-[#008ff0] text-white text-[15px] font-semibold px-8 py-2.5 rounded-full whitespace-nowrap transition-colors hover:bg-[#0080d6]"
-            >
-              שמירה
-            </button>
+            <Button onClick={handleSave}>שמירה</Button>
           </div>
         </div>
       </div>

@@ -4,11 +4,12 @@ import {
   upcomingAppointments,
   pastAppointments,
 } from "./TasksAppointmentsPage";
+import { PAGE_CONTAINER } from "./primitives";
 
 export default function MyAppointmentsPage() {
   return (
     <section className="px-4 sm:px-6 md:px-10 pt-8 pb-12">
-            <div className="md:max-w-[760px] md:mx-auto">
+            <div className={PAGE_CONTAINER}>
 
       {/* <div className="text-right mb-1">
         <h2 className="font-bold text-[#122736] text-[28px] sm:text-[34px] tracking-tight inline">

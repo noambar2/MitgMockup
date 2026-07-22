@@ -43,8 +43,8 @@ const statusStyles: Record<
 > = {
   בתהליך: {
     bg: "rgba(0,143,240,0.1)",
-    text: "#008FF0",
-    dot: "#008FF0",
+    text: "#008ff0",
+    dot: "#008ff0",
   },
   "טרם התחיל": {
     bg: "rgba(23,28,35,0.06)",
