@@ -18,12 +18,20 @@ import TasksAppointmentsPage from './components/TasksAppointmentsPage';
 import MyAppointmentsPage from './components/MyAppointmentsPage';
 import HobbiesQuestionnairePage from './components/HobbiesQuestionnairePage';
 import SettingsPage from './components/SettingsPage';
+import InquiriesPage from './components/InquiriesPage';
 import MessagesPage, {
   INITIAL_READ_MESSAGE_IDS,
   INITIAL_ARCHIVED_MESSAGE_IDS,
   countUnreadMessages,
 } from './components/MessagesPage';
 import { GLASS_CARD } from './components/ui/utils';
+import {
+  THEMES,
+  DEFAULT_THEME,
+  getTheme,
+  heroGradientBg,
+  themeVars,
+} from './themes';
 import {
   Button,
   Dialog,
@@ -51,7 +59,8 @@ type Page =
   | "appointments"
   | "hobbiesForm"
   | "settings"
-  | "messages";
+  | "messages"
+  | "inquiries";
 
 // ── Hooks ────────────────────────────────────────────────────────────────────
 
@@ -242,14 +251,14 @@ function SemiGauge({
         <path
           d="M 10 90 A 80 80 0 0 1 170 90"
           fill="none"
-          stroke="#f5f5f7"
+          stroke="var(--gauge-track, #f5f5f7)"
           strokeWidth="18"
           strokeLinecap="round"
         />
         <path
           d="M 170 90 A 80 80 0 0 0 10 90"
           fill="none"
-          stroke="#008ff0"
+          stroke="var(--brand, #008ff0)"
           strokeWidth="18"
           strokeLinecap="round"
           strokeDasharray={`${fill} ${arc}`}
@@ -556,11 +565,14 @@ function Header({
   activePage,
   onNavigate,
   unreadCount,
+  navGradient,
 }: {
   activePage: Page;
   onNavigate: (page: Page) => void;
   /** מספר ההודעות שלא נקראו - לבאדג' בפעמון */
   unreadCount: number;
+  /** גרדיאנט סרגל הניווט - מגיע מערכת הנושא */
+  navGradient: string;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
@@ -596,6 +608,7 @@ function Header({
     "פרופיל אישי",
   ];
   const tabToPage: Record<string, Page> = {
+    פניות: "inquiries",
     לומדות: "learnings",
     "פרופיל אישי": "profile",
     "משימות": "tasks",
@@ -648,7 +661,7 @@ function Header({
         className="text-white relative"
         style={{
           background:
-            "linear-gradient(-11.751deg, rgb(36,83,119) 6%, rgb(19,131,208) 48%, rgb(0,143,240) 102%, rgb(93,184,245) 113%)",
+            navGradient,
         }}
       >
         <div className="hidden md:flex items-center justify-between px-10 h-[54px]">
@@ -1524,41 +1537,12 @@ function PersonalSection() {
 
 // ── App ───────────────────────────────────────────────────────────────────────
 
-function getHeroGradientSvg(blueOffsetX: number, blobScale: number, blobOpacityScale: number) {
-  return `
-<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
-  <defs>
-    <filter id="blob-blur" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="70" />
-    </filter>
-    <linearGradient id="line-fade-bottom" x1="0" y1="1" x2="0" y2="0">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35" />
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
-    </linearGradient>
-    <linearGradient id="line-fade-top" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.18" />
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
-    </linearGradient>
-  </defs>
-  <g filter="url(#blob-blur)">
-    <ellipse cx="380" cy="530" rx="${250 * blobScale}" ry="${200 * blobScale}" fill="#008ff0" opacity="${0.16 * blobOpacityScale}" />
-    <ellipse cx="${1180 + blueOffsetX}" cy="340" rx="${340 * blobScale}" ry="${270 * blobScale}" fill="#008ff0" opacity="${0.18 * blobOpacityScale}" />
-    <ellipse cx="600" cy="750" rx="${150 * blobScale}" ry="${120 * blobScale}" fill="#69c600" opacity="${0.2 * blobOpacityScale}" />
-  </g>
-  <g stroke-width="140" fill="none">
-    <circle cx="130" cy="520" r="260" stroke="url(#line-fade-bottom)" />
-    <circle cx="${1260 + blueOffsetX}" cy="380" r="260" stroke="url(#line-fade-top)" />
-  </g>
-</svg>`.trim();
-}
-
-function getHeroGradientBg(blueOffsetX: number, blobScale: number, blobOpacityScale: number) {
-  return `url("data:image/svg+xml,${encodeURIComponent(getHeroGradientSvg(blueOffsetX, blobScale, blobOpacityScale))}")`;
-}
-
 export default function App() {
   const isMobile = useIsMobile();
   const [page, setPage] = useState<Page>("profile");
+  // ערכת נושא - משנה צבע מותג, רקע וגרדיאנטים (הכותרת העליונה לא משתנה)
+  const [themeId, setThemeId] = useState(DEFAULT_THEME.id);
+  const theme = getTheme(themeId);
 
   // מצב ההודעות מוחזק כאן כדי שהבאדג' בפעמון ישקף הודעות שלא נקראו
   const [messageReadIds, setMessageReadIds] = useState<Set<string>>(
@@ -1577,21 +1561,28 @@ export default function App() {
       dir="rtl"
       lang="he"
       style={{
+        ...themeVars(theme),
         fontFamily: "'Noto Sans Hebrew', sans-serif",
-        backgroundColor: "#f5f5f7",
-        backgroundImage: getHeroGradientBg(isMobile ? -200 : 0, isMobile ? 1 : 1.4, isMobile ? 1 : 0.7),
+        backgroundColor: theme.pageBg,
+        backgroundImage: heroGradientBg(
+          theme,
+          isMobile ? -200 : 0,
+          isMobile ? 1 : 1.4,
+          isMobile ? 1 : 0.7,
+        ),
         backgroundSize: "cover",
         backgroundRepeat: "no-repeat",
         backgroundPosition: "center",
         backgroundAttachment: "fixed",
       }}
-      className="min-h-[100dvh] flex flex-col"
+      className={`min-h-[100dvh] flex flex-col ${theme.dark ? "dark" : ""}`}
     >
       {/* בתוך השאלון הטאב "משימות וזימונים" נשאר מסומן */}
       <Header
         activePage={page === "hobbiesForm" ? "tasks" : page}
         onNavigate={setPage}
         unreadCount={unreadMessages}
+        navGradient={theme.navGradient}
       />
       <main className="flex-1 flex flex-col">
         {page === "learnings" ? (
@@ -1610,6 +1601,9 @@ export default function App() {
         ) : page === "settings" ? (
           <SettingsPage
             onNavigateHome={() => setPage("profile")}
+            themes={THEMES}
+            themeId={themeId}
+            onThemeChange={setThemeId}
           />
         ) : page === "messages" ? (
           <MessagesPage
@@ -1617,6 +1611,10 @@ export default function App() {
             setReadIds={setMessageReadIds}
             archivedIds={messageArchivedIds}
             setArchivedIds={setMessageArchivedIds}
+            onNavigateHome={() => setPage("profile")}
+          />
+        ) : page === "inquiries" ? (
+          <InquiriesPage
             onNavigateHome={() => setPage("profile")}
           />
         ) : (

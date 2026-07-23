@@ -666,7 +666,6 @@ function DetailsFooter({
     <>
       <Button
         variant="tint"
-        size="sm"
         onClick={() => {
           close();
           setTimeout(onReschedule, 280);
@@ -677,7 +676,6 @@ function DetailsFooter({
       </Button>
       <Button
         variant={confirmed ? "success" : "primary"}
-        size="sm"
         onClick={onConfirm}
       >
         {confirmed && <Check size={15} className="shrink-0" />}
@@ -814,7 +812,7 @@ export function AppointmentCard({
       {!past && (
         <div className="flex flex-wrap items-center justify-end gap-2 mt-auto pt-3 border-t border-[rgba(23,28,35,0.05)]">
           {/* {appointment.digitalOrder && (
-            <Button variant="tint" size="sm">
+            <Button variant="tint">
               <Download size={14} className="shrink-0" />
               הורדת צו דיגיטלי
             </Button>
@@ -822,7 +820,6 @@ export function AppointmentCard({
           <Button
             onClick={() => setRescheduleOpen(true)}
             variant="tint"
-            size="sm"
           >
             <CalendarClock size={14} className="shrink-0" />
             הזזת זימון
@@ -830,7 +827,6 @@ export function AppointmentCard({
           <Button
             onClick={() => setConfirmed(!confirmed)}
             variant={confirmed ? "success" : "primary"}
-            size="sm"
           >
             {confirmed && <Check size={14} className="shrink-0" />}
             {confirmed ? "הגעה אושרה" : "אישור הגעה"}

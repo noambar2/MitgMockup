@@ -34,9 +34,6 @@ export type ButtonVariant =
   | "link"
   | "linkDanger";
 
-/** גודל - רלוונטי רק לכפתורים מלאים (קישורים תמיד 13px ללא ריפוד) */
-export type ButtonSize = "sm" | "md";
-
 const BUTTON_TONES: Record<ButtonVariant, string> = {
   primary: "bg-[#008ff0] text-white hover:bg-[#0080d6]",
   success: "bg-[rgba(105,198,0,0.12)] text-[#4e9400]",
@@ -47,27 +44,23 @@ const BUTTON_TONES: Record<ButtonVariant, string> = {
   linkDanger: "text-[#c43c3c] hover:underline",
 };
 
-const BUTTON_SIZES: Record<ButtonSize, string> = {
-  sm: "rounded-full px-5 py-1.5 text-[13px]",
-  md: "rounded-full px-7 py-2.5 text-[15px]",
-};
+/** גודל אחיד יחיד לכל הכפתורים המלאים במערכת */
+const BUTTON_SIZE = "rounded-full px-5 py-1.5 text-[13px]";
 
 export function Button({
   variant = "primary",
-  size = "md",
   className = "",
   children,
   ...props
 }: {
   variant?: ButtonVariant;
-  size?: ButtonSize;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   const isLink = variant === "link" || variant === "linkDanger";
   return (
     <button
       {...props}
       className={`flex items-center font-semibold whitespace-nowrap transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-        isLink ? "gap-1 text-[13px]" : `gap-1.5 ${BUTTON_SIZES[size]}`
+        isLink ? "gap-1 text-[13px]" : `gap-1.5 ${BUTTON_SIZE}`
       } ${BUTTON_TONES[variant]} ${className}`}
     >
       {children}

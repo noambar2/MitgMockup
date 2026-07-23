@@ -233,7 +233,10 @@ function SignaturePad({
     ctx.lineWidth = 2;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
-    ctx.strokeStyle = "#171c23";
+    // במצב כהה חותמים בדיו בהיר
+    ctx.strokeStyle = canvas.closest(".dark")
+      ? "#eaf0f5"
+      : "#171c23";
   }, []);
 
   const point = (e: React.PointerEvent) => {
@@ -579,7 +582,6 @@ export function AddCompanionBtn({
       title={
         disabled ? `ניתן להוסיף עד ${MAX_COMPANIONS} מלווים` : undefined
       }
-      className="!text-[13px] !px-4 !py-1.5"
     >
       <UserPlus size={14} className="shrink-0" />
       הוספת מלווה

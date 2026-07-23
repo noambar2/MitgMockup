@@ -138,7 +138,6 @@ function PrimaryButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="!px-8"
     >
       {children}
     </Button>

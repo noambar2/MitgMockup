@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Check } from "lucide-react";
+import type { Theme } from "../themes";
 import {
   SectionHeading,
   Breadcrumbs,
@@ -83,7 +84,7 @@ function Toggle({
       }`}
     >
       <span
-        className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.25)] transition-all duration-200 ${
+        className={`absolute top-0.5 w-5 h-5 rounded-full bg-[#ffffff] shadow-[0_1px_3px_rgba(0,0,0,0.25)] transition-all duration-200 ${
           checked ? "left-0.5" : "left-[22px]"
         }`}
       />
@@ -93,10 +94,79 @@ function Toggle({
 
 // ── Page ────────────────────────────────────────────────────────────────────
 
+function ThemePicker({
+  themes,
+  themeId,
+  onThemeChange,
+}: {
+  themes: Theme[];
+  themeId: string;
+  onThemeChange: (id: string) => void;
+}) {
+  return (
+    <div className={`${GLASS_CARD} rounded-[10px]`}>
+      <div className="h-[60px] flex items-center justify-start px-5 border-b border-[rgba(23,28,35,0.05)]">
+        <h3 className="font-bold text-[#171c23] text-[18px]">
+          ערכת נושא
+        </h3>
+      </div>
+      <div className="p-5 flex flex-col gap-4">
+        <p className="text-[#171c23] text-[14px] text-right leading-relaxed opacity-60">
+          בחרו את מראה האזור האישי. הבחירה משנה את צבעי המערכת ואת
+          רקע העמוד.
+        </p>
+        <div
+          role="radiogroup"
+          aria-label="ערכת נושא"
+          className="grid grid-cols-2 sm:grid-cols-3 gap-3"
+        >
+          {themes.map((t) => {
+            const active = t.id === themeId;
+            return (
+              <button
+                key={t.id}
+                role="radio"
+                aria-checked={active}
+                onClick={() => onThemeChange(t.id)}
+                className={`flex items-center gap-2.5 rounded-[10px] border px-3 py-2.5 transition-colors ${
+                  active
+                    ? "border-[#008ff0] bg-[rgba(0,143,240,0.08)]"
+                    : "border-[rgba(23,28,35,0.12)] hover:border-[rgba(0,143,240,0.2)]"
+                }`}
+              >
+                {/* תצוגה מקדימה של הערכה */}
+                <span
+                  className="w-8 h-8 rounded-full shrink-0 border border-[rgba(23,28,35,0.08)]"
+                  style={{ background: t.navGradient }}
+                />
+                <span className="text-[#171c23] text-[14px] font-semibold">
+                  {t.name}
+                </span>
+                {active && (
+                  <Check
+                    size={15}
+                    className="text-[#008ff0] shrink-0 mr-auto"
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SettingsPage({
   onNavigateHome,
+  themes,
+  themeId,
+  onThemeChange,
 }: {
   onNavigateHome?: () => void;
+  themes: Theme[];
+  themeId: string;
+  onThemeChange: (id: string) => void;
 }) {
   // כל ההגדרות מאושרות כברירת מחדל
   const [enabled, setEnabled] = useState<Record<string, boolean>>(
@@ -132,6 +202,11 @@ export default function SettingsPage({
         <SectionHeading title="הגדרות" />
 
         <div className="flex flex-col gap-5">
+          <ThemePicker
+            themes={themes}
+            themeId={themeId}
+            onThemeChange={onThemeChange}
+          />
           {settingsGroups.map((group) => (
             <div
               key={group.key}
