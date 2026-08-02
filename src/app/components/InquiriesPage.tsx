@@ -20,7 +20,7 @@ import {
   PAGE_CONTAINER,
   IconCircle,
 } from "./primitives";
-import { SectionHeading, Breadcrumbs } from "./TasksAppointmentsPage";
+import { SectionHeading } from "./TasksAppointmentsPage";
 
 // ── Data ────────────────────────────────────────────────────────────────────
 
@@ -458,12 +458,6 @@ export default function InquiriesPage({
   return (
     <section className="px-4 sm:px-6 md:px-10 pt-8 pb-12">
       <div className={PAGE_CONTAINER}>
-        <Breadcrumbs
-          items={[
-            { label: "אזור אישי", onClick: onNavigateHome },
-            { label: "פניות" },
-          ]}
-        />
 
         {/* כותרת + יצירת פנייה */}
         <div className="flex items-center justify-between gap-3 mb-5">

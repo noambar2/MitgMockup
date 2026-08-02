@@ -59,6 +59,147 @@
   border-color: rgba(var(--brand-rgb, 0, 143, 240), 0.2);
 }
 
+/* זוהר מותג בריחוף - צ'יפים וכרטיסים אינטראקטיביים */
+.hover\:shadow-\[0_0_20px_0_rgba\(0\,143\,240\,0\.25\)\]:hover {
+  box-shadow: 0 0 20px 0 rgba(var(--brand-rgb, 0, 143, 240), 0.25);
+}
+
+/* ════════ דיו - טקסט, קווים ורקעים ניטרליים ════════ */
+/*
+  כל צבע "דיו" נגזר ממשתנה עם ברירת מחדל שווה לערך המקורי, כדי שערכה
+  שלא נוגעת בדיו תיראה בדיוק כמו קודם. משטח כהה (ראו ערכת "אפליקציה")
+  מגדיר מחדש את המשתנים על עצמו, וכל הצאצאים שלו מקבלים אותם בירושה.
+*/
+
+.text-\[\#171c23\] {
+  color: var(--ink, #171c23);
+}
+.text-\[\#122736\] {
+  color: var(--ink-strong, #122736);
+}
+.text-\[rgba\(23\,28\,35\,0\.62\)\] {
+  color: var(--ink-62, rgba(23, 28, 35, 0.62));
+}
+.text-\[rgba\(23\,28\,35\,0\.5\)\] {
+  color: var(--ink-50, rgba(23, 28, 35, 0.5));
+}
+.text-\[rgba\(23\,28\,35\,0\.4\)\] {
+  color: var(--ink-40, rgba(23, 28, 35, 0.4));
+}
+.placeholder\:text-\[rgba\(23\,28\,35\,0\.4\)\]::placeholder {
+  color: var(--ink-40, rgba(23, 28, 35, 0.4));
+}
+
+/* צבעים סמנטיים */
+.text-\[\#4e9400\] {
+  color: var(--ink-success, #4e9400);
+}
+.text-\[\#e07000\] {
+  color: var(--ink-warn, #e07000);
+}
+.text-\[\#c43c3c\] {
+  color: var(--ink-danger, #c43c3c);
+}
+
+/* קווי הפרדה ומסגרות */
+.border-\[rgba\(23\,28\,35\,0\.05\)\] {
+  border-color: var(--line-05, rgba(23, 28, 35, 0.05));
+}
+.border-\[rgba\(23\,28\,35\,0\.06\)\] {
+  border-color: var(--line-06, rgba(23, 28, 35, 0.06));
+}
+.border-\[rgba\(23\,28\,35\,0\.08\)\] {
+  border-color: var(--line-08, rgba(23, 28, 35, 0.08));
+}
+.border-\[rgba\(23\,28\,35\,0\.1\)\] {
+  border-color: var(--line-10, rgba(23, 28, 35, 0.1));
+}
+.border-\[rgba\(23\,28\,35\,0\.12\)\] {
+  border-color: var(--line-12, rgba(23, 28, 35, 0.12));
+}
+.border-\[rgba\(23\,28\,35\,0\.25\)\] {
+  border-color: var(--line-25, rgba(23, 28, 35, 0.25));
+}
+.border-\[rgba\(23\,28\,35\,0\.3\)\] {
+  border-color: var(--line-30, rgba(23, 28, 35, 0.3));
+}
+
+/* רקעי דיו - תגיות ניטרליות, מסלול בר התקדמות, מתג כבוי */
+.bg-\[rgba\(23\,28\,35\,0\.06\)\] {
+  background-color: var(--ink-bg-06, rgba(23, 28, 35, 0.06));
+}
+.bg-\[rgba\(23\,28\,35\,0\.08\)\] {
+  background-color: var(--ink-bg-08, rgba(23, 28, 35, 0.08));
+}
+.hover\:bg-\[rgba\(23\,28\,35\,0\.08\)\]:hover {
+  background-color: var(--ink-bg-10, rgba(23, 28, 35, 0.08));
+}
+.bg-\[rgba\(23\,28\,35\,0\.1\)\] {
+  background-color: var(--ink-bg-10, rgba(23, 28, 35, 0.1));
+}
+.bg-\[rgba\(23\,28\,35\,0\.15\)\] {
+  background-color: var(--ink-bg-15, rgba(23, 28, 35, 0.15));
+}
+.bg-\[rgba\(23\,28\,35\,0\.2\)\] {
+  background-color: var(--ink-bg-20, rgba(23, 28, 35, 0.2));
+}
+.bg-\[rgba\(23\,28\,35\,0\.3\)\] {
+  background-color: var(--ink-bg-30, rgba(23, 28, 35, 0.3));
+}
+.bg-\[\#e3e4e5\] {
+  background-color: var(--chip-neutral, #e3e4e5);
+}
+
+/* ════════ ערכת "אפליקציה" - עמוד בהיר עם משטחים בנייבי ════════ */
+/*
+  להבדיל מהערכה הכהה, כאן רק הכרטיסים כהים והעמוד נשאר בהיר - בדיוק
+  כמו באפליקציה הקיימת. לכן היפוך הדיו יושב על המשטח עצמו (בירושה
+  לצאצאים) ולא על שורש העמוד.
+*/
+.navy-cards .bg-white,
+.navy-cards .bg-white\/90,
+.navy-cards .bg-white\/95,
+.navy-cards .bg-white\/30,
+.navy-cards .hover\:bg-white:hover {
+  background-color: var(--surface, #122736);
+
+  --ink: #eaf0f5;
+  --ink-strong: #eaf0f5;
+  --ink-62: rgba(234, 240, 245, 0.64);
+  --ink-50: rgba(234, 240, 245, 0.52);
+  --ink-40: rgba(234, 240, 245, 0.42);
+  --ink-success: #93da3a;
+  --ink-warn: #f5a253;
+  --ink-danger: #e57575;
+
+  --line-05: rgba(255, 255, 255, 0.06);
+  --line-06: rgba(255, 255, 255, 0.07);
+  --line-08: rgba(255, 255, 255, 0.1);
+  --line-10: rgba(255, 255, 255, 0.13);
+  --line-12: rgba(255, 255, 255, 0.16);
+  --line-25: rgba(255, 255, 255, 0.3);
+  --line-30: rgba(255, 255, 255, 0.35);
+
+  --ink-bg-06: rgba(255, 255, 255, 0.08);
+  --ink-bg-08: rgba(255, 255, 255, 0.1);
+  --ink-bg-10: rgba(255, 255, 255, 0.12);
+  --ink-bg-15: rgba(255, 255, 255, 0.2);
+  --ink-bg-20: rgba(255, 255, 255, 0.25);
+  --ink-bg-30: rgba(255, 255, 255, 0.35);
+  --chip-neutral: #2a3a47;
+  --gauge-track: rgba(255, 255, 255, 0.1);
+}
+
+/* משטח משני בתוך כרטיס (כפתור ghost, פאנל פנימי) */
+.navy-cards .bg-\[\#f5f5f7\] {
+  background-color: var(--surface-inset, #1c3346);
+}
+
+/* המסגרת של כרטיס הזכוכית - עדינה על נייבי */
+.navy-cards .border-white\/50 {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
 /* ════════ משטחים כהים ════════ */
 
 .dark .bg-white {
@@ -66,6 +207,9 @@
 }
 .dark .bg-\[\#f5f5f7\] {
   background-color: #1e2e3a;
+}
+.dark .hover\:bg-white:hover {
+  background-color: #16242f;
 }
 .dark .bg-white\/90 {
   background-color: rgba(22, 36, 47, 0.9);
@@ -155,6 +299,11 @@
 }
 .dark .bg-\[rgba\(23\,28\,35\,0\.3\)\] {
   background-color: rgba(255, 255, 255, 0.35);
+}
+
+/* תג האות בכרטיס תשובה - אטום בגוון הבורדר */
+.dark .bg-\[\#e3e4e5\] {
+  background-color: #2a3a47;
 }
 
 /* מסלול המד החצי-עגול - מתבהר על משטח כהה */

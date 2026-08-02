@@ -152,13 +152,9 @@ function SecondaryButton({
   onClick: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="bg-transparent border border-[#008ff0] text-[#008ff0] text-[15px] font-semibold px-8 py-2.5 rounded-full whitespace-nowrap transition-colors hover:bg-[rgba(0,143,240,0.06)]"
-    >
+    <Button variant="outline" type="button" onClick={onClick}>
       {children}
-    </button>
+    </Button>
   );
 }
 

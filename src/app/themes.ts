@@ -27,6 +27,13 @@ export interface Theme {
   navGradient: string;
   /** צבע ההדגמה בבורר הערכות */
   swatch: string;
+  /**
+   * צבע הכרטיסים - כשמוגדר, המשטחים כהים בעוד העמוד נשאר בהיר
+   * (ערכת "אפליקציה"). הדיו בתוך הכרטיס מתהפך אוטומטית.
+   */
+  surface?: string;
+  /** משטח משני בתוך כרטיס כהה (כפתור ghost, פאנל פנימי) */
+  surfaceInset?: string;
 }
 
 export const THEMES: Theme[] = [
@@ -45,6 +52,24 @@ export const THEMES: Theme[] = [
       "linear-gradient(-11.751deg, rgb(36,83,119) 6%, rgb(19,131,208) 48%, rgb(0,143,240) 102%, rgb(93,184,245) 113%)",
     swatch: "#008ff0",
   },
+  // {
+  //   // כמו הערכה הבהירה, אבל הכרטיסים בנייבי של הכותרת - כמו האפליקציה
+  //   id: "app",
+  //   name: "אפליקציה",
+  //   dark: false,
+  //   brand: "#008ff0",
+  //   brandHover: "#0080d6",
+  //   brandRgb: "0,143,240",
+  //   pageBg: "#f5f5f7",
+  //   blobA: "#008ff0",
+  //   blobB: "#69c600",
+  //   blobOpacity: 1,
+  //   navGradient:
+  //     "linear-gradient(-11.751deg, rgb(36,83,119) 6%, rgb(19,131,208) 48%, rgb(0,143,240) 102%, rgb(93,184,245) 113%)",
+  //   swatch: "#122736",
+  //   surface: "#122736",
+  //   surfaceInset: "#1c3346",
+  // },
   {
     id: "dark",
     name: "כהה",
@@ -180,5 +205,9 @@ export function themeVars(theme: Theme): React.CSSProperties {
     "--brand": theme.brand,
     "--brand-hover": theme.brandHover,
     "--brand-rgb": theme.brandRgb,
+    ...(theme.surface ? { "--surface": theme.surface } : {}),
+    ...(theme.surfaceInset
+      ? { "--surface-inset": theme.surfaceInset }
+      : {}),
   } as React.CSSProperties;
 }

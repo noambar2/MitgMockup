@@ -520,7 +520,7 @@
                         <div style={{textAlign: 'center', color: 'white', fontSize: 16, fontFamily: 'Noto Sans Hebrew New', fontWeight: '400', wordWrap: 'break-word'}}>משימות</div>
                     </div>
                     <div style={{paddingLeft: 20, paddingRight: 20, paddingTop: 2, paddingBottom: 2, borderRadius: 4, justifyContent: 'center', alignItems: 'center', gap: 10, display: 'flex'}}>
-                        <div style={{textAlign: 'center', color: 'white', fontSize: 16, fontFamily: 'Noto Sans Hebrew New', fontWeight: '400', wordWrap: 'break-word'}}>הזימונים שלי</div>
+                        <div style={{textAlign: 'center', color: 'white', fontSize: 16, fontFamily: 'Noto Sans Hebrew New', fontWeight: '400', wordWrap: 'break-word'}}>זימונים</div>
                     </div>
                     <div style={{paddingLeft: 20, paddingRight: 20, paddingTop: 2, paddingBottom: 2, background: 'rgba(255, 255, 255, 0.10)', borderRadius: 4, justifyContent: 'center', alignItems: 'center', gap: 10, display: 'flex'}}>
                         <div style={{textAlign: 'center', color: 'white', fontSize: 16, fontFamily: 'Noto Sans Hebrew New', fontWeight: '600', wordWrap: 'break-word'}}>פרופיל אישי</div>

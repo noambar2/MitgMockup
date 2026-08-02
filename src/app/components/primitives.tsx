@@ -31,6 +31,7 @@ export type ButtonVariant =
   | "success"
   | "tint"
   | "ghost"
+  | "outline"
   | "link"
   | "linkDanger";
 
@@ -40,12 +41,15 @@ const BUTTON_TONES: Record<ButtonVariant, string> = {
   tint: "bg-[rgba(0,143,240,0.1)] text-[#008ff0] hover:bg-[rgba(0,143,240,0.18)]",
   ghost:
     "bg-[#f5f5f7] text-[#171c23] hover:bg-[rgba(23,28,35,0.08)]",
+  outline:
+    "border-[#008ff0] text-[#008ff0] hover:bg-[rgba(0,143,240,0.06)]",
   link: "text-[#008ff0] hover:underline",
   linkDanger: "text-[#c43c3c] hover:underline",
 };
 
 /** גודל אחיד יחיד לכל הכפתורים המלאים במערכת */
-const BUTTON_SIZE = "rounded-full px-5 py-1.5 text-[13px]";
+const BUTTON_SIZE =
+  "rounded-full px-5 py-1.5 text-[13px] border border-transparent";
 
 export function Button({
   variant = "primary",
@@ -124,6 +128,102 @@ export function StatusBadge({
       )}
       {children}
     </span>
+  );
+}
+
+// ── Progress ────────────────────────────────────────────────────────────────
+
+/** בר התקדמות אופקי */
+export function ProgressBar({
+  value,
+  className = "h-1.5",
+  color = "bg-[#008ff0]",
+}: {
+  value: number;
+  className?: string;
+  /** מחלקת צבע המילוי - לשימוש סמנטי (ירוק/אדום) */
+  color?: string;
+}) {
+  return (
+    <div
+      className={`w-full rounded-full bg-[rgba(23,28,35,0.08)] overflow-hidden ${className}`}
+      role="progressbar"
+      aria-valuenow={value}
+      aria-valuemin={0}
+      aria-valuemax={100}
+    >
+      <div
+        className={`h-full rounded-full transition-[width] duration-700 ease-out ${color}`}
+        style={{ width: `${value}%` }}
+      />
+    </div>
+  );
+}
+
+/** טבעת התקדמות עם הערך במרכז ותווית אופציונלית מתחתיו */
+export function ProgressRing({
+  value,
+  size = 76,
+  label,
+  valueClassName = "text-[15px]",
+  suffix = "%",
+}: {
+  value: number;
+  size?: number;
+  label?: string;
+  valueClassName?: string;
+  suffix?: string;
+}) {
+  const stroke = size >= 120 ? 12 : 7;
+  const r = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * r;
+  return (
+    <div
+      className="relative shrink-0"
+      style={{ width: size, height: size }}
+      role="progressbar"
+      aria-valuenow={value}
+      aria-valuemin={0}
+      aria-valuemax={100}
+    >
+      <svg width={size} height={size} className="-rotate-90 block">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke="var(--gauge-track, #f5f5f7)"
+          strokeWidth={stroke}
+        />
+        {/* ב-0% לא מציירים כלל - קצה מעוגל מצייר נקודה גם באורך אפס */}
+        {value > 0 && (
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            fill="none"
+            stroke="var(--brand, #008ff0)"
+            strokeWidth={stroke}
+            strokeLinecap="round"
+            strokeDasharray={`${(value / 100) * circumference} ${circumference}`}
+            className="transition-[stroke-dasharray] duration-700 ease-out"
+          />
+        )}
+      </svg>
+      <span className="absolute inset-0 flex flex-col items-center justify-center leading-none">
+        <span
+          className={`font-black text-[#171c23] tabular-nums tracking-tight ${valueClassName}`}
+        >
+          {value}
+          {suffix}
+        </span>
+        {label && (
+          <span className="text-[#171c23] text-[13px] opacity-50 mt-1.5">
+            {label}
+          </span>
+        )}
+      </span>
+    </div>
   );
 }
 
@@ -405,7 +505,7 @@ export function Dialog({
             onClick={close}
           />
           <div
-            className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl transition-transform duration-300 ease-out flex flex-col max-h-[92vh]"
+            className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl transition-transform duration-300 ease-out flex flex-col min-h-[50vh] max-h-[92vh]"
             style={{
               transform: visible
                 ? "translateY(0)"

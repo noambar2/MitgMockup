@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Search,
-  Bell,
   LogOut,
   Menu,
   X,
   ChevronDown,
+  ChevronLeft,
   Pencil,
   Info,
   Settings,
@@ -119,6 +119,71 @@ const qualityScores = [
   { label: "התנהגות מסגרתית", value: 4 },
 ];
 
+/** הסבר קצר לכל מיומנות ביום המא"ה - מוצג בריחוף על אייקון המידע */
+const MAAH_SKILL_INFO: Record<string, string> = {
+  "טיפול באדם":
+    "היכולת ליצור קשר בין-אישי, להקשיב ולסייע לאחרים.",
+  שדה: "התפקוד בתנאי שטח - התמצאות, סיבולת ועמידה במאמץ פיזי.",
+  הדרכה: "היכולת להעביר ידע בבהירות ולהנחות קבוצה.",
+  "מנהל וארגון":
+    "סדר, תכנון וניהול של משאבים, זמן ומשימות.",
+  "טכני - הפעלה":
+    "היכולת ללמוד ולהפעיל מערכות וציוד טכני.",
+  "טכני - החזקה":
+    "אחזקה שוטפת, איתור תקלות ותיקון של ציוד.",
+  "קשב סלקטיבי":
+    "היכולת להתמקד בגירוי אחד מתוך רעש והסחות דעת.",
+  "קשב מתמשך":
+    "שמירה על ריכוז לאורך זמן במשימה חוזרת ומונוטונית.",
+  "עיבוד מידע":
+    "קליטה, ניתוח והסקת מסקנות ממידע חדש.",
+  "השקעה והתמדה":
+    "נכונות להשקיע מאמץ ולהתמיד גם במשימות ארוכות וקשות.",
+  "עבודת צוות":
+    "שיתוף פעולה, תרומה לקבוצה והתחשבות באחרים.",
+  פיקוד:
+    "היכולת להוביל, לקבל החלטות ולקחת אחריות על אחרים.",
+  "תפיסה מרחבית":
+    "הבנת יחסים בין עצמים במרחב, ניווט והתמצאות.",
+  "בגרות ובשלות":
+    "שיקול דעת, אחריות אישית והתמודדות עם מצבי לחץ.",
+  "התנהגות מסגרתית":
+    "עמידה בכללים, משמעת ונורמות של מסגרת מאורגנת.",
+};
+
+/** ששת הציונים המספריים. `interactive` = יש לו הסבר בטולטיפ/בוטום-שיט באופציה 1 */
+const scoreCards: {
+  label: string;
+  value: number;
+  max: number;
+  interactive?: boolean;
+}[] = [
+  { label: 'דפ"ר', value: 30, max: 90, interactive: true },
+  { label: "עברית", value: 8, max: 8, interactive: true },
+  {
+    label: "פרופיל רפואי",
+    value: 97,
+    max: 97,
+    interactive: true,
+  },
+  { label: "קשיי הסתגלות", value: 2, max: 5, interactive: true },
+  { label: "קשב מתמשך", value: 3, max: 5, interactive: true },
+  { label: "התאמה לקצונה", value: 4, max: 5, interactive: true },
+];
+
+const MAAH_LABEL = 'יום המא"ה';
+const DAPAR_LABEL = 'דפ"ר';
+
+/** פירוט תת-המבחנים של הדפ"ר - מוצג כגרף עמודות בכל חלונות המידע הנוסף */
+const DAPAR_MAX = 90;
+const DAPAR_TICKS = [90, 80, 70, 60, 50, 40, 30, 20, 10, 0];
+const DAPAR_BREAKDOWN = [
+  { label: "חשיבה כמותית", value: 40 },
+  { label: "הוראות מילוליות", value: 30 },
+  { label: "אנלוגיות צורניות", value: 20 },
+  { label: "אנלוגיות מילוליות", value: 30 },
+];
+
 const GAUGE_INFO: Record<string, { explanation: string }> = {
   'דפ"ר': {
     explanation: `המבחנים הפסיכוטכניים בוחנים את יכולות החשיבה שלך על ידי מבחנים כמותיים, מילוליים וזכרוניים. במהלך המבדק הפסיכוטכני שנערך בלשכת הגיוס נקבע ציון הדפ"ר, שנע בין 10 (הציון הנמוך ביותר) ל-90 (הציון הגבוה ביותר) במרווחים של 10 נקודות.`,
@@ -133,7 +198,93 @@ const GAUGE_INFO: Record<string, { explanation: string }> = {
   'יום המא"ה': {
     explanation: `תפקיד יום המא"ה  (מיון, איתור והתאמה) הוא לבחון את יכולות המלש"בים והמלש"ביות במגוון מיומנויות על מנת להתאים שיבוץ מיטבי המשלב בין צרכי הצבא, יכולות הפרט ורצונותיו.`,
   },
+  "קשיי הסתגלות": {
+    explanation: `ציון קשיי ההסתגלות (קב"א חברתי) נקבע על בסיס הראיון האישי בלשכת הגיוס ומשקף את מידת ההתאמה הצפויה שלך למסגרת הצבאית ולחיי השירות.\n\nהציון נע בין 1 (הציון הנמוך ביותר) ל-5 (הציון הגבוה ביותר) ומשמש, יחד עם נתונים נוספים, בקביעת השיבוץ.`,
+  },
+  "קשב מתמשך": {
+    explanation: `ציון הקשב המתמשך נמדד במהלך יום המא"ה ובוחן את היכולת שלך לשמור על ריכוז לאורך זמן במשימה חוזרת ומונוטונית.\n\nהציון נע בין 1 (הציון הנמוך ביותר) ל-5 (הציון הגבוה ביותר) ומהווה מרכיב בשיבוץ למקצועות הדורשים ערנות ממושכת.`,
+  },
+  "התאמה לקצונה": {
+    explanation: `ציון ההתאמה לקצונה משקלל את נתוני האיכות, המיומנויות שנמדדו ביום המא"ה והראיון האישי, ומשקף את הפוטנציאל שלך להשתלב בהמשך בתפקידי פיקוד והכשרות קצונה.\n\nהציון נע בין 1 (הציון הנמוך ביותר) ל-5 (הציון הגבוה ביותר) ואינו סופי - הוא עשוי להתעדכן במהלך השירות.`,
+  },
 };
+
+// ── Dapar chart ──────────────────────────────────────────────────────────────
+
+/** גרף עמודות של תת-מבחני הדפ"ר. ציר Y: 0-90 במרווחים של 10 */
+function DaparChart() {
+  // העמודות "צומחות" בכניסה - נעים לעין ומדגיש את ההשוואה בין התת-מבחנים
+  const [grown, setGrown] = useState(false);
+  useEffect(() => {
+    const t = requestAnimationFrame(() => setGrown(true));
+    return () => cancelAnimationFrame(t);
+  }, []);
+
+  return (
+    <div className="w-full" dir="ltr">
+      <div className="flex gap-2.5">
+        {/* ציר Y */}
+        <div className="flex flex-col justify-between h-[190px] shrink-0 text-[10px] text-[rgba(23,28,35,0.4)] tabular-nums text-left">
+          {DAPAR_TICKS.map((t) => (
+            <span key={t} className="leading-none">
+              {t}
+            </span>
+          ))}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          {/* אזור הציור */}
+          <div className="relative h-[190px]">
+            {DAPAR_TICKS.map((t, i) => (
+              <div
+                key={t}
+                className={`absolute inset-x-0 border-t ${t === 0 ? "border-[rgba(23,28,35,0.12)]" : "border-[rgba(23,28,35,0.05)]"}`}
+                style={{
+                  top: `${(i / (DAPAR_TICKS.length - 1)) * 100}%`,
+                }}
+              />
+            ))}
+            <div className="absolute inset-0 flex items-end" dir="rtl">
+              {DAPAR_BREAKDOWN.map((b) => (
+                <div
+                  key={b.label}
+                  className="flex-1 flex justify-center items-end h-full px-1.5"
+                >
+                  <div
+                    className="relative w-full max-w-[30px] rounded-t-[6px] transition-[height] duration-700 ease-out"
+                    style={{
+                      height: grown
+                        ? `${(b.value / DAPAR_MAX) * 100}%`
+                        : 0,
+                      background:
+                        "linear-gradient(to top, var(--brand, #008ff0), rgba(var(--brand-rgb, 0,143,240), 0.5))",
+                    }}
+                  >
+                    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 text-[11px] font-bold text-[#008ff0] tabular-nums">
+                      {b.value}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* תוויות ציר X - מיושרות מתחת לעמודות */}
+          <div className="flex pt-2.5" dir="rtl">
+            {DAPAR_BREAKDOWN.map((b) => (
+              <div
+                key={b.label}
+                className="flex-1 px-1 text-center text-[11px] leading-tight text-[rgba(23,28,35,0.62)]"
+              >
+                {b.label}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ── Tooltip (desktop) ────────────────────────────────────────────────────────
 
@@ -151,13 +302,15 @@ function GaugeTooltip({
   const info = GAUGE_INFO[label];
   if (!info) return null;
 
-  const TOOLTIP_W = 300;
+  // לדפ"ר הטולטיפ רחב יותר כדי להכיל את הגרף לצד הטקסט
+  const hasChart = label === DAPAR_LABEL;
+  const TOOLTIP_W = hasChart ? 620 : 300;
   const OFFSET = 18;
   const left =
     x + OFFSET + TOOLTIP_W > window.innerWidth
       ? x - TOOLTIP_W - OFFSET
       : x + OFFSET;
-  const estimatedHeight = 160;
+  const estimatedHeight = hasChart ? 280 : 160;
   const top =
     y + OFFSET + estimatedHeight > window.innerHeight
       ? y - estimatedHeight - OFFSET
@@ -166,10 +319,11 @@ function GaugeTooltip({
   return (
     <div
       dir="rtl"
-      className="fixed z-[500] pointer-events-none bg-white rounded-[10px] p-4 w-[300px]"
+      className="fixed z-[500] pointer-events-none bg-white rounded-[10px] p-4"
       style={{
         left,
         top,
+        width: TOOLTIP_W,
         boxShadow: "0 12px 32px rgba(0,0,0,0.16)",
       }}
     >
@@ -183,9 +337,9 @@ function GaugeTooltip({
           </span>
         )}
       </div>
-      <p className="text-[#171c23] text-[13px] leading-relaxed whitespace-pre-line">
-        {info.explanation}
-      </p>
+      <div className="flex flex-col gap-3">
+        <ScoreDetails label={label} />
+      </div>
     </div>
   );
 }
@@ -201,7 +355,6 @@ function BottomSheet({
   value: number;
   onClose: () => void;
 }) {
-  const info = GAUGE_INFO[label];
   return (
     <Dialog
       onClose={onClose}
@@ -218,9 +371,9 @@ function BottomSheet({
         />
       }
     >
-      <p className="text-[#171c23] text-[15px] leading-relaxed text-right whitespace-pre-line">
-        {info?.explanation}
-      </p>
+      <div className="flex flex-col gap-4">
+        <ScoreDetails label={label} />
+      </div>
     </Dialog>
   );
 }
@@ -303,7 +456,7 @@ function GaugeCard({
 }: GaugeCardProps) {
   return (
     <div
-      className={`bg-white rounded-[10px] flex-1 min-w-0 p-3 sm:p-5 flex flex-col items-center ${display === "number" ? "justify-between" : ""} gap-2 transition-all duration-200 select-none ${interactive ? "cursor-pointer" : ""}`}
+      className={`bg-white rounded-[10px] flex-1 min-w-0 p-3 sm:p-5 flex flex-col items-center gap-2 transition-all duration-200 select-none ${interactive ? "cursor-pointer" : ""}`}
       style={
         hovered
           ? {
@@ -326,21 +479,16 @@ function GaugeCard({
           />
         )}
       </p>
-      {display === "number" ? (
-        <p className="font-black text-[#008ff0] text-[44px] sm:text-[52px] leading-none tracking-tight">
-          {value}
-        </p>
-      ) : (
-        <SemiGauge value={value} max={max} />
-      )}
-      {display === "number" && (
-        <p
-          aria-hidden
-          className="hidden md:block invisible text-[14px] w-full"
-        >
-          &nbsp;
-        </p>
-      )}
+      {/* הערך ממורכז במרחב שנותר - הכרטיסים נמתחים לגובה כרטיס המא"ה */}
+      <div className="flex-1 w-full flex items-center justify-center">
+        {display === "number" ? (
+          <p className="font-black text-[#008ff0] text-[44px] sm:text-[52px] leading-none tracking-tight">
+            {value}
+          </p>
+        ) : (
+          <SemiGauge value={value} max={max} />
+        )}
+      </div>
       {interactive ? (
         <p className="md:hidden text-[#171c23] text-[13px] sm:text-[14px] text-right w-full opacity-70">
           לחצ/י למידע נוסף
@@ -494,15 +642,6 @@ function InfoField({
   );
 }
 
-function CardHeader({ title }: { title: string }) {
-  return (
-    <div className="h-[60px] flex items-center justify-start px-5 border-b border-[rgba(23,28,35,0.05)] shrink-0">
-      <h3 className="font-bold text-[#171c23] text-[18px]">
-        {title}
-      </h3>
-    </div>
-  );
-}
 
 function SubSection({ title }: { title: string }) {
   return (
@@ -569,7 +708,7 @@ function Header({
 }: {
   activePage: Page;
   onNavigate: (page: Page) => void;
-  /** מספר ההודעות שלא נקראו - לבאדג' בפעמון */
+  /** מספר ההודעות שלא נקראו - לבאדג' על פריט "הודעות" בתפריט */
   unreadCount: number;
   /** גרדיאנט סרגל הניווט - מגיע מערכת הנושא */
   navGradient: string;
@@ -577,48 +716,43 @@ function Header({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
 
-  // פעמון עם באדג' - מוביל ישירות לעמוד ההודעות
-  const BellButton = ({ size = 17 }: { size?: number }) => (
-    <button
-      onClick={() => {
-        setMobileOpen(false);
-        onNavigate("messages");
-      }}
-      className={`relative flex items-center justify-center transition-opacity ${
-        activePage === "messages"
-          ? "opacity-100"
-          : "opacity-80 hover:opacity-100"
-      }`}
-      aria-label="הודעות"
-    >
-      <Bell size={size} />
-      {unreadCount > 0 && (
-        <span className="absolute -top-1.5 -left-1.5 min-w-[16px] h-4 px-0.5 rounded-full bg-[#c43c3c] text-white text-[10px] font-bold flex items-center justify-center leading-none">
-          {unreadCount}
-        </span>
-      )}
-    </button>
-  );
-
   const navTabs = [
+    "הודעות",
     "פניות",
     "לומדות",
     "משימות",
-    "הזימונים שלי",
+    "זימונים",
     "פרופיל אישי",
   ];
   const tabToPage: Record<string, Page> = {
+    הודעות: "messages",
     פניות: "inquiries",
     לומדות: "learnings",
     "פרופיל אישי": "profile",
     "משימות": "tasks",
-    "הזימונים שלי": "appointments",
+    "זימונים": "appointments",
   };
+  /** באדג' ספירה על פריט תפריט - כרגע רק להודעות שלא נקראו */
+  const tabCount = (tab: string) =>
+    tab === "הודעות" && unreadCount > 0 ? unreadCount : 0;
   const isActiveTab = (tab: string) =>
     tabToPage[tab] === activePage;
   const handleTabClick = (tab: string) => {
     const page = tabToPage[tab];
     if (page) onNavigate(page);
+  };
+
+  const NavCount = ({ tab }: { tab: string }) => {
+    const count = tabCount(tab);
+    if (!count) return null;
+    return (
+      <span
+        aria-label={`${count} הודעות שלא נקראו`}
+        className="min-w-[18px] h-[18px] px-1 rounded-full bg-[#c43c3c] text-white text-[11px] font-bold flex items-center justify-center leading-none shrink-0"
+      >
+        {count}
+      </span>
+    );
   };
 
   return (
@@ -670,13 +804,14 @@ function Header({
               <button
                 key={tab}
                 onClick={() => handleTabClick(tab)}
-                className={`px-4 py-1 rounded text-[15px] whitespace-nowrap transition-colors ${
+                className={`px-4 py-1 rounded text-[15px] whitespace-nowrap transition-colors flex items-center gap-2 ${
                   isActiveTab(tab)
                     ? "bg-white/10 font-semibold"
                     : "opacity-80 hover:opacity-100 hover:bg-white/5"
                 }`}
               >
                 {tab}
+                <NavCount tab={tab} />
               </button>
             ))}
           </nav>
@@ -687,7 +822,6 @@ function Header({
                 חיפוש
               </span>
             </div>
-            <BellButton />
             <button
               onClick={() => onNavigate("settings")}
               className={`flex items-center justify-center transition-opacity ${
@@ -735,7 +869,6 @@ function Header({
           </div>
           <div className="flex items-center gap-4">
             <Search size={17} />
-            <BellButton />
             <button
               onClick={() => onNavigate("settings")}
               className="flex items-center justify-center"
@@ -776,7 +909,7 @@ function Header({
               {navTabs.map((tab) => (
                 <button
                   key={tab}
-                  className={`w-full text-right px-5 py-3.5 text-[16px] border-b border-white/5 block ${
+                  className={`w-full text-right px-5 py-3.5 text-[16px] border-b border-white/5 flex items-center gap-2 ${
                     isActiveTab(tab)
                       ? "bg-white/10 font-semibold"
                       : ""
@@ -787,6 +920,7 @@ function Header({
                   }}
                 >
                   {tab}
+                  <NavCount tab={tab} />
                 </button>
               ))}
             </div>
@@ -803,45 +937,18 @@ function Header({
 
 // ── Quality Section ───────────────────────────────────────────────────────────
 
-function MaahCard({
-  hovered,
-  onMouseEnter,
-  onMouseLeave,
-  onMouseMove,
-}: {
-  hovered?: boolean;
-  onMouseEnter?: () => void;
-  onMouseLeave?: () => void;
-  onMouseMove?: (e: React.MouseEvent) => void;
-}) {
+function MaahCard() {
   // במובייל הכרטיס סגור כברירת מחדל ונפתח בלחיצה (כמו האקורדיון בפרטים אישיים)
   const [open, setOpen] = useState(false);
   return (
-    <div
-      className="bg-white rounded-[10px] p-5 flex flex-col gap-4 transition-all duration-200 md:h-full"
-      style={
-        hovered
-          ? {
-              boxShadow: "0 0 20px 0 rgba(0, 143, 240, 0.25)",
-              border: "1px solid rgba(0, 143, 240, 0.2)",
-            }
-          : undefined
-      }
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      onMouseMove={onMouseMove}
-    >
+    <div className="bg-white rounded-[10px] p-5 flex flex-col gap-4 md:h-full">
       <button
         type="button"
         onClick={() => setOpen(!open)}
         className="flex items-center justify-between gap-2 w-full text-right md:pointer-events-none"
       >
-        <h3 className="font-bold text-[#171c23] text-[18px] md:text-[16px] flex items-center gap-1.5">
+        <h3 className="font-bold text-[#171c23] text-[18px] flex items-center gap-1.5">
           יום המא"ה
-          <Info
-            size={15}
-            className="hidden md:inline-block shrink-0 opacity-40"
-          />
         </h3>
         <div className="flex items-center gap-2 shrink-0">
           {/* תג סטטוס "הושלם" - באותו סגנון של כרטיסיות הלומדות */}
@@ -854,25 +961,29 @@ function MaahCard({
           />
         </div>
       </button>
-      {/* טקסט ההסבר - רק במובייל (בדסקטופ יש אייקון מידע + טולטיפ בריחוף) */}
+      {/* ההסבר הכללי מוצג תמיד בדסקטופ; במובייל הוא נפתח עם האקורדיון */}
       <p
-        className={`${open ? "block" : "hidden"} md:hidden text-[#171c23] text-[14px] text-right leading-relaxed`}
+        className={`${open ? "block" : "hidden"} md:block text-[#171c23] text-[14px] text-right leading-relaxed`}
       >
-        {`תפקיד יום המא"ה (מיון, איתור והתאמה) הוא לבחון את יכולות המלש"בים והמלש"ביות במגוון מיומנויות על מנת להתאים שיבוץ מיטבי.`}
+        {GAUGE_INFO[MAAH_LABEL].explanation}
       </p>
       <div
-        className={`${open ? "grid" : "hidden"} md:grid grid-cols-3 gap-x-5 gap-y-4 md:flex-1 md:content-evenly`}
+        className={`${open ? "grid" : "hidden"} md:grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 gap-x-3 gap-y-4 md:flex-1 md:content-evenly`}
       >
         {qualityScores.map((item) => (
           <div
             key={item.label}
-            className="flex flex-col items-center min-w-[80px]"
+            className="flex flex-col items-center min-w-0"
           >
-            <span className="text-[#122736] text-[13px] opacity-70 text-center leading-tight">
+            {/* גובה קבוע ללייבל כדי שאייקוני המידע יישבו כולם על אותו קו */}
+            <span className="min-h-[32px] flex items-center justify-center text-[#122736] text-[13px] text-center leading-tight opacity-70">
               {item.label}
             </span>
-            <span className="font-semibold text-[#122736] text-[20px]">
-              {item.value}
+            <span className="flex items-center gap-1">
+              <span className="font-semibold text-[#122736] text-[20px]">
+                {item.value}
+              </span>
+              <MaahSkillInfo label={item.label} />
             </span>
           </div>
         ))}
@@ -881,8 +992,295 @@ function MaahCard({
   );
 }
 
+/** מתג בחירת פריסה - ליד כותרת העמוד */
+function LayoutSwitch({
+  value,
+  onChange,
+}: {
+  value: 1 | 2;
+  onChange: (v: 1 | 2) => void;
+}) {
+  return (
+    <div className="inline-flex items-center gap-1 rounded-full bg-[rgba(23,28,35,0.06)] p-1 shrink-0">
+      {([1, 2] as const).map((opt) => (
+        <button
+          key={opt}
+          onClick={() => onChange(opt)}
+          aria-pressed={value === opt}
+          className={`rounded-full px-4 py-1.5 text-[13px] whitespace-nowrap transition-colors ${
+            value === opt
+              ? "bg-white text-[#008ff0] font-semibold shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
+              : "text-[rgba(23,28,35,0.62)] hover:text-[#171c23]"
+          }`}
+        >
+          אופציה {opt}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * תוכן ההסבר של ציון - משותף לכל חלונות המידע הנוסף
+ * (טולטיפ בדסקטופ, בוטום-שיט במובייל ופאנל הטאבים באופציה 2).
+ */
+function ScoreDetails({ label }: { label: string }) {
+  const explanation = (
+    <p className="text-[#171c23] text-[14px] leading-relaxed text-right whitespace-pre-line flex-1">
+      {GAUGE_INFO[label]?.explanation}
+    </p>
+  );
+  // לדפ"ר ולמא"ה מוצג תוכן נוסף - בדסקטופ משמאל לטקסט, במובייל מתחתיו
+  const aside =
+    label === DAPAR_LABEL ? (
+      <div className="w-full md:w-[320px] shrink-0">
+        <DaparChart />
+      </div>
+    ) : label === MAAH_LABEL ? (
+      <div className="w-full md:w-[58%] shrink-0 grid grid-cols-3 md:grid-cols-5 gap-x-3 gap-y-4">
+        {qualityScores.map((item) => (
+          <div
+            key={item.label}
+            className="flex flex-col items-center min-w-0"
+          >
+            {/* גובה קבוע ללייבל כדי שאייקוני המידע יישבו כולם על אותו קו */}
+            <span className="min-h-[32px] flex items-center justify-center text-[#122736] text-[13px] text-center leading-tight opacity-70">
+              {item.label}
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="font-semibold text-[#122736] text-[20px]">
+                {item.value}
+              </span>
+              <MaahSkillInfo label={item.label} />
+            </span>
+          </div>
+        ))}
+      </div>
+    ) : null;
+
+  if (!aside) return explanation;
+
+  return (
+    <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-6">
+      {explanation}
+      {aside}
+    </div>
+  );
+}
+
+/** אייקון מידע ליד מיומנות של יום המא"ה - ההסבר הקצר נפתח בריחוף */
+function MaahSkillInfo({ label }: { label: string }) {
+  const info = MAAH_SKILL_INFO[label];
+  if (!info) return null;
+  return (
+    <span className="relative group inline-flex shrink-0">
+      <Info
+        size={12}
+        className="opacity-40 group-hover:opacity-100 transition-opacity"
+        aria-label={info}
+      />
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-[180px] rounded-[8px] bg-[#122736] text-white text-[11px] font-normal leading-snug p-2 text-center opacity-0 group-hover:opacity-100 transition-opacity z-20"
+      >
+        {info}
+      </span>
+    </span>
+  );
+}
+
+/** שם הציון + הערך שלו - לכותרת הפאנל/הבוטום-שיט */
+function ScoreTitle({ label }: { label: string }) {
+  const score = scoreCards.find((s) => s.label === label);
+  return (
+    <span className="flex items-baseline gap-1.5">
+      {label}
+      {score && (
+        <span className="font-bold text-[#008ff0] text-[20px]">
+          {score.value}
+        </span>
+      )}
+    </span>
+  );
+}
+
+/** תוכן הקוביה: שם הציון + הערך (או תג "הושלם" ליום המא"ה) */
+function ScoreTileContent({ label }: { label: string }) {
+  const score = scoreCards.find((s) => s.label === label);
+  return (
+    <>
+      <span className="font-bold text-[#171c23] text-[14px] text-center leading-tight">
+        {label}
+      </span>
+      {score ? (
+        <span className="font-black text-[#008ff0] text-[32px] leading-none tracking-tight">
+          {score.value}
+        </span>
+      ) : (
+        <StatusBadge variant="success" dot>
+          הושלם
+        </StatusBadge>
+      )}
+    </>
+  );
+}
+
+/**
+ * אופציה 2: הציונים גלויים תמיד, בלי ללחוץ.
+ * דסקטופ - צ'יפים קומפקטיים (שם + ציון) שנשברים לשורה נוספת כשמתווספים ציונים,
+ *          וההסבר של הנבחר מוצג בכרטיס שמתחת.
+ * מובייל  - רצועת קוביות נגללת לצד, ולחיצה פותחת בוטום-שיט.
+ */
+const SCORE_TABS = [...scoreCards.map((s) => s.label), MAAH_LABEL];
+
+/**
+ * רצועה נגללת אופקית עם סימון ברור שיש עוד תוכן:
+ * דהייה בקצה שממנו אפשר להמשיך לגלול + קוביה חלקית שמציצה בקצה.
+ */
+function ScoreStrip({ children }: { children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [edges, setEdges] = useState({ start: false, end: false });
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const update = () => {
+      const max = el.scrollWidth - el.clientWidth;
+      const pos = Math.abs(el.scrollLeft);
+      setEdges({ start: pos > 4, end: pos < max - 4 });
+    };
+    update();
+    el.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => {
+      el.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, []);
+
+  // ב-RTL ההתחלה היא בימין והמשך הגלילה בשמאל
+  const mask = `linear-gradient(to left, ${
+    edges.start ? "transparent 0, #000 28px" : "#000 0"
+  }, ${
+    edges.end ? "#000 calc(100% - 28px), transparent 100%" : "#000 100%"
+  })`;
+
+  return (
+    <div className="relative">
+      <div
+        ref={ref}
+        aria-label="ציונים"
+        className="flex gap-2 overflow-x-auto snap-x -mx-4 px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        style={{ maskImage: mask, WebkitMaskImage: mask }}
+      >
+        {children}
+      </div>
+      {/* חץ עדין שמרמז לכיוון הגלילה */}
+      {edges.end && (
+        <div className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 -mr-1 flex items-center">
+          <span className="w-6 h-6 rounded-full bg-white shadow-[0_2px_8px_rgba(18,39,54,0.16)] flex items-center justify-center">
+            <ChevronLeft
+              size={14}
+              className="text-[#008ff0]"
+            />
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ScoreTabs() {
+  const isMobile = useIsMobile();
+  const [active, setActive] = useState(SCORE_TABS[0]);
+  const [sheet, setSheet] = useState<string | null>(null);
+
+  if (isMobile) {
+    return (
+      <>
+        {/* רצועה נגללת לצד - בולטת עד קצה המסך, עם דהייה בקצה שיש בו עוד תוכן */}
+        <ScoreStrip>
+          {SCORE_TABS.map((label) => (
+            <button
+              key={label}
+              onClick={() => setSheet(label)}
+              className="snap-start shrink-0 w-[112px] bg-white rounded-[10px] p-3 flex flex-col items-center justify-between gap-2"
+            >
+              <ScoreTileContent label={label} />
+            </button>
+          ))}
+        </ScoreStrip>
+        {sheet && (
+          <Dialog
+            onClose={() => setSheet(null)}
+            header={
+              <DialogHeader title={<ScoreTitle label={sheet} />} />
+            }
+          >
+            <div className="flex flex-col gap-4">
+              <ScoreDetails label={sheet} />
+            </div>
+          </Dialog>
+        )}
+      </>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      {/* צ'יפים - אותה שפה של צ'יפי הסינון בהודעות/פניות */}
+      <div
+        role="tablist"
+        aria-label="ציונים"
+        className="flex flex-wrap items-center gap-2"
+      >
+        {SCORE_TABS.map((label) => {
+          const score = scoreCards.find((s) => s.label === label);
+          const isActive = label === active;
+          return (
+            <button
+              key={label}
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => setActive(label)}
+              className={`flex items-center gap-2 text-[13px] font-semibold px-4 py-1.5 rounded-full whitespace-nowrap border backdrop-blur-lg text-[#171c23] transition-all ${
+                isActive
+                  ? "bg-white border-transparent shadow-[0_8px_32px_rgba(18,39,54,0.12)]"
+                  : "bg-white/30 border-white/50 shadow-[0_8px_32px_rgba(18,39,54,0.12)] hover:bg-white hover:shadow-[0_0_20px_0_rgba(0,143,240,0.25)]"
+              }`}
+            >
+              {label}
+              {score ? (
+                <span className="font-black text-[16px] leading-none text-[#008ff0]">
+                  {score.value}
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 text-[12px] text-[#4e9400]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#4e9400]" />
+                  הושלם
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      <div
+        role="tabpanel"
+        className="bg-white rounded-[10px] p-5 flex flex-col gap-4"
+      >
+        <h3 className="font-bold text-[#171c23] text-[18px] text-right">
+          <ScoreTitle label={active} />
+        </h3>
+        <ScoreDetails label={active} />
+      </div>
+    </div>
+  );
+}
+
 function QualitySection() {
   const isMobile = useIsMobile();
+  const [layout, setLayout] = useState<1 | 2>(1);
 
   // Desktop tooltip: which card + cursor position
   const [hoveredCard, setHoveredCard] = useState<{
@@ -937,15 +1335,10 @@ function QualitySection() {
         />
       )}
 
-      <div className="text-right mb-1">
-        <h2 className="font-bold text-[#122736] text-[28px] sm:text-[34px] tracking-tight inline">
-          נתוני איכות<span className="text-[#69c600]">.</span>
-        </h2>
-      </div>
-      <p className="text-[#171c23] text-[14px] opacity-50 text-right mb-6">
-        שימו לב, נתונים אלו אינם בהכרח סופיים ועשויים להשתנות עד
-        מועד הגיוס
-      </p>
+      {/* כותרת העמוד */}
+      <h2 className="font-bold text-[#122736] text-[28px] sm:text-[34px] tracking-tight text-right mb-6">
+        פרופיל אישי<span className="text-[#69c600]">.</span>
+      </h2>
 
       <div className="flex flex-col gap-4">
         {/* נתוני גיוס - רוחב מלא */}
@@ -956,61 +1349,49 @@ function QualitySection() {
           assignment="ע.ח מבצעים אוויר"
         />
 
-        {/* ציונים (2 שורות) + יום המא"ה בצד, באותו גובה */}
-        <div className="flex flex-col md:flex-row gap-4 items-stretch">
-          <div className="grid grid-cols-3 gap-2 sm:gap-4 w-full md:flex-[2] md:min-w-0">
-            <GaugeCard
-              max={90}
-              display="number"
-              {...gaugeProps('דפ"ר', 30)}
-            />
-            <GaugeCard
-              max={8}
-              display="number"
-              {...gaugeProps("עברית", 8)}
-            />
-            <GaugeCard
-              max={97}
-              display="number"
-              {...gaugeProps("פרופיל רפואי", 97)}
-            />
-            {/* ציונים ללא מידע נוסף (לא אינטראקטיביים) */}
-            <GaugeCard
-              max={5}
-              display="number"
-              label="קשיי הסתגלות"
-              value={2}
-            />
-            <GaugeCard
-              max={5}
-              display="number"
-              label="קשב מתמשך"
-              value={3}
-            />
-            <GaugeCard
-              max={5}
-              display="number"
-              label="התאמה לקצונה"
-              value={4}
-            />
+        {/* כותרת נתוני האיכות + מתג הפריסה - יושבת ישירות מעל מה שהיא משנה */}
+        <div className="pt-2">
+          <div className="flex items-center justify-between gap-4 mb-1">
+            <h2 className="font-bold text-[#122736] text-[28px] sm:text-[34px] tracking-tight text-right">
+              נתוני איכות<span className="text-[#69c600]">.</span>
+            </h2>
+            <LayoutSwitch value={layout} onChange={setLayout} />
           </div>
-          <div className="w-full md:flex-[1] md:min-w-0">
-            <MaahCard
-              hovered={
-                !isMobile && hoveredCard?.label === 'יום המא"ה'
-              }
-              onMouseEnter={() => {
-                if (!isMobile)
-                  setHoveredCard({
-                    label: 'יום המא"ה',
-                    value: 0,
-                  });
-              }}
-              onMouseLeave={() => setHoveredCard(null)}
-              onMouseMove={handleMouseMove}
-            />
-          </div>
+          <p className="text-[#171c23] text-[14px] opacity-50 text-right">
+            שימו לב, נתונים אלו אינם בהכרח סופיים ועשויים להשתנות
+            עד מועד הגיוס
+            {layout === 2 && (
+              <span className="md:hidden">
+                {" · "}לחצ/י על ציון למידע נוסף
+              </span>
+            )}
+          </p>
         </div>
+
+        {layout === 1 ? (
+          /* ציונים (2 שורות) + יום המא"ה בצד, באותו גובה */
+          <div className="flex flex-col md:flex-row gap-4 items-stretch">
+            {/* הציונים תופסים שני שליש מהרוחב - 3 עמודות בשתי שורות */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 w-full md:flex-[2] md:min-w-0">
+              {scoreCards.map((s) => (
+                <GaugeCard
+                  key={s.label}
+                  max={s.max}
+                  display="number"
+                  {...(s.interactive
+                    ? gaugeProps(s.label, s.value)
+                    : { label: s.label, value: s.value })}
+                />
+              ))}
+            </div>
+            {/* יום המא"ה - שליש מרוחב הקונטיינר */}
+            <div className="w-full md:flex-1 md:min-w-0">
+              <MaahCard />
+            </div>
+          </div>
+        ) : (
+          <ScoreTabs />
+        )}
       </div>
     </section>
   );
@@ -1279,30 +1660,6 @@ function CompanionsContent({
   );
 }
 
-function CompanionsCardHeader({
-  count,
-  onAdd,
-}: {
-  count: number;
-  onAdd: () => void;
-}) {
-  return (
-    <div className="h-[60px] flex items-center justify-between px-5 border-b border-[rgba(23,28,35,0.05)] shrink-0">
-      <div className="flex items-center gap-2">
-        <h3 className="font-bold text-[#171c23] text-[18px]">
-          פרטי מלווים
-        </h3>
-        <p className="text-[#171c23] text-[13px] opacity-50 hidden sm:block">
-          {count} מתוך {MAX_COMPANIONS} מלווים
-        </p>
-      </div>
-      <AddCompanionBtn
-        disabled={count >= MAX_COMPANIONS}
-        onClick={onAdd}
-      />
-    </div>
-  );
-}
 
 // ── Personal Section ──────────────────────────────────────────────────────────
 
@@ -1430,32 +1787,8 @@ function PersonalSection() {
         </h2>
       </div>
 
-      {/* Desktop: כרטיסים ברוחב מלא בגובה טבעי - אין שטחים מתים,
-          וכל כרטיס (למשל מלווים) יכול לגדול בחופשיות */}
-      <div className="hidden md:flex flex-col gap-5">
-        <div className="bg-white rounded-[10px]">
-          <CardHeader title="מידע אישי" />
-          {personalContent}
-        </div>
-        <div className="bg-white rounded-[10px]">
-          <CardHeader title="השכלה" />
-          <EducationContent />
-        </div>
-        <div className="bg-white rounded-[10px]">
-          <CardHeader title="פרטי הורים" />
-          {parentsContent}
-        </div>
-        <div className="bg-white rounded-[10px]">
-          <CompanionsCardHeader
-            count={companions.length}
-            onAdd={() => setCompanionForm("new")}
-          />
-          {companionsContent}
-        </div>
-      </div>
-
-      {/* Mobile: accordion */}
-      <div className="md:hidden flex flex-col gap-3">
+      {/* אקורדיון בכל הרזולוציות - סעיף אחד פתוח בכל רגע */}
+      <div className="flex flex-col gap-3 md:gap-5">
         {personalSections.map(({ key, label }) => {
           const isOpen = openKey === key;
           return (
@@ -1463,10 +1796,11 @@ function PersonalSection() {
               key={key}
               className="bg-white rounded-[10px] overflow-hidden"
             >
-              {/* Header row — always visible */}
+              {/* שורת הכותרת - תמיד גלויה */}
               <button
                 onClick={() => setOpenKey(isOpen ? null : key)}
-                className="w-full h-[64px] flex items-center justify-between px-5"
+                aria-expanded={isOpen}
+                className="w-full h-[64px] md:h-[60px] flex items-center justify-between px-5"
               >
                 <span className="font-bold text-[#171c23] text-[18px]">
                   {label}
@@ -1476,7 +1810,7 @@ function PersonalSection() {
                   className={`text-[#171c23] transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
                 />
               </button>
-              {/* Expanded content — same card */}
+              {/* התוכן הפתוח - באותו כרטיס */}
               {isOpen && (
                 <div className="border-t border-[rgba(23,28,35,0.05)]">
                   {key === "personal" && personalContent}
@@ -1484,7 +1818,7 @@ function PersonalSection() {
                   {key === "parents" && parentsContent}
                   {key === "companions" && (
                     <>
-                      {/* Mobile companions header: no title (already in accordion button) */}
+                      {/* שורת מלווים: ספירה + הוספה (הכותרת כבר בכפתור האקורדיון) */}
                       <div className="flex items-center justify-between px-5 py-3 border-b border-[rgba(23,28,35,0.05)]">
                         <p className="text-[#171c23] text-[13px] opacity-50">
                           {companions.length} מתוך {MAX_COMPANIONS}{" "}
@@ -1575,7 +1909,7 @@ export default function App() {
         backgroundPosition: "center",
         backgroundAttachment: "fixed",
       }}
-      className={`min-h-[100dvh] flex flex-col ${theme.dark ? "dark" : ""}`}
+      className={`min-h-[100dvh] flex flex-col ${theme.dark ? "dark" : ""} ${theme.surface ? "navy-cards" : ""}`}
     >
       {/* בתוך השאלון הטאב "משימות וזימונים" נשאר מסומן */}
       <Header

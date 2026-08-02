@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import {
   SectionHeading,
-  Breadcrumbs,
 } from "./TasksAppointmentsPage";
 import { Button, PAGE_CONTAINER } from "./primitives";
 
@@ -396,12 +395,6 @@ export default function MessagesPage({
   return (
     <section className="px-4 sm:px-6 md:px-10 pt-8 pb-12">
       <div className={PAGE_CONTAINER}>
-        <Breadcrumbs
-          items={[
-            { label: "אזור אישי", onClick: onNavigateHome },
-            { label: "הודעות" },
-          ]}
-        />
         <SectionHeading title="הודעות" />
 
         {/* חיפוש וסינונים */}

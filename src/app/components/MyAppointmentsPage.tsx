@@ -13,7 +13,7 @@ export default function MyAppointmentsPage() {
 
       {/* <div className="text-right mb-1">
         <h2 className="font-bold text-[#122736] text-[28px] sm:text-[34px] tracking-tight inline">
-          הזימונים שלי<span className="text-[#69c600]">.</span>
+          זימונים<span className="text-[#69c600]">.</span>
         </h2>
       </div>
       <p className="text-[#171c23] text-[14px] opacity-50 text-right mb-8">
