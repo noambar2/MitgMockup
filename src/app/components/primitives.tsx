@@ -6,7 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { ChevronDown, X } from "lucide-react";
+import { ChevronDown, Megaphone, X } from "lucide-react";
 import { useIsMobile } from "./ui/use-mobile";
 
 /**
@@ -231,6 +231,47 @@ export function ProgressRing({
 
 /** רוחב תוכן אחיד לעמודי המשנה (משימות, זימונים, הודעות, הגדרות) */
 export const PAGE_CONTAINER = "md:max-w-[760px] md:mx-auto";
+
+// ── Ad ──────────────────────────────────────────────────────────────────────
+
+/**
+ * שטח פרסום - באנר לרוחב בתחתית העמודים הראשיים בלבד
+ * (פרופיל אישי, זימונים, משימות, לומדות, פניות, הודעות).
+ * נמוך בכוונה כדי שלא יתחרה בתוכן העמוד.
+ */
+export function AdBanner({
+  className = "",
+}: {
+  className?: string;
+}) {
+  return (
+    <aside
+      aria-label="פרסומת"
+      className={`mt-10 w-full rounded-[10px] overflow-hidden border border-[rgba(0,143,240,0.2)] ${className}`}
+      style={{
+        background:
+          "linear-gradient(90deg, rgba(var(--brand-rgb, 0,143,240),0.14) 0%, rgba(var(--brand-rgb, 0,143,240),0.05) 55%, rgba(105,198,0,0.10) 100%)",
+      }}
+    >
+      <div className="flex items-center gap-3 px-4 py-3.5 sm:px-5">
+        <span className="hidden sm:flex w-10 h-10 rounded-full bg-[rgba(0,143,240,0.12)] items-center justify-center shrink-0">
+          <Megaphone size={18} className="text-[#008ff0]" />
+        </span>
+        <div className="min-w-0">
+          <span className="block text-[#171c23] text-[11px] opacity-50 mb-0.5">
+            פרסומת
+          </span>
+          <p className="font-bold text-[#171c23] text-[16px] leading-tight truncate">
+            מועדון ההטבות למתגייסים
+          </p>
+          <p className="text-[#171c23] text-[13px] opacity-70 leading-tight">
+            הנחות ומבצעים בלעדיים לקראת הגיוס
+          </p>
+        </div>
+      </div>
+    </aside>
+  );
+}
 
 // ── Form fields ─────────────────────────────────────────────────────────────
 

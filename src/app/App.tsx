@@ -33,6 +33,7 @@ import {
   themeVars,
 } from './themes';
 import {
+  AdBanner,
   Button,
   Dialog,
   DialogHeader,
@@ -643,9 +644,17 @@ function InfoField({
 }
 
 
-function SubSection({ title }: { title: string }) {
+function SubSection({
+  title,
+  className = "mb-3",
+}: {
+  title: string;
+  className?: string;
+}) {
   return (
-    <p className="font-semibold text-[#171c23] text-[15px] mb-3">
+    <p
+      className={`font-semibold text-[#171c23] text-[15px] ${className}`}
+    >
       {title}
     </p>
   );
@@ -1450,44 +1459,93 @@ function PersonalInfoContent({
   );
 }
 
+/** מוסדות הלימוד לפי שלב - מהאחרון לראשון */
+const SCHOOLS = [
+  {
+    stage: "תיכון",
+    name: `תיכוני לא מקצועי בחו"ל`,
+    years: `התשמ"ט - התשנ"ט`,
+  },
+  {
+    stage: "חטיבת ביניים",
+    name: "חטיבת ביניים רמות",
+    years: `התשמ"ו - התשמ"ח`,
+  },
+  {
+    stage: "יסודי",
+    name: "בית ספר יסודי הדקל",
+    years: `התש"ם - התשמ"ה`,
+  },
+];
+
+/** בגרויות - מקצוע, יחידות לימוד, וסימון מקצוע הרחבה (לא חובה) */
+const BAGRUT: {
+  subject: string;
+  units: number;
+  extension?: boolean;
+}[] = [
+  { subject: "אנגלית", units: 5 },
+  { subject: "מתמטיקה", units: 4 },
+  { subject: "לשון והבעה", units: 2 },
+  { subject: "ספרות", units: 2 },
+  { subject: `תנ"ך`, units: 2 },
+  { subject: "היסטוריה", units: 2 },
+  { subject: "אזרחות", units: 2 },
+  { subject: "תורת החשמל", units: 5 },
+  { subject: "אמנות", units: 5, extension: true },
+  { subject: "גיאוגרפיה", units: 5 },
+];
+
 function EducationContent() {
   return (
-    // בדסקטופ: תיכון ובגרויות זה לצד זה עם קו מפריד
+    // בדסקטופ: מוסדות הלימוד ובגרויות זה לצד זה עם קו מפריד
     <div className="p-5 grid md:grid-cols-2 gap-5 md:gap-0">
-      <div className="md:pl-5 md:border-l md:border-[rgba(23,28,35,0.08)]">
-        <SubSection title="תיכון" />
-        <div className="flex flex-wrap gap-5 justify-start">
-          <InfoField
-            label="שנת לימודים"
-            value={`התשמ"ט - התשנ"ט`}
-          />
-          <InfoField
-            label="שם המוסד"
-            value={`תיכוני לא מקצועי בחו"ל`}
-          />
-        </div>
+      <div className="md:pl-5 md:border-l md:border-[rgba(23,28,35,0.08)] flex flex-col gap-4">
+        {SCHOOLS.map(({ stage, name, years }) => (
+          <div key={stage}>
+            <SubSection title={stage} className="mb-1" />
+            {/* רוחב קבוע לעמודת המוסד - שנות הלימוד מיושרות בין השלבים */}
+            <div className="flex flex-wrap gap-x-5 gap-y-3 justify-start sm:grid sm:grid-cols-[220px_minmax(0,1fr)]">
+              <InfoField label="שם המוסד" value={name} />
+              <InfoField label="שנת לימודים" value={years} />
+            </div>
+          </div>
+        ))}
       </div>
-      <div className="md:pr-5">
+      {/* במובייל הבגרויות יורדות לטור נפרד - קו מפריד בין שני החלקים */}
+      <div className="md:pr-5 pt-5 border-t border-[rgba(23,28,35,0.05)] md:pt-0 md:border-t-0">
         <SubSection title="בגרויות" />
         <div className="flex flex-wrap gap-2">
-          {[
-            { subject: "תורת החשמל", units: 5 },
-            { subject: "אמנות", units: 5 },
-            { subject: "גיאוגרפיה", units: 5 },
-          ].map(({ subject, units }) => (
+          {BAGRUT.map(({ subject, units, extension }) => (
             <div
               key={subject}
-              className="flex items-center gap-1.5 bg-white border border-[rgba(0,143,240,0.35)] rounded-full px-3.5 py-1.5"
+              className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 ${
+                extension
+                  ? "bg-[rgba(105,198,0,0.1)] border border-[rgba(105,198,0,0.45)]"
+                  : "bg-white border border-[rgba(0,143,240,0.35)]"
+              }`}
             >
               <span className="text-[#171c23] text-[14px] font-semibold whitespace-nowrap">
                 {subject}
               </span>
-              <span className="text-[#008ff0] text-[13px] font-bold whitespace-nowrap">
+              <span
+                className={`text-[13px] font-bold whitespace-nowrap ${extension ? "text-[#4e9400]" : "text-[#008ff0]"}`}
+              >
                 · {units} יח"ל
               </span>
+              {/* מקצוע הרחבה - נבדל מהמקצועות שהם חובה */}
+              {extension && (
+                <span className="text-[#4e9400] text-[11px] font-semibold whitespace-nowrap bg-[rgba(105,198,0,0.16)] rounded-full px-1.5 py-0.5">
+                  הרחבה
+                </span>
+              )}
             </div>
           ))}
         </div>
+        <p className="text-[#171c23] text-[12px] opacity-50 mt-3">
+          מקצועות בירוק הם מקצועות הרחבה, שאר המקצועות הם מקצועות
+          חובה
+        </p>
       </div>
     </div>
   );
@@ -1865,6 +1923,8 @@ function PersonalSection() {
           onClose={() => setCompanionForm(null)}
         />
       )}
+
+      <AdBanner />
     </section>
   );
 }

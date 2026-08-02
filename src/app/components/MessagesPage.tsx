@@ -14,7 +14,7 @@ import {
 import {
   SectionHeading,
 } from "./TasksAppointmentsPage";
-import { Button, PAGE_CONTAINER } from "./primitives";
+import { AdBanner, Button, PAGE_CONTAINER } from "./primitives";
 
 // ── Data ────────────────────────────────────────────────────────────────────
 
@@ -560,6 +560,8 @@ export default function MessagesPage({
             ))}
           </div>
         )}
+
+        <AdBanner />
       </div>
     </section>
   );

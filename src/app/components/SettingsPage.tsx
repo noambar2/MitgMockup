@@ -134,10 +134,15 @@ function ThemePicker({
                     : "border-[rgba(23,28,35,0.12)] hover:border-[rgba(0,143,240,0.2)]"
                 }`}
               >
-                {/* תצוגה מקדימה של הערכה */}
+                {/* תצוגה מקדימה של הערכה - בערכה עם כרטיסים כהים
+                    חצי העיגול מראה את צבע הכרטיס */}
                 <span
                   className="w-8 h-8 rounded-full shrink-0 border border-[rgba(23,28,35,0.08)]"
-                  style={{ background: t.navGradient }}
+                  style={{
+                    background: t.surface
+                      ? `linear-gradient(135deg, ${t.surface} 0 50%, ${t.brand} 50% 100%)`
+                      : t.navGradient,
+                  }}
                 />
                 <span className="text-[#171c23] text-[14px] font-semibold">
                   {t.name}

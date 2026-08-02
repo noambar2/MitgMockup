@@ -7,6 +7,7 @@ import {
   FileText,
 } from "lucide-react";
 import {
+  AdBanner,
   Button,
   StatusBadge,
   ProgressBar,
@@ -562,6 +563,8 @@ function LearningsIntro({ onContinue }: { onContinue: () => void }) {
             </Button>
           </div>
         </div>
+
+        <AdBanner />
       </div>
     </section>
   );
@@ -945,6 +948,9 @@ export default function LearningsPage() {
           />
         ))}
       </div>
+
+      {/* רק בעמוד הלומדות הראשי - לא בתוך לומדה, נושא או מבחן */}
+      <AdBanner />
     </section>
   );
 }

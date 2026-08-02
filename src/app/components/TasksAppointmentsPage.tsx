@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useState, type ReactNode } from "react";
 import {
   ClipboardList,
   Clock,
@@ -23,6 +23,7 @@ import { he } from "date-fns/locale";
 import type { DateRange } from "react-day-picker";
 import { Calendar } from "./ui/calendar";
 import {
+  AdBanner,
   Button,
   Dialog,
   DialogHeader,
@@ -38,6 +39,8 @@ interface Task {
   id: string;
   name: string;
   timeLeft: string;
+  /** תחילת התוכן - מוצג בכרטיס כתצוגה מקדימה של שתי שורות */
+  preview: string;
 }
 
 const tasks: Task[] = [
@@ -45,6 +48,8 @@ const tasks: Task[] = [
     id: "hobbies",
     name: "שאלון תחביבים",
     timeLeft: "נותרו 3 ימים למילוי",
+    preview:
+      "בשאלון זה הנך מתבקש/ת לתאר את עצמך ותחומים מסוימים בחייך. השאלון נועד לסייע לגורמי המיון והשיבוץ בצבא לכוון אותך לתפקידים שיתאימו, עד כמה שניתן, לכישוריך ולתחומי העניין שלך.",
   },
 ];
 
@@ -56,6 +61,7 @@ interface DocumentItem {
 const documentsTask = {
   id: "documents",
   name: "השלמת מסמכים",
+  timeLeft: "נותרו 12 ימים להשלמה",
   description:
     "לא מצאנו מספר מסמכים המקושרים לשאלון רפואי שלך. אנא וודאו שכל המסמכים עודכנו במערכת. סמנו את המסמכים שכבר הועלו:",
   documents: [
@@ -256,6 +262,48 @@ export function SectionHeading({
 
 // ── Task card ────────────────────────────────────────────────────────────────
 
+/**
+ * גוף הכרטיס - אותו סדר בשתי המשימות:
+ * שם המשימה + הזמן שנותר באותה שורה, מתחתיהם ההתקדמות (אם יש),
+ * ובסוף התצוגה המקדימה - כך שפתיחה וסגירה לא מזיזות את השורות שמעל.
+ */
+function TaskCardText({
+  name,
+  timeLeft,
+  progress,
+  preview,
+  expanded,
+}: {
+  name: string;
+  timeLeft: string;
+  progress?: ReactNode;
+  preview: string;
+  expanded?: boolean;
+}) {
+  return (
+    <div className="flex flex-col items-start gap-1 min-w-0 w-full">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <h3 className="font-bold text-[#171c23] text-[18px]">
+          {name}
+        </h3>
+        <span className="flex items-center gap-1.5 text-[13px] font-semibold text-[#e07000]">
+          <Clock size={13} className="shrink-0" />
+          {timeLeft}
+        </span>
+      </div>
+      {progress}
+      {/* העטיפה נדרשת כי line-clamp לא שורד כשהפסקה היא פריט פלקס */}
+      <div className="w-full">
+        <p
+          className={`text-[#171c23] text-[13px] opacity-60 leading-snug ${expanded ? "" : "line-clamp-2"}`}
+        >
+          {preview}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function TaskCard({
   task,
   onClick,
@@ -266,24 +314,21 @@ function TaskCard({
   return (
     <button
       onClick={onClick}
-      className="group bg-white rounded-[10px] p-5 flex items-center justify-between gap-4 text-right w-full transition-all duration-200 cursor-pointer hover:[box-shadow:0_0_20px_0_rgba(0,143,240,0.25)] border border-transparent hover:border-[rgba(0,143,240,0.2)]"
+      className="group bg-white rounded-[10px] p-5 flex items-center justify-between gap-3 sm:gap-4 text-right w-full transition-all duration-200 cursor-pointer hover:[box-shadow:0_0_20px_0_rgba(0,143,240,0.25)] border border-transparent hover:border-[rgba(0,143,240,0.2)]"
     >
-      <div className="flex items-center gap-3 min-w-0">
+      <div className="flex items-center gap-3 min-w-0 w-full">
         <div className="bg-[rgba(0,143,240,0.1)] w-10 h-10 rounded-full flex items-center justify-center shrink-0">
           <ClipboardList size={18} className="text-[#008ff0]" />
         </div>
-        <div className="flex flex-col items-start gap-1 min-w-0">
-          <h3 className="font-bold text-[#171c23] text-[18px] truncate">
-            {task.name}
-          </h3>
-          <span className="flex items-center gap-1.5 text-[13px] font-semibold text-[#e07000]">
-            <Clock size={13} className="shrink-0" />
-            {task.timeLeft}
-          </span>
-        </div>
+        <TaskCardText
+          name={task.name}
+          timeLeft={task.timeLeft}
+          preview={task.preview}
+        />
       </div>
+      {/* במובייל רק החץ, כמו באקורדיון הפרטים האישיים */}
       <span className="flex items-center gap-1 text-[#008ff0] text-[14px] font-semibold whitespace-nowrap shrink-0">
-        למילוי המשימה
+        <span className="hidden sm:inline">למילוי המשימה</span>
         <ChevronLeft
           size={16}
           className="transition-transform duration-200 group-hover:-translate-x-0.5"
@@ -315,32 +360,37 @@ function DocumentsTaskCard() {
       {/* Header row - toggles the checklist */}
       <button
         onClick={() => setOpen(!open)}
-        className="group p-5 flex items-center justify-between gap-4 text-right w-full cursor-pointer"
+        className="group p-5 flex items-center justify-between gap-3 sm:gap-4 text-right w-full cursor-pointer"
       >
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-3 min-w-0 w-full">
           <div className="bg-[rgba(0,143,240,0.1)] w-10 h-10 rounded-full flex items-center justify-center shrink-0">
             <FileText size={18} className="text-[#008ff0]" />
           </div>
-          <div className="flex flex-col items-start gap-1 min-w-0">
-            <h3 className="font-bold text-[#171c23] text-[18px] truncate">
-              {documentsTask.name}
-            </h3>
-            {allUploaded ? (
-              <span className="flex items-center gap-1.5 text-[13px] font-semibold text-[#4e9400]">
-                <Check size={13} className="shrink-0" />
-                כל המסמכים סומנו כהועלו
-              </span>
-            ) : (
-              <span className="flex items-center gap-1.5 text-[13px] font-semibold text-[#e07000]">
-                <Clock size={13} className="shrink-0" />
-                {total - uploadedCount} מתוך {total} מסמכים
-                ממתינים להעלאה
-              </span>
-            )}
-          </div>
+          <TaskCardText
+            name={documentsTask.name}
+            timeLeft={documentsTask.timeLeft}
+            preview={documentsTask.description}
+            expanded={open}
+            progress={
+              allUploaded ? (
+                <span className="flex items-center gap-1.5 text-[13px] font-semibold text-[#4e9400]">
+                  <Check size={13} className="shrink-0" />
+                  כל המסמכים סומנו כהועלו
+                </span>
+              ) : (
+                <span className="text-[#171c23] text-[13px] font-semibold opacity-60">
+                  {total - uploadedCount} מתוך {total} מסמכים
+                  ממתינים להעלאה
+                </span>
+              )
+            }
+          />
         </div>
+        {/* במובייל רק החץ, כמו באקורדיון הפרטים האישיים */}
         <span className="flex items-center gap-1 text-[#008ff0] text-[14px] font-semibold whitespace-nowrap shrink-0">
-          {open ? "סגירה" : "לפרטי המשימה"}
+          <span className="hidden sm:inline">
+            {open ? "סגירה" : "לפרטי המשימה"}
+          </span>
           <ChevronDown
             size={16}
             className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
@@ -351,10 +401,7 @@ function DocumentsTaskCard() {
       {/* Expanded checklist */}
       {open && (
         <div className="px-5 pb-5 border-t border-[rgba(23,28,35,0.05)]">
-          <p className="text-[#171c23] text-[14px] text-right leading-relaxed opacity-70 pt-4 mb-4">
-            {documentsTask.description}
-          </p>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 pt-4">
             {documentsTask.documents.map((doc) => {
               const isUploaded = !!uploaded[doc.id];
               return (
@@ -862,6 +909,8 @@ export default function TasksAppointmentsPage({
         ))}
         <DocumentsTaskCard />
       </div>
+
+      <AdBanner />
 
       {/* Upcoming appointments only, 3 nearest */}
       {/* <SectionHeading title="זימונים" />

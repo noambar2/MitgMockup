@@ -19,6 +19,7 @@ import {
   FIELD_CLASS,
   PAGE_CONTAINER,
   IconCircle,
+  AdBanner,
 } from "./primitives";
 import { SectionHeading } from "./TasksAppointmentsPage";
 
@@ -510,6 +511,8 @@ export default function InquiriesPage({
             ))}
           </div>
         )}
+
+        <AdBanner />
       </div>
 
       {createOpen && (

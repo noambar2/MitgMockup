@@ -4,7 +4,7 @@ import {
   upcomingAppointments,
   pastAppointments,
 } from "./TasksAppointmentsPage";
-import { PAGE_CONTAINER } from "./primitives";
+import { AdBanner, PAGE_CONTAINER } from "./primitives";
 
 export default function MyAppointmentsPage() {
   return (
@@ -43,6 +43,8 @@ export default function MyAppointmentsPage() {
           />
         ))}
       </div>
+
+      <AdBanner />
       </div>
     </section>
   );
