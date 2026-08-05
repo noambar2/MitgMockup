@@ -34,6 +34,26 @@ export interface Theme {
   surface?: string;
   /** משטח משני בתוך כרטיס כהה (כפתור ghost, פאנל פנימי) */
   surfaceInset?: string;
+  /**
+   * ערכה צבעונית: גוון אקסנט שונה לכל עמוד (ראו accentFor).
+   * המפתחות הם מזהי העמודים באפליקציה.
+   */
+  accents?: Record<string, PageAccent>;
+  /** סגנון "ילדותי" - פינות עגולות יותר וצללים צבעוניים */
+  playful?: boolean;
+}
+
+/** גוון אקסנט של עמוד יחיד - מחליף את צבעי המותג והרקע */
+export interface PageAccent {
+  brand: string;
+  brandHover: string;
+  brandRgb: string;
+  blobA: string;
+  /** הצבע המשני של העמוד - כתמי רקע, נקודת הכותרת וגרדיאנטים */
+  blobB: string;
+  navGradient: string;
+  /** רקע העמוד בגוון פסטל של האקסנט */
+  pageBg?: string;
 }
 
 export const THEMES: Theme[] = [
@@ -145,12 +165,135 @@ export const THEMES: Theme[] = [
       "linear-gradient(-11.751deg, rgb(92,32,58) 6%, rgb(166,44,88) 48%, rgb(214,59,115) 102%, rgb(240,124,166) 113%)",
     swatch: "#d63b73",
   },
+  {
+    // ערכה צבעונית ומשוחררת - לכל עמוד גוון משלו
+    id: "playful",
+    name: "צבעוני",
+    dark: false,
+    playful: true,
+    brand: "#7c5cf5",
+    brandHover: "#6a49e8",
+    brandRgb: "124,92,245",
+    pageBg: "#f6f2ff",
+    blobA: "#7c5cf5",
+    blobB: "#ffb02e",
+    blobOpacity: 3.2,
+    navGradient: navGradient("#7c5cf5"),
+    swatch: "#7c5cf5",
+    accents: {
+      profile: accent(
+        "#7c5cf5",
+        "#6a49e8",
+        "124,92,245",
+        "#ff8fc7",
+        "#f3edff",
+      ),
+      appointments: accent(
+        "#ff7a1a",
+        "#ec6a0c",
+        "255,122,26",
+        "#ffcf3f",
+        "#fff3e6",
+      ),
+      tasks: accent(
+        "#00b3c7",
+        "#009cad",
+        "0,179,199",
+        "#69c600",
+        "#e8fafd",
+      ),
+      hobbiesForm: accent(
+        "#00b3c7",
+        "#009cad",
+        "0,179,199",
+        "#69c600",
+        "#e8fafd",
+      ),
+      learnings: accent(
+        "#2eb872",
+        "#25a463",
+        "46,184,114",
+        "#ffcf3f",
+        "#eafaf1",
+      ),
+      inquiries: accent(
+        "#e6398b",
+        "#d02c7c",
+        "230,57,139",
+        "#8b5cf6",
+        "#fdedf5",
+      ),
+      messages: accent(
+        "#2f80ed",
+        "#2570d4",
+        "47,128,237",
+        "#00d0c0",
+        "#eaf2ff",
+      ),
+      settings: accent(
+        "#8b5cf6",
+        "#7a4bea",
+        "139,92,246",
+        "#ff8fc7",
+        "#f5f0ff",
+      ),
+    },
+  },
 ];
+
+/** גרדיאנט סרגל ניווט בגוון נתון - באותה שפה של שאר הערכות */
+function navGradient(color: string) {
+  return `linear-gradient(-11.751deg, ${mix(color, 0.45)} 6%, ${mix(color, 0.8)} 48%, ${color} 102%, ${mix(color, 1.35)} 113%)`;
+}
+
+/** מכהה/מבהיר צבע הקס ביחס נתון (1 = ללא שינוי) */
+function mix(hex: string, ratio: number) {
+  const n = parseInt(hex.slice(1), 16);
+  const ch = [n >> 16, (n >> 8) & 255, n & 255].map((c) =>
+    Math.max(0, Math.min(255, Math.round(c * ratio))),
+  );
+  return `rgb(${ch.join(",")})`;
+}
+
+function accent(
+  brand: string,
+  brandHover: string,
+  brandRgb: string,
+  blobB: string,
+  pageBg: string,
+): PageAccent {
+  return {
+    brand,
+    brandHover,
+    brandRgb,
+    blobA: brand,
+    blobB,
+    pageBg,
+    navGradient: navGradient(brand),
+  };
+}
 
 export const DEFAULT_THEME = THEMES[0];
 
 export function getTheme(id: string): Theme {
   return THEMES.find((t) => t.id === id) ?? DEFAULT_THEME;
+}
+
+/**
+ * הגוון של העמוד הנוכחי - בערכה צבעונית לכל עמוד גוון משלו,
+ * ובשאר הערכות מוחזרים צבעי הערכה עצמה.
+ */
+export function accentFor(theme: Theme, page: string): PageAccent {
+  return (
+    theme.accents?.[page] ?? {
+      brand: theme.brand,
+      brandHover: theme.brandHover,
+      brandRgb: theme.brandRgb,
+      blobA: theme.blobA,
+      blobB: theme.blobB,
+      navGradient: theme.navGradient,
+    }
+  );
 }
 
 /** גרדיאנט הרקע של העמוד - כתמים מטושטשים בצבעי הערכה */
@@ -159,8 +302,11 @@ function heroGradientSvg(
   blueOffsetX: number,
   blobScale: number,
   blobOpacityScale: number,
+  accent?: PageAccent,
 ) {
   const o = blobOpacityScale * theme.blobOpacity;
+  const blobA = accent?.blobA ?? theme.blobA;
+  const blobB = accent?.blobB ?? theme.blobB;
   return `
 <svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
   <defs>
@@ -177,9 +323,9 @@ function heroGradientSvg(
     </linearGradient>
   </defs>
   <g filter="url(#blob-blur)">
-    <ellipse cx="380" cy="530" rx="${250 * blobScale}" ry="${200 * blobScale}" fill="${theme.blobA}" opacity="${0.16 * o}" />
-    <ellipse cx="${1180 + blueOffsetX}" cy="340" rx="${340 * blobScale}" ry="${270 * blobScale}" fill="${theme.blobA}" opacity="${0.18 * o}" />
-    <ellipse cx="600" cy="750" rx="${150 * blobScale}" ry="${120 * blobScale}" fill="${theme.blobB}" opacity="${0.2 * o}" />
+    <ellipse cx="380" cy="530" rx="${250 * blobScale}" ry="${200 * blobScale}" fill="${blobA}" opacity="${0.16 * o}" />
+    <ellipse cx="${1180 + blueOffsetX}" cy="340" rx="${340 * blobScale}" ry="${270 * blobScale}" fill="${blobA}" opacity="${0.18 * o}" />
+    <ellipse cx="600" cy="750" rx="${150 * blobScale}" ry="${120 * blobScale}" fill="${blobB}" opacity="${0.2 * o}" />
   </g>
   <g stroke-width="140" fill="none">
     <circle cx="130" cy="520" r="260" stroke="url(#line-fade-bottom)" />
@@ -193,18 +339,30 @@ export function heroGradientBg(
   blueOffsetX: number,
   blobScale: number,
   blobOpacityScale: number,
+  accent?: PageAccent,
 ) {
   return `url("data:image/svg+xml,${encodeURIComponent(
-    heroGradientSvg(theme, blueOffsetX, blobScale, blobOpacityScale),
+    heroGradientSvg(
+      theme,
+      blueOffsetX,
+      blobScale,
+      blobOpacityScale,
+      accent,
+    ),
   )}")`;
 }
 
 /** משתני ה-CSS שהערכה מזריקה לשורש */
-export function themeVars(theme: Theme): React.CSSProperties {
+export function themeVars(
+  theme: Theme,
+  accent?: PageAccent,
+): React.CSSProperties {
   return {
-    "--brand": theme.brand,
-    "--brand-hover": theme.brandHover,
-    "--brand-rgb": theme.brandRgb,
+    "--brand": accent?.brand ?? theme.brand,
+    "--brand-hover": accent?.brandHover ?? theme.brandHover,
+    "--brand-rgb": accent?.brandRgb ?? theme.brandRgb,
+    // הצבע המשני - בשימוש הערכה הצבעונית בלבד
+    "--accent-2": accent?.blobB ?? theme.blobB,
     ...(theme.surface ? { "--surface": theme.surface } : {}),
     ...(theme.surfaceInset
       ? { "--surface-inset": theme.surfaceInset }

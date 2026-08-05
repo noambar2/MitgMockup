@@ -6,6 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown, Megaphone, X } from "lucide-react";
 import { useIsMobile } from "./ui/use-mobile";
 
@@ -231,6 +232,37 @@ export function ProgressRing({
 
 /** רוחב תוכן אחיד לעמודי המשנה (משימות, זימונים, הודעות, הגדרות) */
 export const PAGE_CONTAINER = "md:max-w-[760px] md:mx-auto";
+
+/** מתג בחירת פריסה - ליד כותרת של מקטע שיש לו שתי אפשרויות תצוגה */
+export function LayoutSwitch({
+  value,
+  onChange,
+  labels,
+}: {
+  value: 1 | 2;
+  onChange: (v: 1 | 2) => void;
+  /** מלל האפשרויות; ברירת המחדל "אופציה 1" / "אופציה 2" */
+  labels?: [string, string];
+}) {
+  return (
+    <div className="inline-flex items-center gap-1 rounded-full bg-[rgba(23,28,35,0.06)] p-1 shrink-0">
+      {([1, 2] as const).map((opt) => (
+        <button
+          key={opt}
+          onClick={() => onChange(opt)}
+          aria-pressed={value === opt}
+          className={`rounded-full px-4 py-1.5 text-[13px] whitespace-nowrap transition-colors ${
+            value === opt
+              ? "bg-white text-[#008ff0] font-semibold shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
+              : "text-[rgba(23,28,35,0.62)] hover:text-[#171c23]"
+          }`}
+        >
+          {labels ? labels[opt - 1] : `אופציה ${opt}`}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 // ── Ad ──────────────────────────────────────────────────────────────────────
 
@@ -536,7 +568,9 @@ export function Dialog({
     </div>
   );
 
-  return (
+  // portal ל-body: אחרת אב עם transform (למשל כרטיס בקרוסלה)
+  // הופך את ה-fixed לממוקם ביחס אליו, והחלון נפתח בתוך הכרטיס
+  return createPortal(
     <DialogCloseContext.Provider value={close}>
       {isMobile ? (
         <div className="fixed inset-0 z-[400]" dir="rtl">
@@ -584,6 +618,8 @@ export function Dialog({
           </div>
         </div>
       )}
-    </DialogCloseContext.Provider>
+    </DialogCloseContext.Provider>,
+    // שורש האפליקציה (ולא body) - שם יושבים משתני ערכת הנושא
+    document.querySelector("[data-app-root]") ?? document.body,
   );
 }

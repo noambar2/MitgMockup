@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import {
   ChevronLeft,
+  ChevronDown,
   BookOpen,
   Play,
   Layers,
@@ -613,6 +614,73 @@ function TopicCard({
   );
 }
 
+/** שאלות נפוצות בתחתית עמוד הלומדה */
+const DAPAR_FAQ: { q: string; a: string }[] = [
+  {
+    q: 'מה זה בעצם ציון הדפ"ר?',
+    a: 'הדפ"ר (דירוג פסיכוטכני ראשוני) הוא ציון בין 10 ל-90 שמחושב ממבחני המיון בצו הראשון. הוא אחד הנתונים שמשמשים את גורמי השיבוץ כדי להתאים בין מועמדים לתפקידים, לצד נתונים נוספים כמו קב"א, פרופיל רפואי וראיון אישי.',
+  },
+  {
+    q: "כמה זמן לוקח לסיים את הלומדה?",
+    a: "אין הגבלת זמן. כל נושא מורכב מכמה מבחנים קצרים של 10-15 דקות, ואפשר לעצור באמצע ולחזור בכל שלב - ההתקדמות נשמרת אוטומטית.",
+  },
+  {
+    q: "אפשר לחזור על מבחן שכבר עשיתי?",
+    a: "כן. אחרי סיום מבחן נפתח מסך סיכום עם התשובות הנכונות והשגויות, וממנו אפשר להתחיל ניסיון חוזר. הציון האחרון הוא זה שמוצג בכרטיס המבחן.",
+  },
+  {
+    q: 'האם התרגול בלומדה משפיע על ציון הדפ"ר שלי?',
+    a: "התרגול עצמו לא נכנס לחישוב הציון ולא נשלח לגורמי המיון. המטרה שלו היא להכיר את סוגי השאלות ואת מבנה המבחן, כדי להגיע ליום המבחנים רגועים ומוכנים.",
+  },
+  {
+    q: "אפשר לתרגל בשפה אחרת?",
+    a: "כן. בראש העמוד אפשר לבחור שפה - עברית, אנגלית, רוסית או ערבית. השפה משפיעה על ניסוח השאלות בלומדה בלבד, ואפשר להחליף אותה בכל שלב.",
+  },
+];
+
+/** אקורדיון שאלות ותשובות - פריט אחד פתוח בכל רגע */
+function Faq({ items }: { items: { q: string; a: string }[] }) {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  return (
+    <div className="mt-10">
+      <h2 className="font-bold text-[#122736] text-[22px] sm:text-[24px] tracking-tight text-right mb-4">
+        שאלות נפוצות<span className="text-[#69c600]">.</span>
+      </h2>
+      <div className="flex flex-col gap-3">
+        {items.map((item, i) => {
+          const isOpen = openIndex === i;
+          return (
+            <div
+              key={item.q}
+              className={`${GLASS_CARD} rounded-[10px] overflow-hidden`}
+            >
+              <button
+                onClick={() => setOpenIndex(isOpen ? null : i)}
+                aria-expanded={isOpen}
+                className="w-full flex items-center justify-between gap-3 px-5 py-4 text-right"
+              >
+                <span className="font-semibold text-[#171c23] text-[16px] min-w-0">
+                  {item.q}
+                </span>
+                <ChevronDown
+                  size={20}
+                  className={`shrink-0 text-[#171c23] transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+              {isOpen && (
+                <p className="px-5 pb-4 pt-1 text-[#171c23] text-[14px] leading-relaxed text-right opacity-70">
+                  {item.a}
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function DaparLearningPage({
   onBackToList,
   onOpenTopic,
@@ -687,6 +755,8 @@ function DaparLearningPage({
           />
         ))}
       </div>
+
+      <Faq items={DAPAR_FAQ} />
     </section>
   );
 }
@@ -856,8 +926,15 @@ type View =
       mode: "run" | "summary";
     };
 
-export default function LearningsPage() {
-  const [view, setView] = useState<View>({ kind: "intro" });
+export default function LearningsPage({
+  initialView = "intro",
+}: {
+  /** "dapar" - כניסה ישירה ללומדה עצמה (למשל מכרטיס המשימה) */
+  initialView?: "intro" | "dapar";
+}) {
+  const [view, setView] = useState<View>(
+    initialView === "dapar" ? { kind: "dapar" } : { kind: "intro" },
+  );
 
   if (view.kind === "intro")
     return (

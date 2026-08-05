@@ -28,6 +28,7 @@ import { GLASS_CARD } from './components/ui/utils';
 import {
   THEMES,
   DEFAULT_THEME,
+  accentFor,
   getTheme,
   heroGradientBg,
   themeVars,
@@ -35,6 +36,7 @@ import {
 import {
   AdBanner,
   Button,
+  LayoutSwitch,
   Dialog,
   DialogHeader,
   IconCircle,
@@ -571,51 +573,51 @@ function EnlistmentCard({
     >
       {/* ימים לגיוס + תאריך משוער */}
       <div className="flex items-stretch min-w-0 md:flex-[2]">
-        <div className="flex-1 min-w-0 p-3 sm:p-5 flex flex-col items-center justify-between gap-2">
-          <p className="font-bold text-[#171c23] text-[15px] sm:text-[16px] text-center w-full">
+        <div className="flex-1 min-w-0 px-3 py-3 sm:px-4 flex flex-col items-center justify-between gap-1">
+          <p className="font-bold text-[#171c23] text-[14px] sm:text-[15px] text-center w-full">
             ימים לגיוס
           </p>
-          <p className="font-black text-[#008ff0] text-[44px] sm:text-[52px] leading-none tracking-tight">
+          <p className="font-black text-[#008ff0] text-[30px] sm:text-[34px] leading-none tracking-tight">
             {days}
           </p>
           <p
             aria-hidden
-            className="invisible text-[13px] sm:text-[14px] w-full"
+            className="invisible text-[12px] sm:text-[13px] w-full"
           >
             &nbsp;
           </p>
         </div>
 
         {/* קו מפריד עדין */}
-        <div className="w-px bg-[rgba(23,28,35,0.08)] my-4 sm:my-6 shrink-0" />
+        <div className="w-px bg-[rgba(23,28,35,0.08)] my-3 sm:my-4 shrink-0" />
 
-        <div className="flex-1 min-w-0 p-3 sm:p-5 flex flex-col items-center justify-between gap-2">
-          <p className="font-bold text-[#171c23] text-[15px] sm:text-[16px] text-center w-full">
+        <div className="flex-1 min-w-0 px-3 py-3 sm:px-4 flex flex-col items-center justify-between gap-1">
+          <p className="font-bold text-[#171c23] text-[14px] sm:text-[15px] text-center w-full">
             תאריך גיוס משוער
           </p>
-          <p className="font-black text-[#008ff0] text-[34px] sm:text-[28px] leading-none tracking-tight whitespace-nowrap">
+          <p className="font-black text-[#008ff0] text-[24px] sm:text-[22px] leading-none tracking-tight whitespace-nowrap">
             {date}
           </p>
-          <p className="text-[#171c23] text-[13px] sm:text-[15px] opacity-70 whitespace-nowrap">
+          <p className="text-[#171c23] text-[12px] sm:text-[13px] opacity-70 whitespace-nowrap">
             {hebrewDate}
           </p>
         </div>
       </div>
 
       {/* קו מפריד: אופקי במובייל, אנכי בדסקטופ */}
-      <div className="h-px w-auto mx-4 md:h-auto md:w-px md:mx-0 md:my-6 bg-[rgba(23,28,35,0.08)] shrink-0" />
+      <div className="h-px w-auto mx-4 md:h-auto md:w-px md:mx-0 md:my-4 bg-[rgba(23,28,35,0.08)] shrink-0" />
 
       {/* שיבוץ חזוי */}
-      <div className="min-w-0 md:flex-[1] p-3 sm:p-5 flex flex-col items-center justify-between gap-2">
-        <p className="font-bold text-[#171c23] text-[15px] sm:text-[16px] text-center w-full">
+      <div className="min-w-0 md:flex-[1] px-3 py-3 sm:px-4 flex flex-col items-center justify-between gap-1">
+        <p className="font-bold text-[#171c23] text-[14px] sm:text-[15px] text-center w-full">
           שיבוץ חזוי
         </p>
-        <p className="font-black text-[#008ff0] text-[34px] sm:text-[28px] leading-none tracking-tight text-center">
+        <p className="font-black text-[#008ff0] text-[24px] sm:text-[22px] leading-none tracking-tight text-center">
           {assignment}
         </p>
         <p
           aria-hidden
-          className="invisible text-[13px] sm:text-[14px] w-full"
+          className="invisible text-[12px] sm:text-[13px] w-full"
         >
           &nbsp;
         </p>
@@ -1001,34 +1003,6 @@ function MaahCard() {
   );
 }
 
-/** מתג בחירת פריסה - ליד כותרת העמוד */
-function LayoutSwitch({
-  value,
-  onChange,
-}: {
-  value: 1 | 2;
-  onChange: (v: 1 | 2) => void;
-}) {
-  return (
-    <div className="inline-flex items-center gap-1 rounded-full bg-[rgba(23,28,35,0.06)] p-1 shrink-0">
-      {([1, 2] as const).map((opt) => (
-        <button
-          key={opt}
-          onClick={() => onChange(opt)}
-          aria-pressed={value === opt}
-          className={`rounded-full px-4 py-1.5 text-[13px] whitespace-nowrap transition-colors ${
-            value === opt
-              ? "bg-white text-[#008ff0] font-semibold shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
-              : "text-[rgba(23,28,35,0.62)] hover:text-[#171c23]"
-          }`}
-        >
-          אופציה {opt}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 /**
  * תוכן ההסבר של ציון - משותף לכל חלונות המידע הנוסף
  * (טולטיפ בדסקטופ, בוטום-שיט במובייל ופאנל הטאבים באופציה 2).
@@ -1369,7 +1343,7 @@ function QualitySection() {
           <p className="text-[#171c23] text-[14px] opacity-50 text-right">
             שימו לב, נתונים אלו אינם בהכרח סופיים ועשויים להשתנות
             עד מועד הגיוס
-            {layout === 2 && (
+            {layout === 1 && (
               <span className="md:hidden">
                 {" · "}לחצ/י על ציון למידע נוסף
               </span>
@@ -1377,7 +1351,7 @@ function QualitySection() {
           </p>
         </div>
 
-        {layout === 1 ? (
+        {layout === 2 ? (
           /* ציונים (2 שורות) + יום המא"ה בצד, באותו גובה */
           <div className="flex flex-col md:flex-row gap-4 items-stretch">
             {/* הציונים תופסים שני שליש מהרוחב - 3 עמודות בשתי שורות */}
@@ -1772,7 +1746,10 @@ const personalSections = [
 ];
 
 function PersonalSection() {
-  const [openKey, setOpenKey] = useState<string | null>(null);
+  // "מידע אישי" פתוח כברירת מחדל; פתיחת סעיף אחר סוגרת את הקודם
+  const [openKey, setOpenKey] = useState<string | null>(
+    "personal",
+  );
 
   // ── נתונים ניתנים לעריכה ──
   const [contact, setContact] =
@@ -1934,9 +1911,15 @@ function PersonalSection() {
 export default function App() {
   const isMobile = useIsMobile();
   const [page, setPage] = useState<Page>("profile");
+  /** מאיפה נכנסים לעמוד הלומדות - מהתפריט (התחלה) או ישירות ללומדה */
+  const [learningsEntry, setLearningsEntry] = useState<
+    "intro" | "dapar"
+  >("intro");
   // ערכת נושא - משנה צבע מותג, רקע וגרדיאנטים (הכותרת העליונה לא משתנה)
   const [themeId, setThemeId] = useState(DEFAULT_THEME.id);
   const theme = getTheme(themeId);
+  // בערכה הצבעונית לכל עמוד גוון אקסנט משלו
+  const accent = accentFor(theme, page);
 
   // מצב ההודעות מוחזק כאן כדי שהבאדג' בפעמון ישקף הודעות שלא נקראו
   const [messageReadIds, setMessageReadIds] = useState<Set<string>>(
@@ -1954,37 +1937,53 @@ export default function App() {
     <div
       dir="rtl"
       lang="he"
+      // יעד ה-portal של החלונות - כאן יושבים משתני ערכת הנושא
+      data-app-root
       style={{
-        ...themeVars(theme),
+        ...themeVars(theme, accent),
         fontFamily: "'Noto Sans Hebrew', sans-serif",
-        backgroundColor: theme.pageBg,
+        backgroundColor: accent.pageBg ?? theme.pageBg,
         backgroundImage: heroGradientBg(
           theme,
           isMobile ? -200 : 0,
           isMobile ? 1 : 1.4,
           isMobile ? 1 : 0.7,
+          accent,
         ),
         backgroundSize: "cover",
         backgroundRepeat: "no-repeat",
         backgroundPosition: "center",
         backgroundAttachment: "fixed",
+        transition: "background-color 300ms ease",
       }}
-      className={`min-h-[100dvh] flex flex-col ${theme.dark ? "dark" : ""} ${theme.surface ? "navy-cards" : ""}`}
+      className={`min-h-[100dvh] flex flex-col ${theme.dark ? "dark" : ""} ${theme.surface ? "navy-cards" : ""} ${theme.playful ? "playful" : ""}`}
     >
       {/* בתוך השאלון הטאב "משימות וזימונים" נשאר מסומן */}
       <Header
         activePage={page === "hobbiesForm" ? "tasks" : page}
-        onNavigate={setPage}
+        onNavigate={(next) => {
+          // כניסה לעמוד הלומדות מהתפריט מתחילה תמיד מההתחלה
+          if (next === "learnings") setLearningsEntry("intro");
+          setPage(next);
+        }}
         unreadCount={unreadMessages}
-        navGradient={theme.navGradient}
+        navGradient={accent.navGradient}
       />
       <main className="flex-1 flex flex-col">
         {page === "learnings" ? (
-          <LearningsPage />
+          <LearningsPage
+            key={learningsEntry}
+            initialView={learningsEntry}
+          />
         ) : page === "tasks" ? (
           <TasksAppointmentsPage
             onViewAllAppointments={() => setPage("appointments")}
             onOpenTask={() => setPage("hobbiesForm")}
+            // כרטיס המשימה של הלומדה פותח את הלומדה עצמה
+            onOpenLearning={() => {
+              setLearningsEntry("dapar");
+              setPage("learnings");
+            }}
           />
         ) : page === "hobbiesForm" ? (
           <HobbiesQuestionnairePage

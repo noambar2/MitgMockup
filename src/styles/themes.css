@@ -200,6 +200,63 @@
   border-color: rgba(255, 255, 255, 0.12);
 }
 
+/* ════════ ערכת "צבעוני" - סגנון רך וילדותי ════════ */
+/*
+  רק הערכה הצבעונית מקבלת את המחלקה הזו; שאר הערכות אינן מושפעות.
+  הגוון עצמו מגיע ממשתני המותג, שמתחלפים לפי העמוד.
+*/
+
+.playful .rounded-\[10px\] {
+  border-radius: 20px;
+}
+.playful .rounded-\[8px\] {
+  border-radius: 14px;
+}
+
+/* כרטיסים - גוון פסטל של העמוד וצל צבעוני במקום לבן וצל אפור */
+.playful .bg-white {
+  background-color: color-mix(in srgb, var(--brand) 6%, #fff);
+  box-shadow: 0 10px 28px
+    rgba(var(--brand-rgb, 0, 143, 240), 0.16);
+}
+
+/* משטח משני בתוך כרטיס (כפתור ghost, פאנל פנימי) */
+.playful .bg-\[\#f5f5f7\] {
+  background-color: color-mix(in srgb, var(--brand) 12%, #fff);
+}
+
+/* הכותרת העליונה נשארת נייבי, כמו בכל שאר הערכות */
+
+/* כפתורים ראשיים - גרדיאנט מהגוון הראשי לגוון המשני */
+.playful .bg-\[\#008ff0\] {
+  background-image: linear-gradient(
+    135deg,
+    var(--brand) 0%,
+    color-mix(in srgb, var(--accent-2) 55%, var(--brand)) 100%
+  );
+}
+
+/* הנקודה שבסוף כל כותרת - בצבע המשני של העמוד */
+.playful .text-\[\#69c600\] {
+  color: var(--accent-2);
+}
+
+/* אייקונים ותגיות בגוון המותג - מעט יותר רוויים */
+.playful .bg-\[rgba\(0\,143\,240\,0\.1\)\],
+.playful .bg-\[rgba\(0\,143\,240\,0\.12\)\] {
+  background-color: rgba(var(--brand-rgb, 0, 143, 240), 0.18);
+}
+
+/* המעבר בין גווני העמודים מרוכך */
+.playful .bg-\[\#008ff0\],
+.playful .text-\[\#008ff0\],
+.playful .border-\[\#008ff0\] {
+  transition:
+    background-color 300ms ease,
+    color 300ms ease,
+    border-color 300ms ease;
+}
+
 /* ════════ משטחים כהים ════════ */
 
 .dark .bg-white {
