@@ -1338,7 +1338,7 @@ function QualitySection() {
             <h2 className="font-bold text-[#122736] text-[28px] sm:text-[34px] tracking-tight text-right">
               נתוני איכות<span className="text-[#69c600]">.</span>
             </h2>
-            <LayoutSwitch value={layout} onChange={setLayout} />
+            {/* <LayoutSwitch value={layout} onChange={setLayout} /> */}
           </div>
           <p className="text-[#171c23] text-[14px] opacity-50 text-right">
             שימו לב, נתונים אלו אינם בהכרח סופיים ועשויים להשתנות
