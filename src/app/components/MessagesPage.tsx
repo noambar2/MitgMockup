@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Search,
   Star,
@@ -8,13 +8,22 @@ import {
   ChevronDown,
   ArrowUpDown,
   Inbox,
+  Mail,
+  MailOpen,
   CheckCheck,
+  SlidersHorizontal,
   X,
 } from "lucide-react";
+import { useIsMobile } from "./ui/use-mobile";
 import {
   SectionHeading,
 } from "./TasksAppointmentsPage";
-import { AdBanner, Button, PAGE_CONTAINER } from "./primitives";
+import {
+  AdBanner,
+  Button,
+  Dialog,
+  PAGE_CONTAINER,
+} from "./primitives";
 
 // ── Data ────────────────────────────────────────────────────────────────────
 
@@ -141,6 +150,7 @@ function MessageCard({
   onToggleFavorite,
   onToggleArchive,
   onRead,
+  onToggleRead,
 }: {
   message: Message;
   unread: boolean;
@@ -149,39 +159,88 @@ function MessageCard({
   onToggleFavorite: () => void;
   onToggleArchive: () => void;
   onRead: () => void;
+  onToggleRead: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  /** האם הטקסט באמת נחתך - רק אז יש טעם בכפתור "לקריאת ההודעה המלאה" */
+  const [clipped, setClipped] = useState(false);
+  const textRef = useRef<HTMLParagraphElement>(null);
 
-  const toggleExpand = () => {
-    setExpanded(!expanded);
-    if (!expanded) onRead();
-  };
+  useEffect(() => {
+    const el = textRef.current;
+    // במצב פתוח אין קיצוץ למדוד - שומרים על הערך הקודם
+    if (!el || expanded) return;
+    const check = () =>
+      setClipped(el.scrollHeight > el.clientHeight + 1);
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [expanded, message.content]);
+
+  const toggleExpand = () => setExpanded(!expanded);
+
+  /** פעולות שאינן "קריאה" - שלא יסמנו את ההודעה כנקראה */
+  const withoutRead =
+    (fn: () => void) => (e: React.MouseEvent) => {
+      e.stopPropagation();
+      fn();
+    };
 
   return (
-    <div className="bg-white rounded-[10px] p-5 flex flex-col gap-2">
+    <div
+      // כל לחיצה על הכרטיס (כולל קישור בתוך ההודעה) מסמנת אותה כנקראה
+      onClick={() => unread && onRead()}
+      className="bg-white rounded-[10px] p-5 flex flex-col gap-2"
+    >
       <div className="flex items-start justify-between gap-3">
         <button
           onClick={toggleExpand}
-          className="flex items-center gap-2 min-w-0 text-right"
+          className="flex items-start sm:items-center gap-2 min-w-0 flex-1 text-right"
         >
           {unread && (
-            <span className="w-2 h-2 rounded-full bg-[#008ff0] shrink-0" />
+            <span className="w-2 h-2 rounded-full bg-[#008ff0] shrink-0 mt-2 sm:mt-0" />
           )}
-          <h3
-            className={`text-[#171c23] text-[16px] truncate ${
-              unread ? "font-bold" : "font-semibold opacity-80"
-            }`}
-          >
-            {message.title}
-          </h3>
+          {/* במובייל הכותרת נפרשת על שתי שורות והזמן יורד מתחתיה,
+              כי בשורה אחת עם האייקונים לא נשאר לה מקום */}
+          <span className="min-w-0 flex flex-col items-start gap-0.5">
+            <h3
+              className={`text-[#171c23] text-[16px] leading-snug sm:truncate sm:max-w-full ${
+                unread ? "font-bold" : "font-semibold opacity-80"
+              }`}
+            >
+              {message.title}
+            </h3>
+            <span className="sm:hidden flex items-center gap-1 text-[#171c23] text-[13px] opacity-50 whitespace-nowrap">
+              <Clock size={11} className="shrink-0" />
+              {message.timeAgo}
+            </span>
+          </span>
         </button>
         <div className="flex items-center gap-2 shrink-0">
-          <span className="flex items-center gap-1 text-[#171c23] text-[13px] opacity-50 whitespace-nowrap">
+          <span className="hidden sm:flex items-center gap-1 text-[#171c23] text-[13px] opacity-50 whitespace-nowrap">
             <Clock size={11} className="shrink-0" />
             {message.timeAgo}
           </span>
+          {/* סימון ידני של נקרא/לא נקרא - ליד שאר פעולות הכרטיס */}
           <button
-            onClick={onToggleFavorite}
+            onClick={withoutRead(onToggleRead)}
+            aria-label={unread ? "סימון כנקרא" : "סימון כלא נקרא"}
+            title={unread ? "סימון כנקרא" : "סימון כלא נקרא"}
+            className={`w-7 h-7 flex items-center justify-center transition-opacity hover:opacity-100 ${
+              unread
+                ? "text-[#008ff0] opacity-90"
+                : "text-[#171c23] opacity-40"
+            }`}
+          >
+            {unread ? (
+              <MailOpen size={17} />
+            ) : (
+              <Mail size={17} />
+            )}
+          </button>
+          <button
+            onClick={withoutRead(onToggleFavorite)}
             aria-label={
               favorite ? "הסרה ממועדפים" : "הוספה למועדפים"
             }
@@ -198,7 +257,7 @@ function MessageCard({
             />
           </button>
           <button
-            onClick={onToggleArchive}
+            onClick={withoutRead(onToggleArchive)}
             aria-label={
               archived ? "החזרה מהארכיון" : "העברה לארכיון"
             }
@@ -214,23 +273,28 @@ function MessageCard({
       </div>
 
       <p
+        ref={textRef}
         className={`text-[#171c23] text-[14px] text-right leading-relaxed whitespace-pre-line ${
-          expanded ? "" : "line-clamp-2 opacity-70"
+          // במובייל שתי שורות, בדסקטופ שלוש
+          expanded ? "" : "line-clamp-2 sm:line-clamp-3 opacity-70"
         }`}
       >
         <Linkify text={message.content} />
       </p>
 
-      <button
-        onClick={toggleExpand}
-        className="self-start flex items-center gap-1 text-[#008ff0] text-[13px] font-semibold hover:underline"
-      >
-        {expanded ? "הצגת פחות" : "לקריאת ההודעה המלאה"}
-        <ChevronDown
-          size={14}
-          className={`transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
-        />
-      </button>
+      {/* הכפתור מופיע רק כשההודעה באמת ארוכה מהמקום שיש לה */}
+      {clipped && (
+        <button
+          onClick={toggleExpand}
+          className="self-start flex items-center gap-1 text-[#008ff0] text-[13px] font-semibold hover:underline"
+        >
+          {expanded ? "הצגת פחות" : "לקריאת ההודעה המלאה"}
+          <ChevronDown
+            size={14}
+            className={`transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+          />
+        </button>
+      )}
     </div>
   );
 }
@@ -282,6 +346,8 @@ export default function MessagesPage({
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [newestFirst, setNewestFirst] = useState(true);
   const [showArchive, setShowArchive] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const toggleIn = (
     setter: React.Dispatch<
@@ -392,6 +458,47 @@ export default function MessagesPage({
     setReadFilter("all");
   };
 
+  /** הסינונים שנכנסים לחלון במובייל - מועדפים, מיון וארכיון */
+  const extraFilters =
+    (onlyFavorites ? 1 : 0) +
+    (showArchive ? 1 : 0) +
+    (newestFirst ? 0 : 1);
+
+  const clearExtraFilters = () => {
+    setOnlyFavorites(false);
+    setShowArchive(false);
+    setNewestFirst(true);
+  };
+
+  const extraChips = (
+    <>
+      <FilterChip
+        active={onlyFavorites}
+        onClick={() => setOnlyFavorites(!onlyFavorites)}
+        count={counts.favorites}
+      >
+        <Star
+          size={13}
+          className="shrink-0"
+          fill={onlyFavorites ? "currentColor" : "none"}
+        />
+        מועדפים
+      </FilterChip>
+      <FilterChip onClick={() => setNewestFirst(!newestFirst)}>
+        <ArrowUpDown size={13} className="shrink-0" />
+        {newestFirst ? "מהחדש לישן" : "מהישן לחדש"}
+      </FilterChip>
+      <FilterChip
+        active={showArchive}
+        onClick={() => setShowArchive(!showArchive)}
+        count={counts.archived}
+      >
+        <Archive size={13} className="shrink-0" />
+        ארכיון
+      </FilterChip>
+    </>
+  );
+
   return (
     <section className="px-4 sm:px-6 md:px-10 pt-8 pb-12">
       <div className={PAGE_CONTAINER}>
@@ -443,35 +550,55 @@ export default function MessagesPage({
             >
               נקראו
             </FilterChip>
-            <div className="w-px h-5 bg-[rgba(23,28,35,0.1)] mx-1" />
-            <FilterChip
-              active={onlyFavorites}
-              onClick={() => setOnlyFavorites(!onlyFavorites)}
-              count={counts.favorites}
-            >
-              <Star
-                size={13}
-                className="shrink-0"
-                fill={onlyFavorites ? "currentColor" : "none"}
-              />
-              מועדפים
-            </FilterChip>
-            <FilterChip
-              onClick={() => setNewestFirst(!newestFirst)}
-            >
-              <ArrowUpDown size={13} className="shrink-0" />
-              {newestFirst ? "מהחדש לישן" : "מהישן לחדש"}
-            </FilterChip>
-            <FilterChip
-              active={showArchive}
-              onClick={() => setShowArchive(!showArchive)}
-              count={counts.archived}
-            >
-              <Archive size={13} className="shrink-0" />
-              ארכיון
-            </FilterChip>
+            {/* במובייל שאר הסינונים נכנסים לחלון "סינון", כמו במשימות */}
+            {isMobile ? (
+              <button
+                onClick={() => setFiltersOpen(true)}
+                className="flex items-center gap-2 bg-white text-[#171c23] text-[13px] font-semibold px-4 py-1.5 rounded-full whitespace-nowrap transition-shadow hover:[box-shadow:0_0_20px_0_rgba(0,143,240,0.25)]"
+              >
+                <SlidersHorizontal size={14} className="shrink-0" />
+                סינון
+                {extraFilters > 0 && (
+                  <span className="min-w-5 h-5 px-1.5 rounded-full bg-[#008ff0] text-white text-[12px] font-bold flex items-center justify-center">
+                    {extraFilters}
+                  </span>
+                )}
+              </button>
+            ) : (
+              <>
+                <div className="w-px h-5 bg-[rgba(23,28,35,0.1)] mx-1" />
+                {extraChips}
+              </>
+            )}
           </div>
         </div>
+
+        {/* חלון הסינון במובייל */}
+        {filtersOpen && (
+          <Dialog
+            onClose={() => setFiltersOpen(false)}
+            title="סינון הודעות"
+            subtitle={`${visibleMessages.length} מתוך ${counts.all} הודעות מוצגות`}
+            footer={
+              <>
+                <Button
+                  variant="ghost"
+                  onClick={clearExtraFilters}
+                  disabled={extraFilters === 0}
+                >
+                  ניקוי
+                </Button>
+                <Button onClick={() => setFiltersOpen(false)}>
+                  הצגת {visibleMessages.length} הודעות
+                </Button>
+              </>
+            }
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              {extraChips}
+            </div>
+          </Dialog>
+        )}
 
         {/* שורת תוצאות: כמה מוצגות + סימון הכל כנקרא */}
         {visibleMessages.length > 0 && (
@@ -555,6 +682,15 @@ export default function MessagesPage({
                   setReadIds(
                     (prev) => new Set([...prev, message.id]),
                   )
+                }
+                onToggleRead={() =>
+                  setReadIds((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(message.id))
+                      next.delete(message.id);
+                    else next.add(message.id);
+                    return next;
+                  })
                 }
               />
             ))}
