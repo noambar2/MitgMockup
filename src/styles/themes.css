@@ -8,6 +8,50 @@
   ראו src/app/themes.ts להגדרות הערכות.
 */
 
+/* ════════ סולם טיפוגרפיה במובייל ════════ */
+/*
+  במובייל (עד 767px - אותו גבול של useIsMobile) כל גדלי הטקסט יורדים
+  מדרגה אחת. כך כל המערכת מתכווצת יחד, בלי לגעת בכל מסך בנפרד.
+  שינוי הגודל של מחלקה כאן משנה אותו בכל האפליקציה.
+*/
+
+@media (max-width: 767px) {
+  .text-\[10px\] { font-size: 9px; }
+  .text-\[11px\] { font-size: 10px; }
+  .text-\[12px\] { font-size: 11px; }
+  .text-\[13px\] { font-size: 12px; }
+  .text-\[14px\] { font-size: 13px; }
+  .text-\[15px\] { font-size: 14px; }
+  .text-\[16px\] { font-size: 15px; }
+  .text-\[18px\] { font-size: 16px; }
+  .text-\[20px\] { font-size: 18px; }
+  .text-\[22px\] { font-size: 20px; }
+  .text-\[24px\] { font-size: 21px; }
+  .text-\[26px\] { font-size: 23px; }
+  .text-\[28px\] { font-size: 25px; }
+  .text-\[30px\] { font-size: 26px; }
+  .text-\[32px\] { font-size: 28px; }
+  .text-\[34px\] { font-size: 30px; }
+  .text-\[44px\] { font-size: 38px; }
+  .text-\[52px\] { font-size: 44px; }
+}
+
+/*
+  גרסאות ה-sm: חלות רק מ-640px, ולכן ההקטנה שלהן מוגבלת לטווח
+  640-767 בלבד. בלי התיחום הזה הן היו דורסות את גודל הבסיס גם
+  בטלפון (הכיתה קיימת על האלמנט גם כשהיא לא פעילה).
+*/
+@media (min-width: 640px) and (max-width: 767px) {
+  .sm\:text-\[13px\] { font-size: 12px; }
+  .sm\:text-\[14px\] { font-size: 13px; }
+  .sm\:text-\[15px\] { font-size: 14px; }
+  .sm\:text-\[16px\] { font-size: 15px; }
+  .sm\:text-\[22px\] { font-size: 20px; }
+  .sm\:text-\[24px\] { font-size: 21px; }
+  .sm\:text-\[34px\] { font-size: 30px; }
+  .sm\:text-\[52px\] { font-size: 44px; }
+}
+
 /* ════════ צבע המותג ════════ */
 
 .bg-\[\#008ff0\] {

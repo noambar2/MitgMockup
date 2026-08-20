@@ -6,8 +6,13 @@ import {
   Paperclip,
   Check,
   Clock,
+  Eye,
+  EyeOff,
+  Image as ImageIcon,
   Inbox,
   FileText,
+  RotateCcw,
+  Send,
   X,
 } from "lucide-react";
 import {
@@ -20,6 +25,8 @@ import {
   PAGE_CONTAINER,
   IconCircle,
   AdBanner,
+  FilterChip,
+  LayoutSwitch,
 } from "./primitives";
 import { SectionHeading } from "./TasksAppointmentsPage";
 
@@ -27,6 +34,22 @@ import { SectionHeading } from "./TasksAppointmentsPage";
 
 type InquiryStatus = "received" | "inProgress" | "closed";
 type Channel = "טלפוני" | "מקוון";
+
+/** מסמך שצורף לפנייה - במנהלן אפשר לצפות בו בתוך האפליקציה בלבד */
+interface InquiryFile {
+  id: string;
+  name: string;
+  kind: "image" | "doc";
+  /** כתובת זמנית בזיכרון הדפדפן לקובץ שצורף בפועל (blob:) */
+  url?: string;
+}
+
+/** רשומה בהיסטוריית הטיפול - מוצגת למנהלן */
+interface HistoryEntry {
+  date: string;
+  text: string;
+  by: string;
+}
 
 interface Inquiry {
   id: string;
@@ -37,11 +60,15 @@ interface Inquiry {
   closeDate?: string;
   status: InquiryStatus;
   channel: Channel;
-  attachments: number;
+  files: InquiryFile[];
   response?: string;
+  /** הגורם המטפל בפנייה - מוצג בתצוגת מנהלן */
+  handler?: string;
+  /** היסטוריית הטיפול - מוצגת בתצוגת מנהלן */
+  history: HistoryEntry[];
 }
 
-const inquiries: Inquiry[] = [
+const INQUIRIES: Inquiry[] = [
   {
     id: "46656641",
     number: "46656641",
@@ -51,9 +78,22 @@ const inquiries: Inquiry[] = [
     closeDate: "19.07.2026",
     status: "closed",
     channel: "טלפוני",
-    attachments: 0,
+    files: [],
+    handler: "מדור שירות ומידע, מיטב",
     response:
       'מלש"ב יקר, ניתן ליצור קשר דרך אתר מתגייסים ברשת ודרך מרכז השירות הטלפוני במספר 1111. בהצלחה!',
+    history: [
+      {
+        date: "19.07.2026",
+        text: "הפנייה נפתחה בערוץ טלפוני",
+        by: "מרכז השירות",
+      },
+      {
+        date: "19.07.2026",
+        text: "נשלח מענה סופי והפנייה נסגרה",
+        by: "רס״ל א. כהן",
+      },
+    ],
   },
   {
     id: "46658120",
@@ -63,7 +103,32 @@ const inquiries: Inquiry[] = [
     openDate: "12.09.2026",
     status: "inProgress",
     channel: "מקוון",
-    attachments: 2,
+    files: [
+      {
+        id: "f1",
+        name: "אישור רופא משפחה.pdf",
+        kind: "doc",
+      },
+      { id: "f2", name: "צילום תעודת זהות.jpg", kind: "image" },
+    ],
+    handler: "מדור רפואה, מיטב",
+    history: [
+      {
+        date: "12.09.2026",
+        text: 'הפנייה נפתחה על ידי המלש"ב',
+        by: "אתר מתגייסים",
+      },
+      {
+        date: "13.09.2026",
+        text: "הפנייה נותבה למדור רפואה",
+        by: "ניתוב אוטומטי",
+      },
+      {
+        date: "14.09.2026",
+        text: "התקבלו מסמכים רפואיים והועברו לבדיקה",
+        by: "סמ״ר ל. אזולאי",
+      },
+    ],
   },
   {
     id: "46659003",
@@ -73,9 +138,45 @@ const inquiries: Inquiry[] = [
     openDate: "21.09.2026",
     status: "received",
     channel: "מקוון",
-    attachments: 0,
+    files: [],
+    history: [
+      {
+        date: "21.09.2026",
+        text: 'הפנייה נפתחה על ידי המלש"ב',
+        by: "אתר מתגייסים",
+      },
+    ],
   },
 ];
+
+/** הצוותים שאפשר להקצות אליהם פנייה שנפתחה מחדש */
+const TEAMS = [
+  "מדור שירות ומידע, מיטב",
+  "מדור רפואה, מיטב",
+  "מדור עתודות",
+  "מדור בריאות הנפש",
+  "לשכת גיוס באר שבע",
+];
+
+/**
+ * רשימה בתוך כרטיס: כ-4 שורות במובייל וכ-6 בדסקטופ, ומעבר לזה גלילה
+ * פנימית - כדי שפנייה עם עשרות מסמכים לא תמתח את הכרטיס.
+ */
+const LIST_SCROLL =
+  "flex flex-col gap-2 w-full max-h-[200px] md:max-h-[280px] overflow-y-auto pe-1";
+
+const STATUS_LABELS: Record<InquiryStatus, string> = {
+  received: "התקבלה",
+  inProgress: "בטיפול",
+  closed: "נסגרה",
+};
+
+/** תאריך היום בפורמט dd.mm.yyyy - כמו שאר התאריכים בעמוד */
+const today = () => {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
+};
 
 // ── Create form options ──────────────────────────────────────────────────────
 
@@ -118,6 +219,12 @@ const MAIN_TOPICS = Object.keys(TOPICS);
 
 const MAX_FILES = 10;
 
+/**
+ * תצוגת המנהלן (מתן מענה, פתיחה מחדש, ניהול מסמכים) מוכנה בקוד אך
+ * מוסתרת לקראת ההשקה. החזרה שלה = החלפת הערך ל-true בלבד.
+ */
+const ADMIN_VIEW_ENABLED = false;
+
 // ── Inquiry card ─────────────────────────────────────────────────────────────
 
 function InfoPair({
@@ -139,8 +246,27 @@ function InfoPair({
   );
 }
 
-function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
+function InquiryCard({
+  inquiry,
+  admin = false,
+  onRespond,
+  onReopen,
+  onAddFiles,
+}: {
+  inquiry: Inquiry;
+  /** תצוגת מנהלן - מוסיפה גורם מטפל, היסטוריה ופעולות טיפול */
+  admin?: boolean;
+  onRespond?: (response: string, status: InquiryStatus) => void;
+  onReopen?: (team: string) => void;
+  onAddFiles?: (files: File[]) => void;
+}) {
   const [open, setOpen] = useState(false);
+  const [respondOpen, setRespondOpen] = useState(false);
+  const [reopenOpen, setReopenOpen] = useState(false);
+  const [viewFile, setViewFile] = useState<InquiryFile | null>(
+    null,
+  );
+  const fileInput = useRef<HTMLInputElement>(null);
   const closed = inquiry.status === "closed";
 
   return (
@@ -204,11 +330,18 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
               size={14}
               className="text-[#008ff0] shrink-0"
             />
-            {inquiry.attachments > 0
-              ? `${inquiry.attachments} קבצים`
+            {inquiry.files.length > 0
+              ? `${inquiry.files.length} קבצים`
               : "לא צורפו קבצים"}
           </span>
         </div>
+        {/* הגורם המטפל - מידע ניהולי, מוצג רק במנהלן */}
+        {admin && (
+          <InfoPair
+            label="גורם מטפל"
+            value={inquiry.handler ?? "טרם הוקצה"}
+          />
+        )}
       </div>
 
       {/* תוכן מורחב: מסלול סטטוס + ערוץ + תשובה */}
@@ -243,9 +376,326 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
               הפנייה בטיפול. נעדכן אותך כאן ברגע שתתקבל תשובה.
             </div>
           )}
+
+          {/* ── תצוגת מנהלן: היסטוריה, מסמכים ופעולות טיפול ── */}
+          {admin && (
+            <>
+              {/* בדסקטופ ההיסטוריה והמסמכים חולקים את השורה;
+                  שתי הרשימות מוגבלות בגובה ונגללות בפנים */}
+              <div className="grid md:grid-cols-2 gap-5 md:gap-6">
+                {/* היסטוריית הטיפול */}
+                <div className="flex flex-col items-start gap-2 min-w-0">
+                  <span className="text-[#171c23] text-[13px] opacity-50">
+                    היסטוריית טיפול
+                  </span>
+                  <ol className={LIST_SCROLL}>
+                    {inquiry.history.map((h, i) => (
+                      <li
+                        key={`${h.date}-${i}`}
+                        className="flex items-start gap-2.5 text-right"
+                      >
+                        <span className="w-2 h-2 rounded-full bg-[#008ff0] shrink-0 mt-1.5" />
+                        <span className="min-w-0">
+                          <span className="block text-[#171c23] text-[14px]">
+                            {h.text}
+                          </span>
+                          <span className="block text-[#171c23] text-[12px] opacity-50">
+                            {h.date} · {h.by}
+                          </span>
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+
+                {/* מסמכי הפנייה - צפייה בתוך האפליקציה בלבד */}
+                <div className="flex flex-col items-start gap-2 min-w-0">
+                  <span className="text-[#171c23] text-[13px] opacity-50">
+                    מסמכי הפנייה
+                  </span>
+                  {inquiry.files.length === 0 ? (
+                    <span className="text-[#171c23] text-[14px] opacity-60">
+                      לא צורפו מסמכים לפנייה
+                    </span>
+                  ) : (
+                    <div className={LIST_SCROLL}>
+                      {inquiry.files.map((f) => (
+                        <div
+                          key={f.id}
+                          className="flex items-center justify-between gap-3 bg-[#f5f5f7] rounded-[8px] px-4 py-2.5"
+                        >
+                          <span className="flex items-center gap-2 min-w-0">
+                            {f.kind === "image" ? (
+                              <ImageIcon
+                                size={15}
+                                className="text-[#008ff0] shrink-0"
+                              />
+                            ) : (
+                              <FileText
+                                size={15}
+                                className="text-[#008ff0] shrink-0"
+                              />
+                            )}
+                            <span className="text-[#171c23] text-[14px] truncate">
+                              {f.name}
+                            </span>
+                          </span>
+                          <Button
+                            variant="link"
+                            onClick={() => setViewFile(f)}
+                            className="shrink-0"
+                          >
+                            <Eye size={14} className="shrink-0" />
+                            צפייה
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* פעולות המנהלן */}
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                {closed ? (
+                  <Button onClick={() => setReopenOpen(true)}>
+                    <RotateCcw size={14} className="shrink-0" />
+                    פתיחת הפנייה מחדש
+                  </Button>
+                ) : (
+                  <Button onClick={() => setRespondOpen(true)}>
+                    <Send size={14} className="shrink-0" />
+                    מתן מענה ועדכון סטטוס
+                  </Button>
+                )}
+                <Button
+                  variant="tint"
+                  onClick={() => fileInput.current?.click()}
+                >
+                  <Paperclip size={14} className="shrink-0" />
+                  צירוף מסמך
+                </Button>
+                <input
+                  ref={fileInput}
+                  type="file"
+                  multiple
+                  accept="image/*,.pdf,.doc,.docx"
+                  className="hidden"
+                  onChange={(e) => {
+                    const picked = Array.from(e.target.files ?? []);
+                    if (picked.length) onAddFiles?.(picked);
+                    e.target.value = "";
+                  }}
+                />
+              </div>
+            </>
+          )}
         </div>
       )}
+
+      {respondOpen && (
+        <RespondDialog
+          inquiry={inquiry}
+          onClose={() => setRespondOpen(false)}
+          onSubmit={(text, status) => {
+            onRespond?.(text, status);
+            setRespondOpen(false);
+          }}
+        />
+      )}
+      {reopenOpen && (
+        <ReopenDialog
+          inquiry={inquiry}
+          onClose={() => setReopenOpen(false)}
+          onSubmit={(team) => {
+            onReopen?.(team);
+            setReopenOpen(false);
+          }}
+        />
+      )}
+      {viewFile && (
+        <FileViewerDialog
+          file={viewFile}
+          onClose={() => setViewFile(null)}
+        />
+      )}
     </div>
+  );
+}
+
+// ── Admin dialogs ───────────────────────────────────────────────────────────
+
+/** מתן מענה סופי ועדכון סטטוס הפנייה (כולל סגירתה) */
+function RespondDialog({
+  inquiry,
+  onClose,
+  onSubmit,
+}: {
+  inquiry: Inquiry;
+  onClose: () => void;
+  onSubmit: (response: string, status: InquiryStatus) => void;
+}) {
+  const [text, setText] = useState(inquiry.response ?? "");
+  const [status, setStatus] = useState<InquiryStatus>(
+    inquiry.status === "received" ? "inProgress" : inquiry.status,
+  );
+
+  return (
+    <Dialog
+      title="מתן מענה לפנייה"
+      subtitle={`${inquiry.subject} · פנייה ${inquiry.number}`}
+      width={520}
+      onClose={onClose}
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose}>
+            ביטול
+          </Button>
+          <Button
+            disabled={text.trim() === ""}
+            onClick={() => onSubmit(text.trim(), status)}
+          >
+            <Send size={14} className="shrink-0" />
+            שליחת מענה
+          </Button>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-4">
+        <div>
+          <FieldLabel required>המענה למלש"ב</FieldLabel>
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            rows={5}
+            placeholder="פרטו את המענה שיוצג למלש״ב בפנייה"
+            className={`${FIELD_CLASS} resize-none`}
+          />
+        </div>
+        <SelectField
+          label="סטטוס הפנייה לאחר המענה"
+          value={STATUS_LABELS[status]}
+          placeholder="בחרו סטטוס"
+          options={(
+            ["received", "inProgress", "closed"] as InquiryStatus[]
+          ).map((s) => STATUS_LABELS[s])}
+          onChange={(label) =>
+            setStatus(
+              (
+                Object.keys(STATUS_LABELS) as InquiryStatus[]
+              ).find((s) => STATUS_LABELS[s] === label) ??
+                "inProgress",
+            )
+          }
+        />
+      </div>
+    </Dialog>
+  );
+}
+
+/** פתיחה מחדש של פנייה שנסגרה והקצאתה לצוות מטפל */
+function ReopenDialog({
+  inquiry,
+  onClose,
+  onSubmit,
+}: {
+  inquiry: Inquiry;
+  onClose: () => void;
+  onSubmit: (team: string) => void;
+}) {
+  const [team, setTeam] = useState(inquiry.handler ?? TEAMS[0]);
+
+  return (
+    <Dialog
+      title="פתיחת הפנייה מחדש"
+      subtitle={`${inquiry.subject} · פנייה ${inquiry.number}`}
+      width={480}
+      onClose={onClose}
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose}>
+            ביטול
+          </Button>
+          <Button onClick={() => onSubmit(team)}>
+            <RotateCcw size={14} className="shrink-0" />
+            פתיחה מחדש
+          </Button>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-4">
+        <p className="text-[#171c23] text-[14px] leading-relaxed opacity-70 text-right">
+          הפנייה תחזור לסטטוס "בטיפול" ותוקצה לצוות שייבחר. המענה
+          הקודם יישמר בהיסטוריית הטיפול.
+        </p>
+        <SelectField
+          label="הקצאה לצוות מטפל"
+          value={team}
+          placeholder="בחרו צוות"
+          options={TEAMS}
+          onChange={setTeam}
+        />
+      </div>
+    </Dialog>
+  );
+}
+
+/** צפייה במסמך בתוך האפליקציה - ללא הורדה ושמירה על המכשיר */
+function FileViewerDialog({
+  file,
+  onClose,
+}: {
+  file: InquiryFile;
+  onClose: () => void;
+}) {
+  return (
+    <Dialog
+      title={file.name}
+      subtitle="צפייה בלבד - לא ניתן להוריד או לשמור את הקובץ"
+      width={560}
+      onClose={onClose}
+      footer={<Button onClick={onClose}>סגירה</Button>}
+    >
+      <div
+        // חסימת תפריט ההקשר ובחירת הטקסט - הצפייה בתוך האפליקציה בלבד
+        onContextMenu={(e) => e.preventDefault()}
+        className="select-none bg-[#f5f5f7] rounded-[10px] overflow-hidden h-[320px] sm:h-[420px] flex items-center justify-center"
+      >
+        {file.url && file.kind === "image" ? (
+          <img
+            src={file.url}
+            alt={file.name}
+            draggable={false}
+            className="max-h-full max-w-full object-contain pointer-events-none"
+          />
+        ) : file.url ? (
+          // toolbar=0 מסתיר את סרגל ההורדה/הדפסה של מציג ה-PDF
+          <iframe
+            src={`${file.url}#toolbar=0&navpanes=0`}
+            title={file.name}
+            className="w-full h-full border-0"
+          />
+        ) : (
+          // קובץ מהנתונים לדוגמה - אין קובץ אמיתי להציג
+          <div className="flex flex-col items-center justify-center gap-3 text-center px-6">
+            <IconCircle size={64} bg="rgba(0,143,240,0.1)">
+              {file.kind === "image" ? (
+                <ImageIcon size={28} />
+              ) : (
+                <FileText size={28} />
+              )}
+            </IconCircle>
+            <p className="font-semibold text-[#171c23] text-[15px]">
+              {file.name}
+            </p>
+            <p className="flex items-center gap-1.5 text-[#171c23] text-[13px] opacity-60">
+              <EyeOff size={14} className="shrink-0" />
+              הקובץ מוצג בתוך האפליקציה בלבד
+            </p>
+          </div>
+        )}
+      </div>
+    </Dialog>
   );
 }
 
@@ -422,6 +872,37 @@ export default function InquiriesPage({
 }) {
   const [filter, setFilter] = useState<InquiryFilter>("all");
   const [createOpen, setCreateOpen] = useState(false);
+  /** 1 = תצוגת מלש"ב (ברירת מחדל), 2 = תצוגת מנהלן */
+  const [role, setRole] = useState<1 | 2>(1);
+  // תצוגת המנהלן מוכנה אך מוסתרת עד להשקה - להחזרה: true
+  const admin = ADMIN_VIEW_ENABLED && role === 2;
+  /** הפניות מוחזקות במצב, כי במנהלן אפשר לעדכן אותן */
+  const [inquiries, setInquiries] = useState<Inquiry[]>(INQUIRIES);
+
+  /** עדכון פנייה בודדת + רישום שורה בהיסטוריית הטיפול */
+  const updateInquiry = (
+    id: string,
+    change: Partial<Inquiry>,
+    historyText: string,
+  ) =>
+    setInquiries((prev) =>
+      prev.map((q) =>
+        q.id === id
+          ? {
+              ...q,
+              ...change,
+              history: [
+                ...q.history,
+                {
+                  date: today(),
+                  text: historyText,
+                  by: "מנהלן מיטב",
+                },
+              ],
+            }
+          : q,
+      ),
+    );
 
   const counts = useMemo(
     () => ({
@@ -430,7 +911,7 @@ export default function InquiriesPage({
       closed: inquiries.filter((q) => q.status === "closed")
         .length,
     }),
-    [],
+    [inquiries],
   );
 
   const visible = useMemo(
@@ -442,7 +923,7 @@ export default function InquiriesPage({
             ? q.status === "closed"
             : q.status !== "closed",
       ),
-    [filter],
+    [filter, inquiries],
   );
 
   const filters: { key: InquiryFilter; label: string; count: number }[] =
@@ -460,9 +941,18 @@ export default function InquiriesPage({
     <section className="px-4 sm:px-6 md:px-10 pt-8 pb-12">
       <div className={PAGE_CONTAINER}>
 
-        {/* כותרת + יצירת פנייה */}
-        <div className="flex items-center justify-between gap-3 mb-5">
-          <SectionHeading title="פניות" />
+        {/* כותרת + מתג התצוגה + יצירת פנייה */}
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-3 mb-5">
+          <div className="flex flex-wrap items-center gap-3">
+            <SectionHeading title="פניות" className="mb-0" />
+            {ADMIN_VIEW_ENABLED && (
+              <LayoutSwitch
+                value={role}
+                onChange={setRole}
+                labels={["לא מנהלן", "מנהלן"]}
+              />
+            )}
+          </div>
           <Button onClick={() => setCreateOpen(true)}>
             <span className="text-[16px] leading-none">+</span>
             פנייה חדשה
@@ -472,22 +962,14 @@ export default function InquiriesPage({
         {/* סינון */}
         <div className="flex flex-wrap items-center gap-2 mb-5">
           {filters.map((f) => (
-            <button
+            <FilterChip
               key={f.key}
+              active={filter === f.key}
               onClick={() => setFilter(f.key)}
-              className={`flex items-center gap-1.5 text-[13px] font-semibold px-4 py-1.5 rounded-full whitespace-nowrap transition-colors ${
-                filter === f.key
-                  ? "bg-[#008ff0] text-white"
-                  : "bg-white text-[#171c23] opacity-70 hover:opacity-100"
-              }`}
+              count={f.count}
             >
               {f.label}
-              <span
-                className={`text-[13px] font-bold ${filter === f.key ? "opacity-75" : "opacity-45"}`}
-              >
-                {f.count}
-              </span>
-            </button>
+            </FilterChip>
           ))}
         </div>
 
@@ -507,7 +989,60 @@ export default function InquiriesPage({
         ) : (
           <div className="grid grid-cols-1 gap-4">
             {visible.map((inquiry) => (
-              <InquiryCard key={inquiry.id} inquiry={inquiry} />
+              <InquiryCard
+                key={inquiry.id}
+                inquiry={inquiry}
+                admin={admin}
+                onRespond={(response, status) =>
+                  updateInquiry(
+                    inquiry.id,
+                    {
+                      response,
+                      status,
+                      closeDate:
+                        status === "closed"
+                          ? today()
+                          : undefined,
+                    },
+                    status === "closed"
+                      ? "נשלח מענה סופי והפנייה נסגרה"
+                      : `נשלח מענה והסטטוס עודכן ל"${STATUS_LABELS[status]}"`,
+                  )
+                }
+                onReopen={(team) =>
+                  updateInquiry(
+                    inquiry.id,
+                    {
+                      status: "inProgress",
+                      closeDate: undefined,
+                      handler: team,
+                    },
+                    `הפנייה נפתחה מחדש והוקצתה ל${team}`,
+                  )
+                }
+                onAddFiles={(picked) =>
+                  updateInquiry(
+                    inquiry.id,
+                    {
+                      files: [
+                        ...inquiry.files,
+                        ...picked.map((f, i) => ({
+                          id: `${Date.now()}-${i}`,
+                          name: f.name,
+                          kind: f.type.startsWith("image/")
+                            ? ("image" as const)
+                            : ("doc" as const),
+                          // כתובת בזיכרון הדפדפן, כדי להציג את הקובץ עצמו
+                          url: URL.createObjectURL(f),
+                        })),
+                      ],
+                    },
+                    picked.length === 1
+                      ? `צורף מסמך: ${picked[0].name}`
+                      : `צורפו ${picked.length} מסמכים`,
+                  )
+                }
+              />
             ))}
           </div>
         )}

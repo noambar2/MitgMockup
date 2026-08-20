@@ -22,6 +22,7 @@ import {
   AdBanner,
   Button,
   Dialog,
+  FilterChip,
   PAGE_CONTAINER,
 } from "./primitives";
 
@@ -105,40 +106,6 @@ function Linkify({ text }: { text: string }) {
   );
 }
 
-// ── Filter chips ────────────────────────────────────────────────────────────
-
-function FilterChip({
-  active,
-  onClick,
-  count,
-  children,
-}: {
-  active?: boolean;
-  onClick: () => void;
-  /** מספר ההודעות שהסינון הזה יניב */
-  count?: number;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-1.5 text-[13px] font-semibold px-4 py-1.5 rounded-full whitespace-nowrap transition-colors ${
-        active
-          ? "bg-[#008ff0] text-white"
-          : "bg-white text-[#171c23] opacity-70 hover:opacity-100"
-      }`}
-    >
-      {children}
-      {count !== undefined && (
-        <span
-          className={`text-[13px] font-bold ${active ? "opacity-75" : "opacity-45"}`}
-        >
-          {count}
-        </span>
-      )}
-    </button>
-  );
-}
 
 // ── Message card ────────────────────────────────────────────────────────────
 

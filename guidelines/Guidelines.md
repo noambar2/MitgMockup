@@ -1,61 +1,206 @@
-**Add your own guidelines here**
-<!--
+# מערכת העיצוב - מוקאפ מתגייסים
 
-System Guidelines
+המסמך מתאר את המערכת **כפי שהיא בקוד היום**. כל רכיב משותף יושב ב-
+`src/app/components/primitives.tsx`, הצבעים והערכות ב-`src/app/themes.ts`
+וב-`src/styles/themes.css`.
 
-Use this file to provide the AI with rules and guidelines you want it to follow.
-This template outlines a few examples of things you can add. You can add your own sections and format it to suit your needs
+---
 
-TIP: More context isn't always better. It can confuse the LLM. Try and add the most important rules you need
+## 1. עקרונות
 
-# General guidelines
+- **RTL תמיד.** השורש הוא `dir="rtl"`; להשתמש במאפיינים לוגיים
+  (`ps/pe`, `ms/me`, `scroll-ps`) ולא בפיזיים, ולזכור שב-RTL
+  `scrollLeft` שלילי.
+- **קומפוננטה אחת לכל דפוס.** אם דפוס מופיע בשני עמודים - מקומו
+  ב-`primitives.tsx`. אין לשכפל מחלקות עיצוב בין מסכים.
+- **צבע מגיע ממשתנה, לא מקוד קשיח.** כל שימוש ב-`#008ff0` עובר דרך
+  `--brand` (ראו §6), כך שהחלפת ערכה או גוון עמוד עובדת מעצמה.
+- **מובייל הוא לא דסקטופ מוקטן.** מה שנפתח בפופאפ בדסקטופ נפתח
+  בבוטום-שיט במובייל (`Dialog` עושה זאת לבד), ורשימות ארוכות של
+  צ'יפים נכנסות לחלון "סינון".
 
-Any general rules you want the AI to follow.
-For example:
+---
 
-* Only use absolute positioning when necessary. Opt for responsive and well structured layouts that use flexbox and grid by default
-* Refactor code as you go to keep code clean
-* Keep file sizes small and put helper functions and components in their own files.
+## 2. טוקנים
 
---------------
+### צבע
 
-# Design system guidelines
-Rules for how the AI should make generations look like your company's design system
+| תפקיד | ערך | הערה |
+| --- | --- | --- |
+| מותג | `--brand` (`#008ff0`) | כפתורים, קישורים, אייקונים |
+| מותג בריחוף | `--brand-hover` | |
+| שקיפויות מותג | `rgba(var(--brand-rgb), α)` | 0.06 / 0.08 / 0.1 / 0.12 / 0.18 |
+| אקסנט משני | `--accent-2` (`#69c600`) | הנקודה שבסוף כל כותרת |
+| הצלחה | `#4e9400` על `rgba(105,198,0,0.12)` | |
+| אזהרה | `#e07000` על `rgba(240,164,0,0.12)` | |
+| שגיאה | `#c43c3c` | |
+| דיו ראשי | `#171c23` | טקסט גוף |
+| דיו כותרות | `#122736` | כותרות עמוד + הכותרת העליונה |
+| משטח | `#fff` (כרטיס), `#f5f5f7` (משטח משני) | |
+| קווים | `rgba(23,28,35,0.05 → 0.3)` | הפרדה, מסגרות |
 
-Additionally, if you select a design system to use in the prompt box, you can reference
-your design system's components, tokens, variables and components.
-For example:
+### טיפוגרפיה
 
-* Use a base font-size of 14px
-* Date formats should always be in the format “Jun 10”
-* The bottom toolbar should only ever have a maximum of 4 items
-* Never use the floating action button with the bottom toolbar
-* Chips should always come in sets of 3 or more
-* Don't use a dropdown if there are 2 or fewer options
+`'Noto Sans Hebrew'` בלבד. **הגדלים בקוד הם גדלי הדסקטופ**; במובייל
+(עד 767px) כל המערכת יורדת מדרגה אחת אוטומטית - ראו למטה.
 
-You can also create sub sections and add more specific details
-For example:
+| שימוש | דסקטופ | מובייל | משקל | גובה שורה | ריווח אותיות |
+| --- | --- | --- | --- | --- | --- |
+| כותרת עמוד | 34px | 25px | 700 | 1.15 `tight` | ‎-0.025em‎ |
+| כותרת מקטע פנימי | 22-24px | 20-21px | 700 | 1.15 `tight` | ‎-0.025em‎ |
+| כותרת כרטיס | 18px | 16px | 700 | 1.3 `snug` | 0 |
+| ערך מודגש (ציון, אחוז) | 20px | 18px | 900 | 1 `none` | ‎-0.025em‎ |
+| מספר ענק (ימים לגיוס) | 52px | 44px | 900 | 1 `none` | ‎-0.025em‎ |
+| תווית / כותרת שדה | 16px | 15px | 600-700 | 1.3 `snug` | 0 |
+| טקסט גוף | 15px / 14px | 14px / 13px | 400 | 1.65 `relaxed` | 0 |
+| מטא־דאטה, צ'יפים | 13px | 12px | 600 | 1.5 `normal` | 0 |
+| הערות ותגיות | 11-12px | 10-11px | 400-600 | 1.3 `snug` | 0 |
 
+**כללי אצבע**
 
-## Button
-The Button component is a fundamental interactive element in our design system, designed to trigger actions or navigate
-users through the application. It provides visual feedback and clear affordances to enhance user experience.
+- **גובה שורה נגזר מהתפקיד ולא מהגודל**: מספרים ומדדים `1`, כותרות
+  `1.15-1.3`, טקסט רץ `1.65`. פסקת הסבר תמיד `leading-relaxed`;
+  שורת מטא־דאטה אף פעם לא.
+- **ריווח אותיות שלילי רק מ-20px ומעלה** (`tracking-tight`). בעברית
+  ריווח שלילי בגדלים קטנים פוגע בקריאוּת - מתחת ל-20px משאירים 0.
+- **ארבעה משקלים בלבד**: 400 לגוף, 600 לצ'יפים/קישורים/תוויות,
+  700 לכותרות, 900 למספרים הגדולים. אין 500 ואין 800.
+- **אורך שורה** של פסקת הסבר לא עובר ~70 תווים. בכרטיס צר עדיף לקצר
+  טקסט מלהקטין גופן.
+- **טקסט משני מתקבל מאטימות** (50-70% על `ink/primary`) או
+  מ-`ink/secondary` - לא מגוון אפור חדש.
 
-### Usage
-Buttons should be used for important actions that users need to take, such as form submissions, confirming choices,
-or initiating processes. They communicate interactivity and should have clear, action-oriented labels.
+**סולם המובייל** מוגדר פעם אחת ב-`src/styles/themes.css`: בלוק
+`@media (max-width: 767px)` שממפה כל מחלקת `text-[Npx]` לגודל קטן
+יותר, ובלוק נפרד `@media (min-width: 640px) and (max-width: 767px)`
+לגרסאות ה-`sm:`. **התיחום של הבלוק השני חובה** - בלעדיו מחלקת
+`sm:text-*` שיושבת על אלמנט דורסת את גודל הבסיס גם בטלפון, גם כשהיא
+עצמה לא פעילה. המשמעות:
 
-### Variants
-* Primary Button
-  * Purpose : Used for the main action in a section or page
-  * Visual Style : Bold, filled with the primary brand color
-  * Usage : One primary button per section to guide users toward the most important action
-* Secondary Button
-  * Purpose : Used for alternative or supporting actions
-  * Visual Style : Outlined with the primary color, transparent background
-  * Usage : Can appear alongside a primary button for less important actions
-* Tertiary Button
-  * Purpose : Used for the least important actions
-  * Visual Style : Text-only with no border, using primary color
-  * Usage : For actions that should be available but not emphasized
--->
+- **אין לכתוב גדלים נפרדים למובייל בקומפוננטות.** כותבים את גודל
+  הדסקטופ, והסולם דואג לשאר.
+- גודל חדש שנכנס לשימוש - להוסיף לו שורה בבלוק הזה, אחרת הוא יישאר
+  בגודל הדסקטופ גם בטלפון.
+- `sm:text-*` נשמר רק כשמובייל ודסקטופ באמת צריכים שני גדלים שונים
+  מהותית (למשל כותרת עמוד 28→34), ולא לצורך הקטנה כללית.
+
+### מרווח, פינות וצל
+
+- ריפוד עמוד: `px-4 sm:px-6 md:px-10 pt-8 pb-12`.
+- ריפוד כרטיס: `p-5`. מרווח בין כרטיסים: `gap-3` / `gap-4`.
+- פינות: כרטיס `10px`, אלמנט פנימי `8px`, צ'יפ/כפתור `rounded-full`.
+- צל: `ELEVATION.hover` (זוהר מותג בריחוף) ו-`ELEVATION.overlay`
+  (חלונות). כרטיס במנוחה - בלי צל.
+
+### נקודות שבירה
+
+`sm` 640 · `md` 768 · `xl` 1280. הגבול בין מובייל לדסקטופ בלוגיקה
+(`useIsMobile`) הוא **768**.
+
+---
+
+## 3. רכיבים
+
+| רכיב | קובץ | תפקיד |
+| --- | --- | --- |
+| `Button` | primitives | `primary` / `success` / `tint` / `ghost` / `outline` / `link` / `linkDanger` |
+| `StatusBadge` | primitives | תגית מצב: success / warning / error / neutral |
+| `FilterChip` | primitives | צ'יפ סינון/בחירה עם מונה ומצב מושבת |
+| `LayoutSwitch` | primitives | מתג שתי אפשרויות תצוגה, עם `labels` חופשי |
+| `ProgressBar` | primitives | בר התקדמות בגוון המותג |
+| `Dialog` + `DialogHeader` | primitives | פופאפ בדסקטופ, בוטום-שיט במובייל |
+| `IconCircle` | primitives | אייקון בעיגול בגוון רך |
+| `FieldLabel` / `TextField` / `SelectField` / `FIELD_CLASS` | primitives | שדות טופס |
+| `AdBanner` | primitives | שטח פרסום |
+| `PAGE_CONTAINER` | primitives | רוחב תוכן אחיד (760px) לעמודי משנה |
+| `GLASS_CARD` | ui/utils | משטח זכוכית |
+| `SectionHeading` | TasksAppointmentsPage | כותרת מקטע + נקודה ירוקה |
+
+### כללי שימוש
+
+- **כפתור ראשי אחד** במקטע. פעולה משנית - `tint` או `ghost`; פעולה
+  שלישונית - `link`.
+- **צ'יפ** תמיד עם מסגרת. צ'יפ שהמונה שלו 0 - מושבת ולא לחיץ, אחרת
+  מגיעים למסך "אין תוצאות".
+- **`Dialog` עובר ב-portal** לשורש האפליקציה (`[data-app-root]`).
+  זה קריטי: אב עם `transform` (למשל כרטיס בקרוסלה) הופך `fixed`
+  לממוקם ביחס אליו, והחלון היה נפתח בתוך הכרטיס.
+- **`AdBanner`** רק בתחתית ששת העמודים הראשיים (פרופיל אישי, זימונים,
+  משימות, לומדות, פניות, הודעות) - לא בתוך לומדה, נושא, מבחן, שאלון
+  או הגדרות.
+
+---
+
+## 4. דפוסי מסך
+
+**שלד עמוד**: `<section>` עם ריפוד העמוד → כותרת (+ מתג/פעולה) →
+סינון → תוכן → `AdBanner`.
+
+**כרטיס ישות** (לומדה, נושא, מבחן): אייקון + כותרת + תג מצב, טקסט
+הסבר, בר התקדמות, קישורי פעולה. פעולה אחת - כל הכרטיס לחיץ.
+
+**סינון**: עד שלושה צ'יפים - בשורה. מעבר לזה, או במובייל - כפתור
+"סינון" עם באדג' שפותח `Dialog`, ומתחתיו שורת תוצאות בנוסח
+"מוצגות X מתוך Y" עם "ניקוי סינון" כשיש סינון פעיל.
+
+**קרוסלה** (זימונים, אופציה 2): הכרטיס שבפוקוס בימין - לבן ובגודל
+מלא, השכנים ב-`scale 0.94` ובזכוכית; לחיצה על שכן ממקדת אותו;
+הרשימה משוכפלת ×3 ללולאה אינסופית; חצים בדסקטופ ונקודות מתחת.
+
+**אקורדיון**: פריט אחד פתוח בכל רגע, `ChevronDown` שמסתובב 180°.
+
+**רשימות בתוך כרטיס** (היסטוריה, מסמכים): מוגבלות בגובה עם גלילה
+פנימית - 200px במובייל, 280px בדסקטופ (כ-4 ו-6 שורות) - כדי שכרטיס
+עם עשרות פריטים לא ימתח את העמוד. בדסקטופ שתי רשימות קצרות חולקות
+שורה (`md:grid-cols-2`) במקום להשתרע כל אחת על מלוא הרוחב.
+
+**תצוגה מקדימה של טקסט**: `line-clamp-2 sm:line-clamp-3`, וכפתור
+"קריאת הכל" מוצג רק כשהטקסט באמת נחתך (`scrollHeight > clientHeight`).
+`line-clamp` לא שורד כשהפסקה היא פריט פלקס - יש לעטוף אותה ב-div.
+
+**נקרא / לא נקרא** (הודעות): סימון רק בפעולה יזומה - לחיצה על הכרטיס
+או על אייקון המעטפה. כניסה לעמוד או גלילה לא מסמנות דבר; פעולות
+ניהול (מועדפים, ארכיון) עוצרות את בועת האירוע.
+
+**תצוגת מנהלן** (פניות): `LayoutSwitch` עם `labels={["לא מנהלן","מנהלן"]}`
+מוסיף לכרטיס גורם מטפל, היסטוריית טיפול, מסמכים לצפייה בלבד, ופעולות
+מענה / פתיחה מחדש / צירוף מסמך.
+
+---
+
+## 5. נגישות
+
+- לכל כפתור אייקון `aria-label`; לצ'יפ `aria-pressed`; לאקורדיון
+  `aria-expanded`; לקבוצת בחירה `role="radiogroup"`.
+- שטח פרסום ב-`<aside aria-label="פרסומת">`.
+- טקסט על מותג הוא תמיד לבן; אין להשתמש בצבע כאות היחידה למצב -
+  תמיד עם אייקון או מלל.
+
+---
+
+## 6. ערכות נושא
+
+מוגדרות ב-`src/app/themes.ts` ומוזרקות כמשתני CSS על שורש האפליקציה;
+`src/styles/themes.css` ממפה את מחלקות הצבע הקנוניות למשתנים. בזכות זה
+**הוספת ערכה לא נוגעת בקוד המסכים**.
+
+| ערכה | מאפיין |
+| --- | --- |
+| בהיר | ברירת המחדל |
+| כהה | `dark: true` - משטחים כהים וטקסט בהיר, דרך המחלקה `.dark` |
+| סגול / טורקיז / שקיעה / ורוד | החלפת גוון מותג ורקע בלבד |
+| צבעוני | `playful: true` + `accents` - גוון שונה לכל עמוד, רקע פסטל, פינות 20px, צל צבעוני וכפתורי גרדיאנט |
+
+- `accentFor(theme, page)` מחזיר את גוון העמוד; לערכה בלי `accents`
+  הוא מחזיר את צבעי הערכה - ולכן שום ערכה קיימת לא מושפעת.
+- ערכה עם `surface` (כרטיסים כהים על עמוד בהיר) מקבלת את המחלקה
+  `navy-cards`: היפוך הדיו יושב על המשטח עצמו ועובר בירושה לצאצאיו,
+  ולא על שורש העמוד.
+- הכותרת העליונה (נייבי `#122736`) זהה בכל הערכות. סרגל הניווט
+  מתחתיה משתנה עם הגוון.
+
+**קבצי המשתנים ל-Figma** נמצאים ב-`design/figma-tokens/` ונוצרים
+מהערכים שבקוד: אוסף `Primitives` (רדיוסים, טיפוגרפיה לדסקטופ ולמובייל,
+מרווחים, מידות, פריסה, אטימות, זמנים) ואוסף `Theme` עם mode לכל ערכה,
+כולל הגוון הייעודי לכל עמוד. פירוט מלא ב-`design/figma-tokens/README.md`.
+כששמים צבע או טוקן חדש בקוד - לייצר את הקבצים מחדש ולייבא ל-Figma.

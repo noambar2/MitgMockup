@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -233,6 +234,56 @@ export function ProgressRing({
 /** רוחב תוכן אחיד לעמודי המשנה (משימות, זימונים, הודעות, הגדרות) */
 export const PAGE_CONTAINER = "md:max-w-[760px] md:mx-auto";
 
+// ── Filter chip ─────────────────────────────────────────────────────────────
+
+/**
+ * צ'יפ סינון/בחירה - אותו מראה בכל המערכת: על רקע העמוד ובתוך חלונות.
+ * המסגרת היא מה שמגדיר אותו כשהרקע מאחוריו לבן (למשל בתוך חלון סינון).
+ */
+export function FilterChip({
+  active,
+  disabled,
+  count,
+  onClick,
+  children,
+  ...props
+}: {
+  active?: boolean;
+  disabled?: boolean;
+  /** מספר הפריטים שהסינון הזה יניב */
+  count?: number;
+  onClick: () => void;
+  children: ReactNode;
+} & Omit<
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  "onClick" | "disabled" | "children"
+>) {
+  return (
+    <button
+      {...props}
+      onClick={onClick}
+      disabled={disabled}
+      aria-pressed={active}
+      className={`flex items-center gap-1.5 text-[13px] font-semibold px-4 py-1.5 rounded-full whitespace-nowrap border transition-colors ${
+        active
+          ? "bg-[#008ff0] border-[#008ff0] text-white"
+          : disabled
+            ? "bg-[rgba(23,28,35,0.05)] border-[rgba(23,28,35,0.12)] text-[#171c23] opacity-35 cursor-not-allowed"
+            : "bg-[rgba(23,28,35,0.05)] border-[rgba(23,28,35,0.12)] text-[#171c23] hover:border-[rgba(0,143,240,0.35)]"
+      }`}
+    >
+      {children}
+      {count !== undefined && (
+        <span
+          className={`text-[13px] font-bold ${active ? "opacity-75" : "opacity-45"}`}
+        >
+          {count}
+        </span>
+      )}
+    </button>
+  );
+}
+
 /** מתג בחירת פריסה - ליד כותרת של מקטע שיש לו שתי אפשרויות תצוגה */
 export function LayoutSwitch({
   value,
@@ -380,6 +431,46 @@ export function SelectField({
   onChange: (value: string) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const trigger = useRef<HTMLButtonElement>(null);
+  /**
+   * הרשימה נפתחת ב-portal ובמיקום fixed, ולא בתוך השדה: בתוך חלון
+   * גולל היא נחתכה והיה צריך לגלול כדי לראות את האפשרויות.
+   */
+  const [pos, setPos] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    maxHeight: number;
+    flip: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const place = () => {
+      const el = trigger.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const below = window.innerHeight - r.bottom - 16;
+      const above = r.top - 16;
+      // אם אין מקום מתחת - נפתח כלפי מעלה
+      const flip = below < 200 && above > below;
+      setPos({
+        top: flip ? r.top - 6 : r.bottom + 6,
+        left: r.left,
+        width: r.width,
+        maxHeight: Math.max(120, Math.min(224, flip ? above : below)),
+        flip,
+      });
+    };
+    place();
+    window.addEventListener("resize", place);
+    window.addEventListener("scroll", place, true);
+    return () => {
+      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", place, true);
+    };
+  }, [open]);
+
   return (
     <div>
       {label && (
@@ -387,6 +478,7 @@ export function SelectField({
       )}
       <div className="relative">
         <button
+          ref={trigger}
           type="button"
           onClick={() => setOpen(!open)}
           className={`w-full bg-white border rounded-[10px] px-4 py-3 flex items-center justify-between gap-2 text-right transition-colors ${
@@ -405,36 +497,49 @@ export function SelectField({
             className={`text-[#171c23] opacity-50 shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
           />
         </button>
-        {open && (
-          <>
-            <div
-              className="fixed inset-0 z-10"
-              onClick={() => setOpen(false)}
-            />
-            <div
-              className="absolute z-20 top-full mt-1.5 w-full bg-white rounded-[10px] border border-[rgba(23,28,35,0.08)] max-h-56 overflow-y-auto py-1"
-              style={{ boxShadow: ELEVATION.overlay }}
-            >
-              {options.map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => {
-                    onChange(option);
-                    setOpen(false);
-                  }}
-                  className={`w-full text-right px-4 py-2.5 text-[15px] transition-colors hover:bg-[rgba(0,143,240,0.06)] ${
-                    option === value
-                      ? "text-[#008ff0] font-semibold"
-                      : "text-[#171c23]"
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
+        {open &&
+          pos &&
+          createPortal(
+            <div dir="rtl">
+              <div
+                className="fixed inset-0 z-[500]"
+                onClick={() => setOpen(false)}
+              />
+              <div
+                className="fixed z-[510] bg-white rounded-[10px] border border-[rgba(23,28,35,0.08)] overflow-y-auto py-1"
+                style={{
+                  top: pos.top,
+                  left: pos.left,
+                  width: pos.width,
+                  maxHeight: pos.maxHeight,
+                  transform: pos.flip
+                    ? "translateY(-100%)"
+                    : undefined,
+                  boxShadow: ELEVATION.overlay,
+                }}
+              >
+                {options.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => {
+                      onChange(option);
+                      setOpen(false);
+                    }}
+                    className={`w-full text-right px-4 py-2.5 text-[15px] transition-colors hover:bg-[rgba(0,143,240,0.06)] ${
+                      option === value
+                        ? "text-[#008ff0] font-semibold"
+                        : "text-[#171c23]"
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>,
+            document.querySelector("[data-app-root]") ??
+              document.body,
+          )}
       </div>
     </div>
   );

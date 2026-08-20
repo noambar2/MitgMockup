@@ -32,6 +32,7 @@ import {
   Button,
   Dialog,
   DialogHeader,
+  FilterChip,
   IconCircle,
   StatusBadge,
   useDialogClose,
@@ -981,32 +982,18 @@ function FilterGroup({
       <span className="w-full text-[#171c23] text-[13px] opacity-50 mb-0.5">
         {label}
       </span>
-      {options.map((o) => {
-        // צ'יפ ריק לא ניתן ללחיצה - אחרת מגיעים למצב "אין תוצאות"
-        const empty = o.count === 0 && !o.active;
-        return (
-          <button
-            key={o.key}
-            onClick={o.onClick}
-            disabled={empty}
-            aria-pressed={o.active}
-            className={`flex items-center gap-1.5 text-[13px] font-semibold px-4 py-1.5 rounded-full whitespace-nowrap border transition-colors ${
-              o.active
-                ? "bg-[#008ff0] border-[#008ff0] text-white"
-                : empty
-                  ? "bg-[rgba(23,28,35,0.04)] border-[rgba(23,28,35,0.12)] text-[#171c23] opacity-35 cursor-not-allowed"
-                  : "bg-[rgba(23,28,35,0.04)] border-[rgba(23,28,35,0.12)] text-[#171c23] hover:border-[rgba(0,143,240,0.35)]"
-            }`}
-          >
-            {o.label}
-            <span
-              className={`text-[13px] font-bold ${o.active ? "opacity-75" : "opacity-45"}`}
-            >
-              {o.count}
-            </span>
-          </button>
-        );
-      })}
+      {options.map((o) => (
+        <FilterChip
+          key={o.key}
+          active={o.active}
+          // צ'יפ ריק לא ניתן ללחיצה - אחרת מגיעים למצב "אין תוצאות"
+          disabled={o.count === 0 && !o.active}
+          count={o.count}
+          onClick={o.onClick}
+        >
+          {o.label}
+        </FilterChip>
+      ))}
     </div>
   );
 }

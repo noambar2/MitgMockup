@@ -10,6 +10,7 @@ import {
 import {
   AdBanner,
   Button,
+  FilterChip,
   StatusBadge,
   ProgressBar,
 } from "./primitives";
@@ -727,19 +728,15 @@ function DaparLearningPage({
         className="flex flex-wrap items-center gap-2 mb-6"
       >
         {DAPAR_LANGUAGES.map((lang) => (
-          <button
+          <FilterChip
             key={lang.id}
             role="radio"
             aria-checked={language === lang.id}
+            active={language === lang.id}
             onClick={() => setLanguage(lang.id)}
-            className={`flex items-center gap-1.5 text-[13px] font-semibold px-4 py-1.5 rounded-full whitespace-nowrap transition-colors ${
-              language === lang.id
-                ? "bg-[#008ff0] text-white"
-                : "bg-white text-[#171c23] opacity-70 hover:opacity-100"
-            }`}
           >
             {lang.label}
-          </button>
+          </FilterChip>
         ))}
       </div>
 
