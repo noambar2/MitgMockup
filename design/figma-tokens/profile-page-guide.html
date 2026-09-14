@@ -13,6 +13,7 @@
     --brand-soft: #e6f4fe;
     --navy: #122736;
     --green: #69c600;
+    --amber: #e07000;
     --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
     --sans: "Noto Sans Hebrew", "Assistant", "Heebo", "Rubik",
       system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
@@ -32,6 +33,7 @@
       --brand-soft: #16303f;
       --navy: #0a1620;
       --green: #93da3a;
+      --amber: #f5a253;
     }
   }
 
@@ -48,6 +50,7 @@
     --brand-soft: #16303f;
     --navy: #0a1620;
     --green: #93da3a;
+    --amber: #f5a253;
   }
 
   * { box-sizing: border-box; }
@@ -63,12 +66,12 @@
   }
 
   .wrap {
-    max-width: 940px;
+    max-width: 960px;
     margin: 0 auto;
     padding: 56px 24px 96px;
     display: flex;
     flex-direction: column;
-    gap: 56px;
+    gap: 60px;
   }
 
   header.top {
@@ -98,12 +101,7 @@
     text-wrap: balance;
   }
 
-  .lede {
-    margin: 0;
-    max-width: 62ch;
-    color: var(--ink-2);
-    font-size: 17px;
-  }
+  .lede { margin: 0; max-width: 62ch; color: var(--ink-2); font-size: 17px; }
 
   section { display: flex; flex-direction: column; gap: 18px; }
 
@@ -128,10 +126,14 @@
   }
 
   h3 {
-    margin: 22px 0 0;
-    font-size: 17px;
+    margin: 24px 0 0;
+    font-size: 18px;
     font-weight: 700;
+    padding-inline-start: 12px;
+    border-inline-start: 3px solid var(--brand);
   }
+
+  h4 { margin: 18px 0 -4px; font-size: 15.5px; font-weight: 700; color: var(--ink); }
 
   p { margin: 0; max-width: 68ch; color: var(--ink-2); }
   p.tight { max-width: none; }
@@ -156,7 +158,7 @@
     border-collapse: collapse;
     background: var(--surface);
     font-size: 14.5px;
-    min-width: 620px;
+    min-width: 640px;
   }
 
   th, td {
@@ -178,6 +180,7 @@
   tbody tr:last-child td { border-bottom: 0; }
   td.var { font-family: var(--mono); font-size: 13px; direction: ltr; text-align: right; color: var(--brand); white-space: nowrap; }
   td.num { font-family: var(--mono); font-size: 13px; direction: ltr; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.st { white-space: nowrap; font-size: 13.5px; }
 
   .callout {
     background: var(--surface);
@@ -189,18 +192,15 @@
     flex-direction: column;
     gap: 6px;
   }
-  .callout .k {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--brand);
-  }
+  .callout.warn { border-inline-start-color: var(--amber); }
+  .callout .k { font-size: 13px; font-weight: 700; color: var(--brand); }
+  .callout.warn .k { color: var(--amber); }
   .callout p { color: var(--ink-2); font-size: 15px; }
 
   .map { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
   .map svg { display: block; width: 100%; height: auto; }
 
-  ol.steps, ul.plain { margin: 0; padding-inline-start: 22px; color: var(--ink-2); display: flex; flex-direction: column; gap: 8px; }
-  ol.steps li::marker { color: var(--brand); font-weight: 700; }
+  ul.plain { margin: 0; padding-inline-start: 22px; color: var(--ink-2); display: flex; flex-direction: column; gap: 8px; }
   ul.check { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
   ul.check li {
     background: var(--surface);
@@ -231,6 +231,19 @@
   }
   .sw i { width: 18px; height: 18px; border-radius: 50%; display: block; border: 1px solid rgba(0,0,0,.12); }
 
+  .pill {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 1px 9px;
+    background: var(--brand-soft);
+    color: var(--brand);
+    white-space: nowrap;
+  }
+  .pill.g { background: color-mix(in srgb, var(--green) 16%, transparent); color: color-mix(in srgb, var(--green) 75%, var(--ink)); }
+  .pill.a { background: color-mix(in srgb, var(--amber) 15%, transparent); color: var(--amber); }
+
   footer {
     border-top: 1px solid var(--line);
     padding-top: 24px;
@@ -244,33 +257,30 @@
     <div class="eyebrow">Figma · Personal profile</div>
     <h1>מפת המשתנים לפרופיל אישי</h1>
     <p class="lede">
-      איזה משתנה להצמיד לכל שכבה בעמוד הפרופיל, בדסקטופ ובמובייל.
-      כל ערך כאן נמדד מהעמוד החי, ולכן מה שייבנה בפיגמה יתאים למה
-      שרואים באתר.
+      כל מה שצריך כדי לבנות את העמוד בפיגמה: איזה משתנה לכל שכבה,
+      כל מרווח בפיקסלים, הפרדה מלאה בין דסקטופ למובייל, ורשימת
+      הפריימים והמצבים שצריך לצייר. כל ערך נמדד מהעמוד החי.
     </p>
   </header>
 
   <section>
     <h2><span class="num">00</span> שני האוספים</h2>
     <p>
-      אחרי הייבוא יש בקובץ שני אוספי משתנים. ההפרדה ביניהם היא כל
-      הרעיון: <strong>Value</strong> הוא מה שלא משתנה בין ערכות,
-      <strong>Theme</strong> הוא מה שכן.
+      ההפרדה היא כל הרעיון: <strong>Value</strong> הוא מה שלא משתנה בין
+      ערכות, <strong>Theme</strong> הוא מה שכן.
     </p>
     <div class="scroll">
       <table>
-        <thead>
-          <tr><th>אוסף</th><th>מה יש בו</th><th>Modes</th></tr>
-        </thead>
+        <thead><tr><th>אוסף</th><th>מה יש בו</th><th>Modes</th></tr></thead>
         <tbody>
           <tr>
             <td><strong>Value</strong></td>
-            <td>רדיוסים, טיפוגרפיה, מרווחים, מידות, פריסה, אטימות, זמני אנימציה</td>
+            <td>רדיוסים, טיפוגרפיה (דסקטופ + מובייל), גובה שורה, משקלים, ריווח אותיות, מרווחים, מידות, פריסה, אטימות, זמנים</td>
             <td>אחד</td>
           </tr>
           <tr>
             <td><strong>Theme</strong></td>
-            <td>כל הצבעים: מותג, רקע, משטחים, דיו, סמנטיקה, גרדיאנט הניווט</td>
+            <td>כל הצבעים: מותג, רקע, משטחים, דיו, סמנטיקה, גרדיאנט הניווט, גוון לכל עמוד</td>
             <td>בהיר · כהה · סגול · טורקיז · שקיעה · ורוד · צבעוני</td>
           </tr>
         </tbody>
@@ -279,102 +289,137 @@
     <div class="callout">
       <span class="k">כלל עבודה</span>
       <p>
-        לעולם לא להקליד צבע ידנית בשכבה. כל מילוי, מסגרת וטקסט מקבלים
-        משתנה מ-Theme — רק כך החלפת mode תצבע את כל העמוד, ורק כך
-        הערכה הצבעונית תעבוד.
+        לא להקליד צבע ידנית בשום שכבה, ולא להקליד מספר במרווח או
+        ברדיוס. הכל מוצמד למשתנה — רק כך החלפת mode צובעת את העמוד,
+        ורק כך שינוי טוקן אחד מתפשט לכל המסכים.
       </p>
     </div>
   </section>
 
   <section>
-    <h2><span class="num">01</span> הפריימים</h2>
+    <h2><span class="num">01</span> הפריימים והמרווחים הגלובליים</h2>
     <div class="scroll">
       <table>
-        <thead>
-          <tr><th>מה</th><th>דסקטופ</th><th>מובייל</th><th>משתנה</th></tr>
-        </thead>
+        <thead><tr><th>מה</th><th>דסקטופ</th><th>מובייל</th><th>משתנה</th></tr></thead>
         <tbody>
           <tr><td>רוחב פריים</td><td class="num">1440</td><td class="num">375</td><td class="var">layout/breakpoint-*</td></tr>
           <tr><td>ריפוד צדדי</td><td class="num">40</td><td class="num">16</td><td class="var">space/page-x-desktop · page-x-mobile</td></tr>
           <tr><td>ריפוד עליון (מתחת לניווט)</td><td class="num">32</td><td class="num">32</td><td class="var">space/page-top</td></tr>
-          <tr><td>ריפוד תחתון</td><td class="num">48</td><td class="num">48</td><td class="var">space/page-bottom</td></tr>
-          <tr><td>כיוון</td><td colspan="2">RTL — הגדירי בפריים <code>Direction: RTL</code></td><td>—</td></tr>
+          <tr><td>ריפוד תחתון של העמוד</td><td class="num">48</td><td class="num">48</td><td class="var">space/page-bottom</td></tr>
+          <tr><td>רוחב תוכן בפועל</td><td class="num">1360</td><td class="num">343</td><td>—</td></tr>
+          <tr><td>כיוון</td><td colspan="2">RTL על הפריים</td><td>—</td></tr>
         </tbody>
       </table>
     </div>
     <p>
-      עמוד הפרופיל הוא עמוד ברוחב מלא. <code>layout/content-max-width</code>
+      עמוד הפרופיל הוא ברוחב מלא. <code>layout/content-max-width</code>
       (760) שייך לעמודי המשנה — הודעות, פניות, זימונים — ולא כאן.
     </p>
   </section>
 
   <section>
-    <h2><span class="num">02</span> מפת האזורים</h2>
-    <p>שמונת האזורים מלמעלה למטה. המספרים חוזרים בטבלאות שאחריהם.</p>
+    <h2><span class="num">02</span> מפת המרווחים האנכיים</h2>
+    <p class="tight">
+      זה החלק שהכי קל לפספס. אלה המרווחים בין הבלוקים, מלמעלה למטה,
+      בשני המסכים:
+    </p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>בין</th><th>לבין</th><th>דסקטופ</th><th>מובייל</th><th>משתנה</th></tr></thead>
+        <tbody>
+          <tr><td>סרגל הניווט</td><td>כותרת "פרופיל אישי"</td><td class="num">32</td><td class="num">32</td><td class="var">space/page-top</td></tr>
+          <tr><td>כותרת "פרופיל אישי"</td><td>כרטיס נתוני הגיוס</td><td class="num">24</td><td class="num">24</td><td class="var">space/6</td></tr>
+          <tr><td>כרטיס נתוני הגיוס</td><td>כותרת "נתוני איכות"</td><td class="num">24</td><td class="num">24</td><td class="var">space/4 + space/2</td></tr>
+          <tr><td>כותרת "נתוני איכות"</td><td>שורת ההסבר</td><td class="num">4</td><td class="num">4</td><td class="var">space/1</td></tr>
+          <tr><td>שורת ההסבר</td><td>הצ'יפים / הרצועה</td><td class="num">16</td><td class="num">16</td><td class="var">space/4</td></tr>
+          <tr><td>הצ'יפים</td><td>פאנל התוכן</td><td class="num">12</td><td>—</td><td class="var">space/3</td></tr>
+          <tr><td>מקטע נתוני איכות</td><td>כותרת "פרטים אישיים"</td><td class="num">40</td><td class="num">40</td><td class="var">space/10</td></tr>
+          <tr><td>כותרת "פרטים אישיים"</td><td>כרטיס האקורדיון הראשון</td><td class="num">24</td><td class="num">24</td><td class="var">space/6</td></tr>
+          <tr><td>כרטיס אקורדיון</td><td>הכרטיס הבא</td><td class="num">20</td><td class="num">12</td><td class="var">space/5 · space/3</td></tr>
+          <tr><td>האקורדיון האחרון</td><td>שטח הפרסום</td><td class="num">40</td><td class="num">40</td><td class="var">space/10</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>מרווחים פנימיים חוזרים</h4>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>איפה</th><th>ערך</th><th>משתנה</th></tr></thead>
+        <tbody>
+          <tr><td>ריפוד כל כרטיס</td><td class="num">20</td><td class="var">space/card-padding</td></tr>
+          <tr><td>בין שדה לשדה בגריד פרטים (אופקי / אנכי)</td><td class="num">20 / 16</td><td class="var">space/5 · space/4</td></tr>
+          <tr><td>בין תווית לערך בתוך שדה</td><td class="num">0-2</td><td class="var">space/1</td></tr>
+          <tr><td>בין צ'יפ לצ'יפ</td><td class="num">8</td><td class="var">space/2</td></tr>
+          <tr><td>בין אריח לאריח ברצועת המובייל</td><td class="num">8</td><td class="var">space/2</td></tr>
+          <tr><td>בין אייקון לטקסט</td><td class="num">6-8</td><td class="var">space/2</td></tr>
+          <tr><td>ריפוד פנימי בכפתור</td><td class="num">20 / 6</td><td class="var">space/5 · space/1</td></tr>
+          <tr><td>ריפוד פנימי בצ'יפ</td><td class="num">16 / 6</td><td class="var">space/4 · space/1</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span> מפת האזורים</h2>
     <div class="map">
       <svg viewBox="0 0 900 380" role="img" aria-label="סכמת עמוד הפרופיל בדסקטופ ובמובייל">
         <g font-family="var(--sans)" font-size="11" fill="currentColor">
-          <!-- desktop -->
           <text x="620" y="16" font-size="12" font-weight="700">דסקטופ 1440</text>
           <rect x="330" y="26" width="530" height="330" rx="10" fill="none" stroke="var(--line-strong)"/>
           <rect x="330" y="26" width="530" height="20" fill="var(--navy)"/>
-          <text x="850" y="40" text-anchor="end" fill="#fff" font-size="10">1 · פס עליון</text>
+          <text x="850" y="40" text-anchor="end" fill="#fff" font-size="10">1 · פס עליון 44</text>
           <rect x="330" y="46" width="530" height="22" fill="var(--brand)" opacity="0.85"/>
-          <text x="850" y="61" text-anchor="end" fill="#fff" font-size="10">2 · סרגל ניווט</text>
+          <text x="850" y="61" text-anchor="end" fill="#fff" font-size="10">2 · סרגל ניווט 54</text>
           <text x="845" y="92" text-anchor="end" font-weight="700" font-size="13">3 · פרופיל אישי.</text>
           <rect x="350" y="104" width="490" height="46" rx="8" fill="var(--surface-2)" stroke="var(--line)"/>
-          <text x="828" y="131" text-anchor="end" font-size="10">4 · נתוני גיוס · כרטיס זכוכית</text>
+          <text x="828" y="131" text-anchor="end" font-size="10">4 · נתוני גיוס · זכוכית · h 110</text>
           <text x="845" y="172" text-anchor="end" font-weight="700" font-size="13">5 · נתוני איכות.</text>
-          <rect x="640" y="182" width="90" height="16" rx="8" fill="var(--surface-2)" stroke="var(--line)"/>
-          <rect x="350" y="206" width="490" height="20" rx="10" fill="none" stroke="var(--line)"/>
-          <text x="828" y="220" text-anchor="end" font-size="10">6 · צ'יפי ציונים</text>
-          <rect x="350" y="234" width="490" height="52" rx="8" fill="var(--surface)" stroke="var(--line)"/>
-          <text x="828" y="264" text-anchor="end" font-size="10">7 · פאנל התוכן</text>
+          <rect x="350" y="182" width="490" height="20" rx="10" fill="none" stroke="var(--line)"/>
+          <text x="828" y="196" text-anchor="end" font-size="10">6 · צ'יפי ציונים h 34</text>
+          <rect x="350" y="210" width="490" height="76" rx="8" fill="var(--surface)" stroke="var(--line)"/>
+          <text x="828" y="252" text-anchor="end" font-size="10">7 · פאנל התוכן</text>
           <rect x="350" y="296" width="490" height="18" rx="6" fill="var(--surface)" stroke="var(--line)"/>
           <rect x="350" y="318" width="490" height="18" rx="6" fill="var(--surface)" stroke="var(--line)"/>
           <text x="828" y="331" text-anchor="end" font-size="10">8 · פרטים אישיים · אקורדיון</text>
 
-          <!-- mobile -->
           <text x="240" y="16" font-size="12" font-weight="700">מובייל 375</text>
           <rect x="60" y="26" width="190" height="330" rx="14" fill="none" stroke="var(--line-strong)"/>
           <rect x="60" y="26" width="190" height="24" fill="var(--navy)"/>
-          <text x="240" y="42" text-anchor="end" fill="#fff" font-size="9">1+2 · פס אחד</text>
+          <text x="240" y="42" text-anchor="end" fill="#fff" font-size="9">1+2 · פס אחד 64</text>
           <text x="238" y="72" text-anchor="end" font-weight="700" font-size="11">3</text>
           <rect x="72" y="82" width="166" height="70" rx="8" fill="var(--surface-2)" stroke="var(--line)"/>
-          <text x="230" y="120" text-anchor="end" font-size="9">4 · נערם לשלוש שורות</text>
+          <text x="230" y="120" text-anchor="end" font-size="9">4 · נערם · h 186</text>
           <text x="238" y="172" text-anchor="end" font-weight="700" font-size="11">5</text>
-          <rect x="72" y="182" width="166" height="26" rx="6" fill="var(--surface)" stroke="var(--line)"/>
-          <text x="230" y="198" text-anchor="end" font-size="9">6 · רצועה נגללת</text>
-          <rect x="72" y="216" width="166" height="60" rx="8" fill="var(--surface)" stroke="var(--line)"/>
-          <text x="230" y="250" text-anchor="end" font-size="9">7 · בוטום-שיט בלחיצה</text>
-          <rect x="72" y="286" width="166" height="20" rx="6" fill="var(--surface)" stroke="var(--line)"/>
-          <rect x="72" y="312" width="166" height="20" rx="6" fill="var(--surface)" stroke="var(--line)"/>
-          <text x="230" y="326" text-anchor="end" font-size="9">8</text>
+          <rect x="72" y="182" width="180" height="40" rx="6" fill="var(--surface)" stroke="var(--line)"/>
+          <text x="230" y="206" text-anchor="end" font-size="9">6 · רצועה נגללת · אריח 112</text>
+          <rect x="72" y="236" width="166" height="44" rx="8" fill="var(--surface-2)" stroke="var(--line)" stroke-dasharray="3 3"/>
+          <text x="230" y="262" text-anchor="end" font-size="9">7 · בוטום-שיט בלחיצה</text>
+          <rect x="72" y="290" width="166" height="18" rx="6" fill="var(--surface)" stroke="var(--line)"/>
+          <rect x="72" y="314" width="166" height="18" rx="6" fill="var(--surface)" stroke="var(--line)"/>
+          <text x="230" y="327" text-anchor="end" font-size="9">8</text>
         </g>
       </svg>
     </div>
   </section>
 
   <section>
-    <h2><span class="num">03</span> אזור אחר אזור</h2>
+    <h2><span class="num">04</span> אזורים 1-4</h2>
 
     <h3>1 + 2 · הכותרת העליונה וסרגל הניווט</h3>
     <div class="scroll">
       <table>
         <thead><tr><th>שכבה</th><th>משתנה</th><th>דסקטופ</th><th>מובייל</th></tr></thead>
         <tbody>
-          <tr><td>מילוי הפס העליון</td><td class="var">header/bar</td><td class="num">#122736 · h 44</td><td class="num">#122736 · h 64</td></tr>
-          <tr><td>מילוי סרגל הניווט</td><td class="var">nav-gradient/stop-1..4</td><td class="num">h 54</td><td>מוסתר</td></tr>
-          <tr><td>טקסט הניווט</td><td class="var">ink/primary <em>(לבן)</em></td><td class="num">type/caption 13</td><td>—</td></tr>
-          <tr><td>טאב פעיל</td><td class="var">surface/glass-fill</td><td class="num">radius/pill</td><td>—</td></tr>
+          <tr><td>פס עליון</td><td class="var">header/bar</td><td class="num">h 44 · ריפוד 40/6</td><td class="num">h 64 · ריפוד 16</td></tr>
+          <tr><td>סרגל ניווט</td><td class="var">nav-gradient/stop-1..4</td><td class="num">h 54</td><td>מוסתר — המבורגר</td></tr>
+          <tr><td>פריט ניווט</td><td class="var">type/caption · לבן</td><td class="num">13 · ריפוד 16/6</td><td>—</td></tr>
+          <tr><td>מרווח בין פריטי ניווט</td><td class="var">space/1</td><td class="num">4</td><td>—</td></tr>
+          <tr><td>טאב פעיל</td><td class="var">surface/glass-fill · radius/pill</td><td class="num">—</td><td>—</td></tr>
+          <tr><td>שדה חיפוש</td><td class="var">surface/glass-fill · radius/pill</td><td class="num">h 40 · w 220</td><td>אייקון בלבד</td></tr>
         </tbody>
       </table>
     </div>
-    <p>
-      הגרדיאנט הוא ליניארי בזווית <code>-11.75°</code> עם ארבע עצירות
-      לפי הסדר. הפס העליון הוא היחיד שלא משתנה בין ערכות — גם בערכה
-      הצבעונית הוא נשאר נייבי.
-    </p>
+    <p>הגרדיאנט ליניארי בזווית <code>-11.75°</code>, ארבע עצירות לפי הסדר. הפס העליון נשאר נייבי גם בערכה הצבעונית.</p>
 
     <h3>רקע העמוד</h3>
     <div class="scroll">
@@ -382,8 +427,9 @@
         <thead><tr><th>שכבה</th><th>משתנה</th><th>איך לצייר</th></tr></thead>
         <tbody>
           <tr><td>מילוי הפריים</td><td class="var">background/page</td><td>מילוי אחיד</td></tr>
-          <tr><td>כתם ראשי (×2)</td><td class="var">background/blob-a</td><td>אליפסה, Blur 70, אטימות 16% ו-18%</td></tr>
-          <tr><td>כתם משני</td><td class="var">background/blob-b</td><td>אליפסה, Blur 70, אטימות 20%</td></tr>
+          <tr><td>כתם ראשי ימין</td><td class="var">background/blob-a</td><td class="num">אליפסה 340×270 · Blur 70 · 18%</td></tr>
+          <tr><td>כתם ראשי שמאל</td><td class="var">background/blob-a</td><td class="num">אליפסה 250×200 · Blur 70 · 16%</td></tr>
+          <tr><td>כתם משני</td><td class="var">background/blob-b</td><td class="num">אליפסה 150×120 · Blur 70 · 20%</td></tr>
         </tbody>
       </table>
     </div>
@@ -393,19 +439,11 @@
       <table>
         <thead><tr><th>שכבה</th><th>משתנה</th><th>דסקטופ</th><th>מובייל</th></tr></thead>
         <tbody>
-          <tr><td>"פרופיל אישי"</td><td class="var">type/page-title · ink/primary</td><td class="num">34 / Bold</td><td class="num">25 / Bold</td></tr>
+          <tr><td>"פרופיל אישי"</td><td class="var">type/page-title · ink/primary</td><td class="num">34 · 700 · ‎-0.025em‎</td><td class="num">25</td></tr>
           <tr><td>הנקודה שבסוף</td><td class="var">accent-2</td><td class="num">#69C600</td><td class="num">#69C600</td></tr>
           <tr><td>מרווח מתחת</td><td class="var">space/6</td><td class="num">24</td><td class="num">24</td></tr>
         </tbody>
       </table>
-    </div>
-    <div class="callout">
-      <span class="k">הנקודה הירוקה</span>
-      <p>
-        היא לא קישוט — היא חוזרת בסוף כל כותרת מקטע במערכת. בערכה
-        הצבעונית היא מקבלת את <code>accent/&lt;עמוד&gt;/accent-2</code>
-        ולכן משנה גוון בין העמודים.
-      </p>
     </div>
 
     <h3>4 · כרטיס נתוני הגיוס (זכוכית)</h3>
@@ -416,128 +454,362 @@
           <tr><td>מילוי</td><td class="var">surface/glass-fill</td><td class="num">לבן 30%</td></tr>
           <tr><td>מסגרת 1px</td><td class="var">surface/glass-border</td><td class="num">לבן 50%</td></tr>
           <tr><td>טשטוש רקע</td><td>Background blur</td><td class="num">16</td></tr>
-          <tr><td>צל</td><td class="var">elevation/glass-shadow</td><td class="num">0 · 8 · 32</td></tr>
+          <tr><td>צל</td><td class="var">elevation/glass-shadow</td><td class="num">Y 8 · Blur 32</td></tr>
           <tr><td>פינות</td><td class="var">radius/surface</td><td class="num">10</td></tr>
-          <tr><td>ריפוד פנימי</td><td class="var">space/card-padding</td><td class="num">20</td></tr>
-          <tr><td>מספר הימים</td><td class="var">type/display · brand/default</td><td class="num">52 / Black · במובייל 44</td></tr>
-          <tr><td>תווית מעל</td><td class="var">type/label · ink/primary</td><td class="num">16 / Bold</td></tr>
-          <tr><td>תאריך עברי</td><td class="var">type/body-emphasis · ink/secondary</td><td class="num">15</td></tr>
-          <tr><td>קו מפריד אנכי</td><td class="var">ink/line</td><td class="num">1px · גובה 76</td></tr>
+          <tr><td>ריפוד פנימי בכל תא</td><td class="var">space/card-padding</td><td class="num">20</td></tr>
+          <tr><td>מספר הימים</td><td class="var">type/display · brand/default</td><td class="num">52 · 900 · line-height 1</td></tr>
+          <tr><td>תווית מעל המספר</td><td class="var">type/label · ink/primary</td><td class="num">16 · 700</td></tr>
+          <tr><td>מרווח תווית↔מספר</td><td class="var">space/2</td><td class="num">8</td></tr>
+          <tr><td>תאריך עברי</td><td class="var">type/body-emphasis · ink/secondary</td><td class="num">15 · 70%</td></tr>
+          <tr><td>קו מפריד אנכי</td><td class="var">ink/line</td><td class="num">1px · גובה 76 · שוליים 24 מלמעלה ומלמטה</td></tr>
         </tbody>
       </table>
     </div>
     <p>
-      בדסקטופ הכרטיס בגובה <strong>110</strong>: שתי העמודות הימניות
-      (ימים לגיוס · תאריך) חולקות 883, קו מפריד, והשיבוץ החזוי 474.
-      במובייל הכל נערם לגובה <strong>186</strong> — שתי העמודות למעלה
-      והשיבוץ מתחת לקו מפריד אופקי.
+      <strong>דסקטופ</strong> — גובה 110. שני התאים הימניים (ימים
+      לגיוס · תאריך גיוס) חולקים 883, קו מפריד, והשיבוץ החזוי תופס 474.
+      <strong>מובייל</strong> — גובה 186: שני התאים העליונים זה לצד זה
+      עם קו מפריד ביניהם, קו אופקי לרוחב, והשיבוץ החזוי מתחתיו.
+    </p>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span> אזורים 5-7 · נתוני איכות בדסקטופ</h2>
+    <p class="tight">
+      בדסקטופ המידע גלוי תמיד: שורת צ'יפים למעלה, ומתחתיה כרטיס
+      שמציג את ההסבר של הצ'יפ הנבחר. אין בוטום-שיט.
     </p>
 
-    <h3>5 + 6 · נתוני איכות</h3>
-    <div class="scroll">
-      <table>
-        <thead><tr><th>שכבה</th><th>משתנה</th><th>דסקטופ</th><th>מובייל</th></tr></thead>
-        <tbody>
-          <tr><td>כותרת המקטע</td><td class="var">type/page-title</td><td class="num">34</td><td class="num">25</td></tr>
-          <tr><td>שורת ההסבר</td><td class="var">type/caption · ink/faint</td><td class="num">13 · 50%</td><td class="num">12 · 50%</td></tr>
-          <tr><td>מתג האופציות — מסלול</td><td class="var">surface/chip</td><td class="num">radius/pill · ריפוד 4</td><td class="num">זהה</td></tr>
-          <tr><td>מתג — כפתור פעיל</td><td class="var">surface/card + brand/default</td><td class="num">13 / Semibold</td><td class="num">12</td></tr>
-          <tr><td>צ'יפ ציון</td><td class="var">surface/card · ink/primary</td><td class="num">h 34 · ריפוד 16/6</td><td>אריח ברצועה</td></tr>
-          <tr><td>הערך בצ'יפ</td><td class="var">brand/default</td><td class="num">16 / Black</td><td class="num">15</td></tr>
-          <tr><td>צ'יפ פעיל</td><td class="var">surface/card + elevation/overlay-shadow</td><td class="num">radius/pill</td><td>—</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p>
-      במובייל אזור 6 הוא רצועה נגללת אופקית: אריחים ברוחב
-      <strong>112</strong>, ריפוד <code>space/3</code>, פינות
-      <code>radius/surface</code>, והרצועה בולטת עד קצה המסך (ביטול
-      ריפוד העמוד).
-    </p>
-
-    <h3>7 · פאנל התוכן</h3>
+    <h4>שורת הצ'יפים</h4>
     <div class="scroll">
       <table>
         <thead><tr><th>שכבה</th><th>משתנה</th><th>ערך</th></tr></thead>
         <tbody>
-          <tr><td>מילוי</td><td class="var">surface/card</td><td class="num">#FFFFFF</td></tr>
-          <tr><td>פינות</td><td class="var">radius/surface</td><td class="num">10</td></tr>
-          <tr><td>ריפוד</td><td class="var">space/card-padding</td><td class="num">20</td></tr>
-          <tr><td>כותרת הציון</td><td class="var">type/card-title · ink/primary</td><td class="num">18 / Bold</td></tr>
-          <tr><td>הערך שליד הכותרת</td><td class="var">type/value · brand/default</td><td class="num">20 / Black</td></tr>
-          <tr><td>גוף ההסבר</td><td class="var">type/body · ink/primary</td><td class="num">14 · שורה 1.65</td></tr>
-          <tr><td>עמודות התרשים</td><td class="var">brand/default</td><td class="num">רדיוס 4</td></tr>
-          <tr><td>ציר וקווי עזר</td><td class="var">ink/line</td><td class="num">1px</td></tr>
+          <tr><td>גובה צ'יפ</td><td class="var">size/chip-height</td><td class="num">34</td></tr>
+          <tr><td>ריפוד פנימי</td><td class="var">space/4 · space/1</td><td class="num">16 / 6</td></tr>
+          <tr><td>מרווח בין צ'יפים</td><td class="var">space/2</td><td class="num">8</td></tr>
+          <tr><td>פינות</td><td class="var">radius/pill</td><td class="num">999</td></tr>
+          <tr><td>שם הציון</td><td class="var">type/caption · ink/primary</td><td class="num">13 · 600</td></tr>
+          <tr><td>הערך</td><td class="var">type/label · brand/default</td><td class="num">16 · 900</td></tr>
+          <tr><td>מרווח שם↔ערך</td><td class="var">space/2</td><td class="num">8</td></tr>
+          <tr><td>צ'יפ לא נבחר</td><td class="var">surface/glass-fill + glass-border</td><td class="num">לבן 30% · מסגרת 50% · Blur 16</td></tr>
+          <tr><td>צ'יפ נבחר</td><td class="var">surface/card</td><td class="num">לבן מלא · בלי מסגרת · צל 0/8/32</td></tr>
+          <tr><td>צ'יפ בריחוף</td><td class="var">elevation/hover-glow</td><td class="num">זוהר Blur 20 · 25%</td></tr>
+          <tr><td>"יום המא״ה" (בלי ציון)</td><td class="var">semantic/success</td><td class="num">נקודה 6px + "הושלם" 12</td></tr>
         </tbody>
       </table>
     </div>
-    <p>
-      במובייל הפאנל לא קיים כשכבה קבועה — לחיצה על אריח פותחת
-      בוטום-שיט: <code>radius/sheet-top</code> למעלה,
-      <code>surface/card</code> מילוי, <code>surface/overlay-scrim</code>
-      לכהות מאחור, גובה מינימלי 50vh.
+
+    <h4>פאנל התוכן</h4>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>שכבה</th><th>משתנה</th><th>ערך</th></tr></thead>
+        <tbody>
+          <tr><td>מילוי · פינות · ריפוד</td><td class="var">surface/card · radius/surface · space/card-padding</td><td class="num">לבן · 10 · 20</td></tr>
+          <tr><td>מרווח בין כותרת לתוכן</td><td class="var">space/4</td><td class="num">16</td></tr>
+          <tr><td>כותרת הציון</td><td class="var">type/card-title · ink/primary</td><td class="num">18 · 700</td></tr>
+          <tr><td>הערך שליד הכותרת</td><td class="var">type/value · brand/default</td><td class="num">20 · 700 · מרווח 6</td></tr>
+          <tr><td>גוף ההסבר</td><td class="var">type/body · ink/primary</td><td class="num">14 · line-height 1.65</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>שלושת מצבי הפאנל</h4>
+    <p class="tight">התוכן משתנה לפי הצ'יפ הנבחר — צריך שלושה פריימים:</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>מצב</th><th>מה מוצג</th><th>פריסה</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="st"><span class="pill">א · ציון רגיל</span></td>
+            <td>טקסט הסבר בלבד (עברית, פרופיל רפואי, קשיי הסתגלות...)</td>
+            <td>עמודה אחת, רוחב מלא</td>
+          </tr>
+          <tr>
+            <td class="st"><span class="pill">ב · דפ״ר</span></td>
+            <td>הסבר + תרשים עמודות</td>
+            <td>טקסט גמיש מימין · תרשים 320 קבוע משמאל · מרווח 24</td>
+          </tr>
+          <tr>
+            <td class="st"><span class="pill">ג · יום המא״ה</span></td>
+            <td>הסבר + 15 מיומנויות</td>
+            <td>טקסט 42% מימין · גריד 5 עמודות משמאל · מרווח 24</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>גריד המיומנויות (מצב ג)</h4>
+    <ul class="plain">
+      <li>5 עמודות × 3 שורות, מרווח אופקי <code>12</code>, אנכי <code>16</code>.</li>
+      <li>שם המיומנות: <code>type/caption</code> 13, <code>ink/primary</code> באטימות 70%, ממורכז, בגובה קבוע <strong>32</strong> כדי שכל הערכים יישבו על אותו קו.</li>
+      <li>הערך: <code>type/value</code> 20 · 600, ולידו אייקון מידע 12 באטימות 40%.</li>
+    </ul>
+
+    <h4>טולטיפ הריחוף (דסקטופ בלבד)</h4>
+    <p class="tight">
+      בעכבר מעל צ'יפ נפתח טולטיפ צף: מילוי <code>surface/card</code>,
+      פינות <code>radius/surface</code>, ריפוד 20, צל
+      <code>elevation/overlay-shadow</code>, רוחב מקסימלי 320. פריים
+      נפרד — <span class="pill">Hover</span>.
+    </p>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span> אזורים 5-7 · נתוני איכות במובייל</h2>
+    <p class="tight">
+      במובייל אין צ'יפים ואין פאנל. יש <strong>רצועת אריחים נגללת</strong>,
+      ולחיצה על אריח פותחת <strong>בוטום-שיט</strong> עם אותו תוכן
+      שמופיע בפאנל הדסקטופ.
     </p>
 
-    <h3>8 · פרטים אישיים</h3>
+    <h4>הרצועה</h4>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>שכבה</th><th>משתנה</th><th>ערך</th></tr></thead>
+        <tbody>
+          <tr><td>רוחב אריח</td><td>קבוע</td><td class="num">112</td></tr>
+          <tr><td>ריפוד פנימי</td><td class="var">space/3</td><td class="num">12</td></tr>
+          <tr><td>מרווח בין אריחים</td><td class="var">space/2</td><td class="num">8</td></tr>
+          <tr><td>מילוי · פינות</td><td class="var">surface/card · radius/surface</td><td class="num">לבן · 10</td></tr>
+          <tr><td>שם הציון</td><td class="var">type/body · ink/primary</td><td class="num">13 · 700 · ממורכז · line-height 1.15</td></tr>
+          <tr><td>הערך</td><td class="var">brand/default</td><td class="num">32 · 900 · line-height 1</td></tr>
+          <tr><td>מרווח שם↔ערך</td><td class="var">space/2</td><td class="num">8</td></tr>
+          <tr><td>"יום המא״ה"</td><td class="var">semantic/success · success-bg</td><td class="num">תגית "הושלם" · radius/pill</td></tr>
+          <tr><td>גלישה לקצה המסך</td><td>—</td><td class="num">הרצועה מבטלת את ריפוד העמוד (‎-16‎ מכל צד)</td></tr>
+          <tr><td>דהייה בקצה</td><td>—</td><td class="num">מסכה 28px בצד שיש בו עוד תוכן</td></tr>
+          <tr><td>חץ רמז</td><td class="var">surface/card · brand/default</td><td class="num">עיגול 24 · צל 0/2/8 · אייקון 14</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      <span class="k">שני מצבי גלילה</span>
+      <p>
+        ציירי שני פריימים לרצועה: <span class="pill">התחלה</span> —
+        דהייה וחץ בצד שמאל בלבד; <span class="pill">אמצע</span> —
+        דהייה בשני הצדדים ואריח חתוך שמציץ מימין.
+      </p>
+    </div>
+
+    <h4>הבוטום-שיט</h4>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>שכבה</th><th>משתנה</th><th>ערך</th></tr></thead>
+        <tbody>
+          <tr><td>כהות מאחור</td><td class="var">surface/overlay-scrim</td><td class="num">שחור 20%</td></tr>
+          <tr><td>מילוי היריעה</td><td class="var">surface/card</td><td class="num">לבן</td></tr>
+          <tr><td>פינות עליונות</td><td class="var">radius/sheet-top</td><td class="num">16 · תחתונות 0</td></tr>
+          <tr><td>גובה</td><td class="var">layout/sheet-min-height-vh</td><td class="num">מינימום 50vh · מקסימום 92vh</td></tr>
+          <tr><td>ידית אחיזה</td><td class="var">ink/line</td><td class="num">40×4 · radius/pill · ממורכזת · 12 מלמעלה</td></tr>
+          <tr><td>ריפוד הכותרת</td><td class="var">space/5 · space/4</td><td class="num">20 צדדי · 16 אנכי</td></tr>
+          <tr><td>שם הציון בכותרת</td><td class="var">type/card-title · ink/primary</td><td class="num">18 · 700</td></tr>
+          <tr><td>הערך בכותרת</td><td class="var">brand/default</td><td class="num">24 · 700 · מרווח 6</td></tr>
+          <tr><td>כפתור סגירה</td><td class="var">ink/primary</td><td class="num">32×32 · אייקון 20 · אטימות 60%</td></tr>
+          <tr><td>קו מתחת לכותרת</td><td class="var">ink/line</td><td class="num">1px</td></tr>
+          <tr><td>ריפוד הגוף</td><td class="var">space/5</td><td class="num">20</td></tr>
+          <tr><td>גוף ההסבר</td><td class="var">type/body · ink/primary</td><td class="num">13 · line-height 1.65</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>שלושת מצבי הבוטום-שיט</h4>
+    <p class="tight">
+      אותם שלושה מצבים של הדסקטופ, אבל <strong>הכל נערם לעמודה אחת</strong>
+      (הצד לא יושב ליד הטקסט אלא מתחתיו, מרווח <code>16</code>):
+    </p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>מצב</th><th>מה מוצג</th></tr></thead>
+        <tbody>
+          <tr><td class="st"><span class="pill">א · ציון רגיל</span></td><td>הסבר בלבד</td></tr>
+          <tr><td class="st"><span class="pill">ב · דפ״ר</span></td><td>הסבר, ומתחתיו תרשים ברוחב מלא</td></tr>
+          <tr><td class="st"><span class="pill">ג · יום המא״ה</span></td><td>הסבר, ומתחתיו גריד מיומנויות ב-<strong>3 עמודות</strong> (ולא 5)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn">
+      <span class="k">שים לב</span>
+      <p>
+        גריד המיומנויות הוא ההבדל הגדול בין המסכים: 5 עמודות בדסקטופ
+        מול 3 במובייל, ובשניהם גובה קבוע 32 לשם המיומנות.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span> אזור 8 · פרטים אישיים</h2>
     <div class="scroll">
       <table>
         <thead><tr><th>שכבה</th><th>משתנה</th><th>דסקטופ</th><th>מובייל</th></tr></thead>
         <tbody>
-          <tr><td>כרטיס אקורדיון</td><td class="var">surface/card · radius/surface</td><td class="num">גובה שורה 60</td><td class="num">64</td></tr>
-          <tr><td>כותרת הסעיף</td><td class="var">type/card-title</td><td class="num">18 / Bold</td><td class="num">16</td></tr>
-          <tr><td>חץ הפתיחה</td><td class="var">ink/primary · size/icon-xl</td><td class="num">20</td><td class="num">20</td></tr>
-          <tr><td>קו הפרדה בפתיחה</td><td class="var">ink/line</td><td class="num">1px</td><td class="num">1px</td></tr>
-          <tr><td>תווית שדה</td><td class="var">type/caption · ink/faint</td><td class="num">13</td><td class="num">12</td></tr>
+          <tr><td>כרטיס</td><td class="var">surface/card · radius/surface</td><td class="num">10</td><td class="num">10</td></tr>
+          <tr><td>גובה שורת הכותרת</td><td>—</td><td class="num">60</td><td class="num">64</td></tr>
+          <tr><td>ריפוד צדדי בשורה</td><td class="var">space/5</td><td class="num">20</td><td class="num">20</td></tr>
+          <tr><td>שם הסעיף</td><td class="var">type/card-title · ink/primary</td><td class="num">18 · 700</td><td class="num">16</td></tr>
+          <tr><td>חץ הפתיחה</td><td class="var">size/icon-xl · ink/primary</td><td class="num">20</td><td class="num">20</td></tr>
+          <tr><td>קו מתחת לכותרת (בפתיחה)</td><td class="var">ink/line</td><td class="num">1px</td><td class="num">1px</td></tr>
+          <tr><td>ריפוד התוכן הפתוח</td><td class="var">space/card-padding</td><td class="num">20</td><td class="num">20</td></tr>
+          <tr><td>גריד השדות</td><td>—</td><td class="num">6 עמודות</td><td class="num">2 עמודות</td></tr>
+          <tr><td>מרווח בגריד</td><td class="var">space/5 · space/4</td><td class="num">20 / 16</td><td class="num">20 / 16</td></tr>
+          <tr><td>תווית שדה</td><td class="var">type/caption · ink/faint</td><td class="num">13 · 50%</td><td class="num">12</td></tr>
           <tr><td>ערך שדה</td><td class="var">type/body-emphasis · ink/primary</td><td class="num">15</td><td class="num">14</td></tr>
+          <tr><td>קישור "עריכה"</td><td class="var">brand/default</td><td class="num">13 · 600 · אייקון 13</td><td class="num">12</td></tr>
           <tr><td>מרווח בין כרטיסים</td><td class="var">space/5 · space/3</td><td class="num">20</td><td class="num">12</td></tr>
         </tbody>
       </table>
     </div>
-
-    <h3>שטח הפרסום</h3>
-    <p class="tight">
-      בתחתית העמוד, <code>layout/ad-banner-height</code> = 83, מרווח
-      <code>space/10</code> (40) מעליו, <code>radius/surface</code>,
-      מילוי אפור בהיר עם כיתוב ממורכז ב-<code>ink/secondary</code>.
+    <p>
+      ארבעה סעיפים: <strong>מידע אישי · השכלה · פרטי הורים · פרטי
+      מלווים</strong>. רק אחד פתוח בכל רגע — לכן צריך פריים לכל סעיף
+      פתוח, ופריים אחד שבו כולם סגורים.
     </p>
   </section>
 
   <section>
-    <h2><span class="num">04</span> טיפוגרפיה: איזה גודל מתי</h2>
-    <p>
-      בקוד כתובים תמיד גדלי הדסקטופ, והמובייל יורד מדרגה אוטומטית.
-      בפיגמה זה שני סטים: <code>type/*</code> לפריים 1440 ו־
-      <code>type-mobile/*</code> לפריים 375.
+    <h2><span class="num">08</span> אילו פריימים לצייר</h2>
+    <p class="tight">
+      זו הרשימה המלאה. הצעה למבנה: עמוד פיגמה אחד לדסקטופ, אחד למובייל,
+      ובכל אחד קבוצות לפי אזור.
+    </p>
+
+    <h4>מצבי העמוד</h4>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>#</th><th>פריים</th><th>דסקטופ</th><th>מובייל</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td>מצב ברירת מחדל — כל האקורדיונים סגורים</td><td>✓</td><td>✓</td></tr>
+          <tr><td class="num">2</td><td>נתוני איכות · צ'יפ "דפ״ר" נבחר (עם תרשים)</td><td>✓</td><td>—</td></tr>
+          <tr><td class="num">3</td><td>נתוני איכות · צ'יפ "יום המא״ה" נבחר (גריד 5)</td><td>✓</td><td>—</td></tr>
+          <tr><td class="num">4</td><td>נתוני איכות · צ'יפ רגיל נבחר</td><td>✓</td><td>—</td></tr>
+          <tr><td class="num">5</td><td>טולטיפ ריחוף מעל צ'יפ</td><td>✓</td><td>—</td></tr>
+          <tr><td class="num">6</td><td>רצועת ציונים · תחילת גלילה</td><td>—</td><td>✓</td></tr>
+          <tr><td class="num">7</td><td>רצועת ציונים · אמצע גלילה</td><td>—</td><td>✓</td></tr>
+          <tr><td class="num">8</td><td>בוטום-שיט · ציון רגיל</td><td>—</td><td>✓</td></tr>
+          <tr><td class="num">9</td><td>בוטום-שיט · דפ״ר עם תרשים</td><td>—</td><td>✓</td></tr>
+          <tr><td class="num">10</td><td>בוטום-שיט · יום המא״ה (גריד 3)</td><td>—</td><td>✓</td></tr>
+          <tr><td class="num">11</td><td>אקורדיון "מידע אישי" פתוח</td><td>✓</td><td>✓</td></tr>
+          <tr><td class="num">12</td><td>אקורדיון "השכלה" פתוח</td><td>✓</td><td>✓</td></tr>
+          <tr><td class="num">13</td><td>אקורדיון "פרטי הורים" פתוח</td><td>✓</td><td>✓</td></tr>
+          <tr><td class="num">14</td><td>אקורדיון "פרטי מלווים" · יש מלווים</td><td>✓</td><td>✓</td></tr>
+          <tr><td class="num">15</td><td>אקורדיון "פרטי מלווים" · <strong>מצב ריק</strong></td><td>✓</td><td>✓</td></tr>
+          <tr><td class="num">16</td><td>תפריט המבורגר פתוח</td><td>—</td><td>✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>חלונות וטפסים</h4>
+    <p class="tight">
+      בדסקטופ כל חלון הוא מודל ממורכז עם כהות מאחור; במובייל אותו תוכן
+      בדיוק עולה כבוטום-שיט. לכל אחד ציירי את שני הווריאנטים.
     </p>
     <div class="scroll">
       <table>
-        <thead><tr><th>תפקיד</th><th>משתנה</th><th>דסקטופ</th><th>מובייל</th></tr></thead>
+        <thead><tr><th>חלון</th><th>מצבים לצייר</th><th>רוחב בדסקטופ</th></tr></thead>
         <tbody>
-          <tr><td>כותרת עמוד</td><td class="var">page-title</td><td class="num">34</td><td class="num">25</td></tr>
-          <tr><td>מספר ענק (ימים לגיוס)</td><td class="var">display</td><td class="num">52</td><td class="num">44</td></tr>
-          <tr><td>כותרת כרטיס</td><td class="var">card-title</td><td class="num">18</td><td class="num">16</td></tr>
-          <tr><td>ערך מודגש</td><td class="var">value</td><td class="num">20</td><td class="num">18</td></tr>
-          <tr><td>תווית / כותרת שדה</td><td class="var">label</td><td class="num">16</td><td class="num">15</td></tr>
-          <tr><td>גוף מודגש</td><td class="var">body-emphasis</td><td class="num">15</td><td class="num">14</td></tr>
-          <tr><td>גוף</td><td class="var">body</td><td class="num">14</td><td class="num">13</td></tr>
-          <tr><td>מטא־דאטה, צ'יפים</td><td class="var">caption</td><td class="num">13</td><td class="num">12</td></tr>
-          <tr><td>תגיות והערות</td><td class="var">meta / tag</td><td class="num">12 / 11</td><td class="num">11 / 10</td></tr>
+          <tr>
+            <td>עריכת דרכי התקשרות</td>
+            <td><span class="pill">מלא</span> ארבעה שדות מאוכלסים · <span class="pill a">שגיאה</span> שדה לא תקין</td>
+            <td class="num">480</td>
+          </tr>
+          <tr>
+            <td>עריכת פרטי הורה</td>
+            <td><span class="pill">מלא</span></td>
+            <td class="num">480</td>
+          </tr>
+          <tr>
+            <td>הוספת מלווה · שלב 1</td>
+            <td><span class="pill">ריק</span> כפתור "הבא" מושבת · <span class="pill">מלא</span> "הבא" פעיל</td>
+            <td class="num">480</td>
+          </tr>
+          <tr>
+            <td>הוספת מלווה · שלב 2</td>
+            <td><span class="pill">לפני</span> תקנון + צ'קבוקס ריק + חתימה ריקה · <span class="pill">אחרי</span> מסומן וחתום</td>
+            <td class="num">560</td>
+          </tr>
+          <tr>
+            <td>הוספת מלווה · שלב 3</td>
+            <td><span class="pill g">אישור</span> עיגול ירוק 64 + וי + הודעת הצלחה</td>
+            <td class="num">480</td>
+          </tr>
+          <tr>
+            <td>עריכת מלווה</td>
+            <td>אותם שלושה שלבים, כותרת "עריכת פרטי מלווה" והשדות מאוכלסים</td>
+            <td class="num">480 / 560</td>
+          </tr>
+          <tr>
+            <td>אישור התנתקות</td>
+            <td><span class="pill a">אזהרה</span> שאלה + "ביטול" / "התנתקות"</td>
+            <td class="num">400</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>אנטומיית חלון</h4>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>חלק</th><th>משתנה</th><th>דסקטופ</th><th>מובייל</th></tr></thead>
+        <tbody>
+          <tr><td>כהות מאחור</td><td class="var">surface/overlay-scrim</td><td class="num">שחור 20%</td><td class="num">שחור 20%</td></tr>
+          <tr><td>מילוי</td><td class="var">surface/card</td><td class="num">לבן</td><td class="num">לבן</td></tr>
+          <tr><td>פינות</td><td class="var">radius/surface · radius/sheet-top</td><td class="num">10 בכל הפינות</td><td class="num">16 עליונות בלבד</td></tr>
+          <tr><td>צל</td><td class="var">elevation/overlay-shadow</td><td class="num">Y 12 · Blur 32</td><td>—</td></tr>
+          <tr><td>גובה מקסימלי</td><td class="var">layout/dialog-max-height-vh</td><td class="num">85vh</td><td class="num">92vh</td></tr>
+          <tr><td>ריפוד כותרת</td><td class="var">space/5 · space/4</td><td class="num">20 / 16</td><td class="num">20 / 16</td></tr>
+          <tr><td>כותרת</td><td class="var">type/card-title · ink/primary</td><td class="num">18 · 700</td><td class="num">16</td></tr>
+          <tr><td>תת-כותרת</td><td class="var">type/caption · ink/secondary</td><td class="num">13 · 60%</td><td class="num">12</td></tr>
+          <tr><td>ריפוד גוף</td><td class="var">space/5</td><td class="num">20</td><td class="num">20</td></tr>
+          <tr><td>מרווח בין שדות</td><td class="var">space/5</td><td class="num">20</td><td class="num">20</td></tr>
+          <tr><td>ריפוד פוטר</td><td class="var">space/5 · space/4</td><td class="num">20 / 16</td><td class="num">20 / 16</td></tr>
+          <tr><td>מרווח בין כפתורי הפוטר</td><td class="var">space/2</td><td class="num">8</td><td class="num">8</td></tr>
+          <tr><td>קו מעל הפוטר ומתחת לכותרת</td><td class="var">ink/line</td><td class="num">1px</td><td class="num">1px</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>שדה טופס</h4>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>מצב</th><th>מסגרת</th><th>שאר המאפיינים</th></tr></thead>
+        <tbody>
+          <tr><td class="st">רגיל</td><td class="var">ink/line-strong</td><td class="num">h 48 · radius/surface · ריפוד 16/12 · טקסט 15</td></tr>
+          <tr><td class="st">ממוקד</td><td class="var">brand/default</td><td class="num">מסגרת 1px בגוון המותג</td></tr>
+          <tr><td class="st">ריק (placeholder)</td><td class="var">ink/line-strong</td><td class="num">טקסט <code>ink/faint</code> 40%</td></tr>
+          <tr><td class="st">שגיאה</td><td class="var">semantic/error</td><td class="num">מסגרת + הודעה 12 מתחת</td></tr>
+          <tr><td class="st">תווית מעל</td><td class="var">ink/primary</td><td class="num">16 · 600 · מרווח 10 מתחת · כוכבית ב-<code>semantic/error</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">09</span> טיפוגרפיה</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>תפקיד</th><th>משתנה</th><th>דסקטופ</th><th>מובייל</th><th>משקל</th><th>גובה שורה</th><th>ריווח</th></tr></thead>
+        <tbody>
+          <tr><td>כותרת עמוד</td><td class="var">page-title</td><td class="num">34</td><td class="num">25</td><td class="num">700</td><td class="num">1.15</td><td class="num">-0.025em</td></tr>
+          <tr><td>מספר ענק</td><td class="var">display</td><td class="num">52</td><td class="num">44</td><td class="num">900</td><td class="num">1</td><td class="num">-0.025em</td></tr>
+          <tr><td>ערך באריח מובייל</td><td class="var">—</td><td class="num">—</td><td class="num">32</td><td class="num">900</td><td class="num">1</td><td class="num">-0.025em</td></tr>
+          <tr><td>כותרת כרטיס</td><td class="var">card-title</td><td class="num">18</td><td class="num">16</td><td class="num">700</td><td class="num">1.3</td><td class="num">0</td></tr>
+          <tr><td>ערך מודגש</td><td class="var">value</td><td class="num">20</td><td class="num">18</td><td class="num">900</td><td class="num">1</td><td class="num">-0.025em</td></tr>
+          <tr><td>תווית</td><td class="var">label</td><td class="num">16</td><td class="num">15</td><td class="num">600-700</td><td class="num">1.3</td><td class="num">0</td></tr>
+          <tr><td>גוף מודגש</td><td class="var">body-emphasis</td><td class="num">15</td><td class="num">14</td><td class="num">400</td><td class="num">1.65</td><td class="num">0</td></tr>
+          <tr><td>גוף</td><td class="var">body</td><td class="num">14</td><td class="num">13</td><td class="num">400</td><td class="num">1.65</td><td class="num">0</td></tr>
+          <tr><td>מטא־דאטה, צ'יפים</td><td class="var">caption</td><td class="num">13</td><td class="num">12</td><td class="num">600</td><td class="num">1.5</td><td class="num">0</td></tr>
+          <tr><td>תגיות והערות</td><td class="var">meta / tag</td><td class="num">12 / 11</td><td class="num">11 / 10</td><td class="num">400-600</td><td class="num">1.3</td><td class="num">0</td></tr>
         </tbody>
       </table>
     </div>
     <p>
-      משקלים: Regular 400 לגוף, Semibold 600 לצ'יפים וקישורים,
-      Bold 700 לכותרות, Black 900 למספרים הגדולים. הפונט הוא
-      <strong>Noto Sans Hebrew</strong> בלבד.
+      ריווח שלילי רק מ-20px ומעלה. בפריים המובייל להשתמש בסט
+      <code>type-mobile/*</code> — אותם תפקידים, גדלים קטנים יותר.
+      הפונט: <strong>Noto Sans Hebrew</strong> בלבד.
     </p>
   </section>
 
   <section>
-    <h2><span class="num">05</span> בדיקת הערכות</h2>
-    <p>
-      אחרי שהעמוד בנוי כולו על משתנים, בחירת mode אחר על הפריים צובעת
-      אותו מחדש. שבע הערכות:
-    </p>
+    <h2><span class="num">10</span> בדיקת הערכות</h2>
     <div class="swatches">
       <span class="sw"><i style="background:#008ff0"></i>בהיר</span>
       <span class="sw"><i style="background:#4db4f5"></i>כהה</span>
@@ -548,29 +820,30 @@
       <span class="sw"><i style="background:linear-gradient(135deg,#7c5cf5,#ff7a1a,#00b3c7)"></i>צבעוני</span>
     </div>
     <p>
-      ב<strong>כהה</strong> בדקי במיוחד את כרטיס הזכוכית — המילוי יורד
-      ל-6% והמסגרת ל-12%, אחרת הוא נעלם. ב<strong>צבעוני</strong>
-      הפרופיל משתמש ב-<code>accent/profile/*</code>: סגול
-      <code>#7C5CF5</code>, רקע <code>#F3EDFF</code>, נקודת כותרת ורודה
-      <code>#FF8FC7</code>, פינות 20 וצל צבעוני.
+      ב<strong>כהה</strong> בדקי את כרטיס הזכוכית ואת הצ'יפים — המילוי
+      יורד ל-6% והמסגרת ל-12%, אחרת הם נעלמים.
+      ב<strong>צבעוני</strong> הפרופיל מושך מ-<code>accent/profile/*</code>:
+      מותג <code>#7C5CF5</code>, רקע <code>#F3EDFF</code>, נקודת כותרת
+      <code>#FF8FC7</code>, פינות 20 במקום 10 וצל צבעוני.
     </p>
   </section>
 
   <section>
-    <h2><span class="num">06</span> לפני שמעבירים הלאה</h2>
+    <h2><span class="num">11</span> לפני שמעבירים הלאה</h2>
     <ul class="check">
-      <li>אין אף צבע ידני בשכבות — הכל דרך משתנה מ-Theme.</li>
-      <li>שני הפריימים (1440 / 375) משתמשים באותם משתני צבע, ונבדלים רק בסט הטיפוגרפיה ובריפוד הצדדי.</li>
-      <li>החלפת mode ל"כהה" ול"צבעוני" לא שוברת קריאוּת בשום מקום.</li>
+      <li>אין צבע, מרווח או רדיוס מוקלדים ידנית — הכל מוצמד למשתנה.</li>
+      <li>שני הפריימים משתמשים באותם משתני צבע, ונבדלים רק בסט הטיפוגרפיה, בריפוד הצדדי ובפריסה.</li>
+      <li>קיימים כל 16 פריימי המצבים + החלונות על שני הווריאנטים שלהם.</li>
+      <li>מצב ריק של מלווים ומצב מלא — שניהם.</li>
+      <li>גריד המיומנויות: 5 עמודות בדסקטופ, 3 במובייל, שם בגובה קבוע 32.</li>
+      <li>החלפת mode ל"כהה" ול"צבעוני" לא שוברת קריאוּת בשום פריים.</li>
       <li>הפס העליון נשאר נייבי בכל הערכות.</li>
-      <li>הנקודה בסוף כל כותרת לקוחה מ-<code>accent-2</code> ולא מירוק קשיח.</li>
-      <li>כל הפינות מ-<code>radius/*</code> וכל המרווחים מ-<code>space/*</code>.</li>
     </ul>
   </section>
 
   <footer>
-    כל המידות נמדדו מהעמוד החי בדפדפן (1440×900 ו-375×812). אם משתנה
-    ערך בקוד — יש לייצר מחדש את קובצי המשתנים ולייבא, כדי שפיגמה
-    והאתר לא ייפרדו.
+    כל המידות נמדדו מהעמוד החי ב-1440×900 וב-375×812. אם ערך משתנה
+    בקוד — לייצר מחדש את קובצי המשתנים ולייבא, כדי שפיגמה והאתר לא
+    ייפרדו.
   </footer>
 </div>

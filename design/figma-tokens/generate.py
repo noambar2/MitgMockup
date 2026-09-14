@@ -116,6 +116,8 @@ primitives = {
         "page-title": num(30),
         "display": num(44),
     },
+    # מכפילים - לתיעוד ולשימוש ב-CSS. בפיגמה אין להצמיד אותם לשדה
+    # Line height, שמצפה לפיקסלים; לשם כך יש type-line למטה.
     "line-height": {
         "none": num(1),
         "tight": num(1.15),
@@ -129,10 +131,52 @@ primitives = {
         "bold": num(700),
         "black": num(900),
     },
-    # ריווח אותיות שלילי רק מ-20px ומעלה
+    # ריווח אותיות באחוזים (כמו בשדה Letter spacing בפיגמה).
+    # שלילי רק מ-20px ומעלה.
     "letter-spacing": {
         "normal": num(0),
-        "tight": num(-0.025),
+        "tight": num(-2.5),
+    },
+    # גובה שורה בפיקסלים לכל תפקיד - זה מה שמצמידים בפיגמה
+    "type-line": {
+        role: num(round(size * ratio))
+        for role, size, ratio in [
+            ("micro", 10, 1.3),
+            ("tag", 11, 1.3),
+            ("meta", 12, 1.3),
+            ("caption", 13, 1.5),
+            ("body", 14, 1.65),
+            ("body-emphasis", 15, 1.65),
+            ("label", 16, 1.3),
+            ("card-title", 18, 1.3),
+            ("value", 20, 1),
+            ("section-title", 22, 1.15),
+            ("dialog-title", 24, 1.15),
+            ("gauge", 26, 1),
+            ("page-title-mobile", 28, 1.15),
+            ("page-title", 34, 1.15),
+            ("display-mobile", 44, 1),
+            ("display", 52, 1),
+        ]
+    },
+    "type-mobile-line": {
+        role: num(round(size * ratio))
+        for role, size, ratio in [
+            ("micro", 9, 1.3),
+            ("tag", 10, 1.3),
+            ("meta", 11, 1.3),
+            ("caption", 12, 1.5),
+            ("body", 13, 1.65),
+            ("body-emphasis", 14, 1.65),
+            ("label", 15, 1.3),
+            ("card-title", 16, 1.3),
+            ("value", 18, 1),
+            ("section-title", 20, 1.15),
+            ("dialog-title", 21, 1.15),
+            ("gauge", 23, 1),
+            ("page-title", 25, 1.15),
+            ("display", 44, 1),
+        ]
     },
     "space": {
         "1": num(4),

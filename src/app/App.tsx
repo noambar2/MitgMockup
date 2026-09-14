@@ -17,6 +17,7 @@ import LearningsPage from './components/LearningsPage';
 import TasksAppointmentsPage from './components/TasksAppointmentsPage';
 import MyAppointmentsPage from './components/MyAppointmentsPage';
 import HobbiesQuestionnairePage from './components/HobbiesQuestionnairePage';
+import AtudaQuestionnairePage from './components/AtudaQuestionnairePage';
 import SettingsPage from './components/SettingsPage';
 import InquiriesPage from './components/InquiriesPage';
 import MessagesPage, {
@@ -61,6 +62,7 @@ type Page =
   | "tasks"
   | "appointments"
   | "hobbiesForm"
+  | "atudaForm"
   | "settings"
   | "messages"
   | "inquiries";
@@ -1958,9 +1960,13 @@ export default function App() {
       }}
       className={`min-h-[100dvh] flex flex-col ${theme.dark ? "dark" : ""} ${theme.surface ? "navy-cards" : ""} ${theme.playful ? "playful" : ""}`}
     >
-      {/* בתוך השאלון הטאב "משימות וזימונים" נשאר מסומן */}
+      {/* בתוך שאלון הטאב "משימות" נשאר מסומן */}
       <Header
-        activePage={page === "hobbiesForm" ? "tasks" : page}
+        activePage={
+          page === "hobbiesForm" || page === "atudaForm"
+            ? "tasks"
+            : page
+        }
         onNavigate={(next) => {
           // כניסה לעמוד הלומדות מהתפריט מתחילה תמיד מההתחלה
           if (next === "learnings") setLearningsEntry("intro");
@@ -1978,7 +1984,10 @@ export default function App() {
         ) : page === "tasks" ? (
           <TasksAppointmentsPage
             onViewAllAppointments={() => setPage("appointments")}
-            onOpenTask={() => setPage("hobbiesForm")}
+            // כל שאלון נפתח בעמוד שלו
+            onOpenTask={(id) =>
+              setPage(id === "atuda" ? "atudaForm" : "hobbiesForm")
+            }
             // כרטיס המשימה של הלומדה פותח את הלומדה עצמה
             onOpenLearning={() => {
               setLearningsEntry("dapar");
@@ -1988,6 +1997,11 @@ export default function App() {
         ) : page === "hobbiesForm" ? (
           <HobbiesQuestionnairePage
             onExit={() => setPage("tasks")}
+          />
+        ) : page === "atudaForm" ? (
+          <AtudaQuestionnairePage
+            onExit={() => setPage("tasks")}
+            onGoHome={() => setPage("profile")}
           />
         ) : page === "appointments" ? (
           <MyAppointmentsPage />
