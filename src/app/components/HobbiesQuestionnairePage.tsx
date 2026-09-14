@@ -2,6 +2,7 @@ import {
   Button,
   IconCircle,
   FieldLabel as SharedFieldLabel,
+  FormTopBar,
   SelectField,
   FIELD_CLASS,
 } from "./primitives";
@@ -96,7 +97,7 @@ function ControlScale({
   onChange: (value: number) => void;
 }) {
   return (
-    <div dir="ltr" className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2">
       <div className="flex gap-2.5">
         {[1, 2, 3, 4, 5].map((level) => {
           const selected = value === level;
@@ -161,24 +162,6 @@ function SecondaryButton({
 // ── Steps content ────────────────────────────────────────────────────────────
 
 const TOTAL_QUESTION_STEPS = 2;
-
-function ProgressSteps({ current }: { current: number }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <div className="h-[6px] rounded-full bg-[rgba(23,28,35,0.08)] overflow-hidden">
-        <div
-          className="h-full rounded-full bg-[#008ff0] transition-all duration-300"
-          style={{
-            width: `${(current / TOTAL_QUESTION_STEPS) * 100}%`,
-          }}
-        />
-      </div>
-      <span className="text-[13px] text-[#171c23] opacity-60 text-right">
-        שלב {current} מתוך {TOTAL_QUESTION_STEPS}
-      </span>
-    </div>
-  );
-}
 
 function IntroContent() {
   return (
@@ -300,33 +283,22 @@ export default function HobbiesQuestionnairePage({
 
   return (
     // ה-section נמתח (flex-1) עד תחתית הדף, כך שכפתורי הניווט הדביקים תמיד בתחתית המסך
-    <section className="bg-white px-4 sm:px-6 md:px-10 pt-6 flex flex-col flex-1">
-      {/* Breadcrumbs */}
-      <nav className="flex items-center gap-1.5 text-[14px] mb-4">
-        <button
-          type="button"
-          onClick={onExit}
-          className="text-[#008ff0] font-semibold hover:underline underline-offset-4"
-        >
-          משימות
-        </button>
-        <ChevronLeft
-          size={14}
-          className="text-[#171c23] opacity-40 shrink-0"
-        />
-        <span className="text-[#171c23] opacity-70">
-          שאלון תחביבים
-        </span>
-      </nav>
-
-      {/* Sticky progress - נשאר צמוד להדר גם בגלילה */}
-      {showProgress && (
-        <div className="sticky top-[64px] md:top-[98px] z-30 -mx-4 sm:-mx-6 md:-mx-10 px-4 sm:px-6 md:px-10 py-3 bg-white/90 backdrop-blur-md border-b border-[rgba(23,28,35,0.06)]">
-          <div className="max-w-[640px] mx-auto">
-            <ProgressSteps current={step as number} />
-          </div>
-        </div>
-      )}
+    <section className="bg-white px-4 sm:px-6 md:px-10 flex flex-col flex-1">
+      <FormTopBar
+        title="שאלון תחביבים"
+        counter={
+          showProgress
+            ? `שלב ${step} מתוך ${TOTAL_QUESTION_STEPS}`
+            : undefined
+        }
+        progress={
+          showProgress
+            ? ((step as number) / TOTAL_QUESTION_STEPS) * 100
+            : undefined
+        }
+        width={640}
+        onExit={onExit}
+      />
 
       {/* Scrollable content */}
       <div className="flex-1 w-full max-w-[640px] mx-auto py-6">

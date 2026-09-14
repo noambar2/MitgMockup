@@ -4,31 +4,26 @@ import {
   ChevronLeft,
   ChevronRight,
   ClipboardList,
-  Flag,
-  ListChecks,
-  LogOut,
   Send,
-  Target,
-  Users,
-  type LucideIcon,
 } from "lucide-react";
 import {
   Button,
   Dialog,
+  FieldLabel,
   FIELD_CLASS,
+  FormTopBar,
   IconCircle,
-  ProgressBar,
 } from "./primitives";
 
 /**
- * סקר צו ראשון - 33 שאלות, שאלה אחת בכל מסך, מחולקות לתשעה נושאים.
- * היציאה מהסקר שומרת טיוטה כך שאפשר להמשיך מאותה נקודה.
+ * סקר צו ראשון - שלב לכל נושא, ובראש כל תחנה שאלת סינון "האם ביצעת
+ * את התחנה". תשובת "לא" מעמעמת את שאר שאלות התחנה ומאפשרת להמשיך.
+ * היציאה מהסקר שומרת טיוטה כך שאפשר להמשיך מאותו שלב.
  */
 
 // ── תשובות מוכנות ───────────────────────────────────────────────────────────
 
 const SCALE_LABELS: Record<number, string> = {
-  0: "לא ביצעתי את התחנה",
   1: "במידה מועטה מאוד",
   2: "במידה מועטה",
   3: "במידה בינונית",
@@ -36,13 +31,11 @@ const SCALE_LABELS: Record<number, string> = {
   5: "במידה רבה מאוד",
 };
 
-const SCALE_0_5 = [0, 1, 2, 3, 4, 5];
 const SCALE_1_5 = [1, 2, 3, 4, 5];
 
 const TEXT_HINT = "רשום הערתך/הארתך כאן.";
 
 type QuestionType =
-  | "scale0to5"
   | "scale1to5"
   | "yesNo"
   | "choice"
@@ -53,6 +46,8 @@ interface Question {
   section: string;
   text: string;
   type: QuestionType;
+  /** שאלת הסינון שבראש התחנה - "האם ביצעת את התחנה" */
+  gate?: boolean;
   /** אפשרויות מותאמות - רק ל-choice */
   options?: string[];
   /** טקסט מנחה בשדה טקסט חופשי */
@@ -83,8 +78,14 @@ const PERSONAL =
 
 const QUESTIONS: Question[] = [
   // ── תחנת אימות הנתונים ──
-  { section: SECTIONS.data, text: PROFESSIONAL, type: "scale0to5" },
-  { section: SECTIONS.data, text: PERSONAL, type: "scale0to5" },
+  {
+    section: SECTIONS.data,
+    text: "האם ביצעת את תחנת אימות הנתונים?",
+    type: "yesNo",
+    gate: true,
+  },
+  { section: SECTIONS.data, text: PROFESSIONAL, type: "scale1to5" },
+  { section: SECTIONS.data, text: PERSONAL, type: "scale1to5" },
   {
     section: SECTIONS.data,
     text: "הערות/הארות כלליות לגבי תחנת אימות הנתונים.",
@@ -95,10 +96,16 @@ const QUESTIONS: Question[] = [
   // ── תחנת הריאיון האישי ──
   {
     section: SECTIONS.interview,
-    text: PROFESSIONAL,
-    type: "scale0to5",
+    text: "האם ביצעת את תחנת הריאיון האישי?",
+    type: "yesNo",
+    gate: true,
   },
-  { section: SECTIONS.interview, text: PERSONAL, type: "scale0to5" },
+  {
+    section: SECTIONS.interview,
+    text: PROFESSIONAL,
+    type: "scale1to5",
+  },
+  { section: SECTIONS.interview, text: PERSONAL, type: "scale1to5" },
   {
     section: SECTIONS.interview,
     text: "הערות/הארות כלליות לגבי תחנת הריאיון האישי.",
@@ -109,10 +116,16 @@ const QUESTIONS: Question[] = [
   // ── תחנת המבחנים ──
   {
     section: SECTIONS.tests,
-    text: "האם היו הפרעות בזמן הבחינה שגרמו לחוסר ריכוז?",
-    type: "scale0to5",
+    text: "האם ביצעת את תחנת המבחנים?",
+    type: "yesNo",
+    gate: true,
   },
-  { section: SECTIONS.tests, text: PERSONAL, type: "scale0to5" },
+  {
+    section: SECTIONS.tests,
+    text: "האם היו הפרעות בזמן הבחינה שגרמו לחוסר ריכוז?",
+    type: "scale1to5",
+  },
+  { section: SECTIONS.tests, text: PERSONAL, type: "scale1to5" },
   {
     section: SECTIONS.tests,
     text: "במידה וברשותך אבחון דידקטי/פסיכולוגי כלשהו - האם העברת אותו טרם ההתייצבות בלשכת הגיוס?",
@@ -129,6 +142,12 @@ const QUESTIONS: Question[] = [
   // ── תחנת המעבדה ──
   {
     section: SECTIONS.lab,
+    text: "האם ביצעת את תחנת המעבדה (בדיקת שתן/דם)?",
+    type: "yesNo",
+    gate: true,
+  },
+  {
+    section: SECTIONS.lab,
     text: "האם העברת תוצאות בדיקות שתן/דם טרם ההתייצבות בלשכת הגיוס?",
     type: "yesNo",
   },
@@ -140,12 +159,18 @@ const QUESTIONS: Question[] = [
   },
 
   // ── תחנת הוועדה הרפואית ──
-  { section: SECTIONS.medical, text: PROFESSIONAL, type: "scale0to5" },
-  { section: SECTIONS.medical, text: PERSONAL, type: "scale0to5" },
+  {
+    section: SECTIONS.medical,
+    text: "האם ביצעת את תחנת הוועדה הרפואית?",
+    type: "yesNo",
+    gate: true,
+  },
+  { section: SECTIONS.medical, text: PROFESSIONAL, type: "scale1to5" },
+  { section: SECTIONS.medical, text: PERSONAL, type: "scale1to5" },
   {
     section: SECTIONS.medical,
     text: "עד כמה היחס שניתן לך על ידי הרופא היה מקצועי ואדיב?",
-    type: "scale0to5",
+    type: "scale1to5",
   },
   {
     section: SECTIONS.medical,
@@ -263,38 +288,51 @@ const QUESTIONS: Question[] = [
   },
 ];
 
-const TOTAL = QUESTIONS.length;
+/** מספר השאלה באפיון - שאלות הסינון שהוספנו אינן נספרות */
+const SPEC_NUMBERS = QUESTIONS.reduce<Record<number, number>>(
+  (acc, question, index) => {
+    if (!question.gate) {
+      acc[index] = Object.keys(acc).length + 1;
+    }
+    return acc;
+  },
+  {},
+);
 
-/** כרטיסי המאמרים במסך הסיום - השלבים הבאים בתהליך הגיוס */
-const NEXT_STEPS: {
-  title: string;
-  text: string;
-  icon: LucideIcon;
-}[] = [
+/** כל נושא בסקר הוא שלב אחד, ובתוכו כל שאלות אותו נושא */
+const STEPS = QUESTIONS.reduce<
+  { section: string; items: { question: Question; index: number }[] }[]
+>((acc, question, index) => {
+  const current = acc[acc.length - 1];
+  if (current && current.section === question.section) {
+    current.items.push({ question, index });
+  } else {
+    acc.push({ section: question.section, items: [{ question, index }] });
+  }
+  return acc;
+}, []);
+
+/** כתבות ההמשך במסך הסיום - השלבים הבאים בתהליך הגיוס */
+const NEXT_STEPS: { title: string; text: string }[] = [
   {
     title: "הצו הראשון",
     text: "מה עובר עליך ביום הצו הראשון, אילו תחנות יש ואיך מתכוננים אליהן.",
-    icon: ClipboardList,
   },
   {
     title: 'יום המא"ה',
     text: "יום המשימות והאתגרים שבודק התאמה לתפקידים לוחמים ומקצועיים.",
-    icon: Target,
   },
   {
     title: "שאלון ההעדפות",
     text: "איך מדרגים תפקידים ומסלולים, ומה קורה עם הבחירות שלך אחר כך.",
-    icon: ListChecks,
   },
   {
     title: "המיון המתקדם",
     text: "ימי המיון הייעודיים ליחידות ולתפקידים, ומה כדאי לדעת לפניהם.",
-    icon: Users,
   },
   {
     title: "יום הגיוס",
     text: "מה לוקחים, מתי מגיעים ומה קורה מרגע ההגעה לבקו\"ם ועד השיבוץ.",
-    icon: Flag,
   },
 ];
 
@@ -307,28 +345,81 @@ interface Answer {
  * טיוטת הסקר נשמרת מחוץ לקומפוננטה - יציאה וחזרה ממשיכות
  * מאותה שאלה עם התשובות שכבר נענו.
  */
-const draftStore: { answers: Record<number, Answer>; index: number } = {
+const draftStore: { answers: Record<number, Answer>; step: number } = {
   answers: {},
-  index: 0,
+  step: 0,
+};
+
+/** שאלה שנדרשת תשובה עליה - כל שאלה שאינה טקסט חופשי */
+const isRequired = (question: Question) => question.type !== "text";
+
+const isAnswered = (question: Question, answer: Answer) => {
+  if (!isRequired(question)) return true;
+  if (!answer.value) return false;
+  const needsDetail =
+    question.detail?.required &&
+    (question.detail.when === "always" ||
+      answer.value === question.detail.when);
+  return !needsDetail || Boolean(answer.detail?.trim());
 };
 
 // ── פקדי מענה ───────────────────────────────────────────────────────────────
 
-function OptionButton({
+/** אפשרות בחירה יחידה - עיגול רדיו ותווית, כמו בשאלון תחביבים */
+function RadioOption({
   label,
-  badge,
   selected,
+  disabled,
   onClick,
 }: {
   label: string;
-  badge?: number | string;
   selected: boolean;
+  disabled?: boolean;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
+      aria-pressed={selected}
+      className="flex items-center gap-2.5 text-right w-fit"
+    >
+      <span
+        className={`w-[22px] h-[22px] rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+          selected
+            ? "border-[#008ff0]"
+            : "border-[rgba(23,28,35,0.3)]"
+        }`}
+      >
+        {selected && (
+          <span className="w-[11px] h-[11px] rounded-full bg-[#008ff0]" />
+        )}
+      </span>
+      <span className="text-[#171c23] text-[15px]">{label}</span>
+    </button>
+  );
+}
+
+/** אפשרות בחירה ככרטיס - לסולמות ולשאלות עם אפשרויות מותאמות */
+function OptionCard({
+  label,
+  badge,
+  selected,
+  disabled,
+  onClick,
+}: {
+  label: string;
+  badge?: number;
+  selected: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
       aria-pressed={selected}
       className={`w-full flex items-center gap-3 rounded-[10px] border px-4 py-3.5 text-right transition-colors ${
         selected
@@ -354,17 +445,19 @@ function OptionButton({
   );
 }
 
-/** סרגל דירוג 1-5 - חמש דרגות בשורה אחת, עם תווית הדרגה שנבחרה */
+/** סרגל דירוג 1-5 - אותו פקד כמו סולם השליטה בשאלון תחביבים */
 function RatingBar({
   value,
+  disabled,
   onChange,
 }: {
   value?: string;
+  disabled?: boolean;
   onChange: (v: string) => void;
 }) {
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-stretch gap-1.5">
+    <div className="flex flex-col gap-2">
+      <div className="flex gap-2.5">
         {SCALE_1_5.map((n) => {
           const selected = value === String(n);
           return (
@@ -372,12 +465,13 @@ function RatingBar({
               key={n}
               type="button"
               onClick={() => onChange(String(n))}
+              disabled={disabled}
               aria-pressed={selected}
               aria-label={`${n} - ${SCALE_LABELS[n]}`}
-              className={`flex-1 h-[52px] rounded-[10px] border text-[17px] font-bold transition-colors ${
+              className={`flex-1 h-[52px] rounded-[10px] text-[18px] font-semibold border transition-colors ${
                 selected
-                  ? "border-[#008ff0] bg-[rgba(0,143,240,0.06)] text-[#008ff0]"
-                  : "border-[rgba(23,28,35,0.12)] bg-white text-[#171c23] hover:border-[rgba(0,143,240,0.35)]"
+                  ? "bg-[rgba(0,143,240,0.06)] border-[#008ff0] text-[#008ff0]"
+                  : "bg-white border-[rgba(23,28,35,0.12)] text-[#171c23] hover:bg-[rgba(0,143,240,0.06)]"
               }`}
             >
               {n}
@@ -385,14 +479,113 @@ function RatingBar({
           );
         })}
       </div>
-      <div className="flex items-center justify-between gap-2 text-[#171c23] text-[12px] opacity-55">
+      <div className="flex justify-between text-[13px] text-[#171c23] opacity-60">
         <span>{SCALE_LABELS[1]}</span>
         <span>{SCALE_LABELS[5]}</span>
       </div>
-      {value && (
-        <span className="text-[#008ff0] text-[14px] font-semibold text-right">
-          {SCALE_LABELS[Number(value)]}
+    </div>
+  );
+}
+
+/** שאלה אחת בתוך שלב: מספר השאלה, נוסח, פקד המענה ושדה פירוט */
+function QuestionBlock({
+  question,
+  number,
+  answer,
+  disabled,
+  onValue,
+  onDetail,
+}: {
+  question: Question;
+  /** מספר השאלה באפיון; לשאלת הסינון אין מספר */
+  number?: number;
+  answer: Answer;
+  /** התחנה לא בוצעה - השאלה מוצגת מעומעמת ואינה נדרשת */
+  disabled?: boolean;
+  onValue: (v: string) => void;
+  onDetail: (v: string) => void;
+}) {
+  const showDetail =
+    question.detail &&
+    (question.detail.when === "always" ||
+      answer.value === question.detail.when);
+
+  return (
+    <div
+      aria-disabled={disabled}
+      className={`flex flex-col ${disabled ? "opacity-40 pointer-events-none select-none" : ""}`}
+    >
+      {number !== undefined && (
+        <span className="text-[#171c23] text-[12px] opacity-45 text-right mb-1">
+          שאלה {number}
         </span>
+      )}
+      <FieldLabel required={isRequired(question)}>
+        {question.text}
+      </FieldLabel>
+
+      {question.type === "text" ? (
+        <textarea
+          value={answer.value ?? ""}
+          onChange={(e) => onValue(e.target.value)}
+          placeholder={question.hint}
+          rows={4}
+          disabled={disabled}
+          className={`${FIELD_CLASS} resize-none leading-relaxed`}
+        />
+      ) : question.type === "slider" ||
+        question.type === "scale1to5" ? (
+        <RatingBar
+          value={answer.value}
+          disabled={disabled}
+          onChange={onValue}
+        />
+      ) : question.type === "yesNo" ? (
+        <div className="flex flex-col gap-2.5">
+          {["כן", "לא"].map((label) => (
+            <RadioOption
+              key={label}
+              label={label}
+              selected={answer.value === label}
+              disabled={disabled}
+              onClick={() => onValue(label)}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {(question.options ?? []).map((label) => (
+            <OptionCard
+              key={label}
+              label={label}
+              selected={answer.value === label}
+              disabled={disabled}
+              onClick={() => onValue(label)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* שדה פירוט - מוצג תמיד או רק אחרי תשובה מסוימת */}
+      {showDetail && question.detail && (
+        <div className="mt-4">
+          <FieldLabel required={question.detail.required}>
+            {question.detail.label}
+            {!question.detail.required && (
+              <span className="text-[#171c23] opacity-50 font-normal">
+                {" "}
+                (רשות)
+              </span>
+            )}
+          </FieldLabel>
+          <textarea
+            value={answer.detail ?? ""}
+            onChange={(e) => onDetail(e.target.value)}
+            rows={3}
+            disabled={disabled}
+            className={`${FIELD_CLASS} resize-none leading-relaxed`}
+          />
+        </div>
       )}
     </div>
   );
@@ -407,7 +600,7 @@ export default function FirstOrderSurveyPage({
   onExit: () => void;
   onGoHome: () => void;
 }) {
-  const [index, setIndex] = useState(draftStore.index);
+  const [step, setStep] = useState(draftStore.step);
   const [answers, setAnswers] = useState<Record<number, Answer>>(
     draftStore.answers,
   );
@@ -417,43 +610,46 @@ export default function FirstOrderSurveyPage({
   // שמירת הטיוטה בכל שינוי - כך שיציאה וחזרה ממשיכות מאותה נקודה
   useEffect(() => {
     draftStore.answers = answers;
-    draftStore.index = index;
-  }, [answers, index]);
+    draftStore.step = step;
+  }, [answers, step]);
 
-  const question = QUESTIONS[index];
-  const answer = answers[index] ?? {};
+  // מעבר בין שלבים מתחיל תמיד מראש הנושא
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
 
-  const setValue = (value: string) =>
+  const current = STEPS[step];
+
+  const setValue = (index: number, value: string) =>
     setAnswers((prev) => ({
       ...prev,
       [index]: { ...prev[index], value },
     }));
 
-  const setDetail = (detail: string) =>
+  const setDetail = (index: number, detail: string) =>
     setAnswers((prev) => ({
       ...prev,
       [index]: { ...prev[index], detail },
     }));
 
-  const showDetail =
-    question.detail &&
-    (question.detail.when === "always" ||
-      answer.value === question.detail.when);
+  /** שאלת הסינון של התחנה, אם יש כזו בנושא הנוכחי */
+  const gate = current.items.find(({ question }) => question.gate);
+  const gateAnswer = gate ? answers[gate.index]?.value : undefined;
+  /** סומן "לא ביצעתי" - שאר שאלות התחנה מעומעמות ואינן נדרשות */
+  const stationSkipped = gateAnswer === "לא";
 
-  /** טקסט חופשי אינו חובה; בחירה - כן, וכך גם פירוט שהוגדר כחובה */
-  const canContinue =
-    question.type === "text"
-      ? true
-      : Boolean(answer.value) &&
-        (!showDetail ||
-          !question.detail?.required ||
-          Boolean(answer.detail?.trim()));
+  /** אפשר להמשיך רק אחרי שנענו כל שאלות החובה שבנושא */
+  const canContinue = stationSkipped
+    ? true
+    : current.items.every(({ question, index }) =>
+        isAnswered(question, answers[index] ?? {}),
+      );
 
-  const last = index === TOTAL - 1;
+  const last = step === STEPS.length - 1;
 
   const submit = () => {
     draftStore.answers = {};
-    draftStore.index = 0;
+    draftStore.step = 0;
     setDone(true);
   };
 
@@ -466,7 +662,7 @@ export default function FirstOrderSurveyPage({
   if (done) {
     return (
       <section className="bg-white px-4 sm:px-6 md:px-10 py-6 flex flex-col flex-1">
-        <div className="flex-1 w-full max-w-[760px] mx-auto flex flex-col gap-6">
+        <div className="flex-1 w-full max-w-[640px] mx-auto flex flex-col gap-6">
           <div className="flex flex-col items-center gap-4 text-center py-6">
             <IconCircle
               size={72}
@@ -477,7 +673,7 @@ export default function FirstOrderSurveyPage({
             </IconCircle>
             <h3 className="font-bold text-[#122736] text-[24px] tracking-tight">
               מילאת את השאלון בהצלחה
-              <span className="text-[#69c600]">!</span>
+              <span className="text-[#69c600]">.</span>
             </h3>
             <p className="text-[#171c23] text-[15px] opacity-60 max-w-[420px] leading-relaxed">
               תודה על המשוב. הוא יסייע לנו לשפר את השירות
@@ -497,36 +693,29 @@ export default function FirstOrderSurveyPage({
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {NEXT_STEPS.map((step) => {
-                const Icon = step.icon;
-                return (
-                  <a
-                    key={step.title}
-                    href="https://www.mitgaisim.idf.il"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="group bg-white rounded-[10px] border border-[rgba(23,28,35,0.1)] p-4 flex flex-col gap-2.5 transition-colors hover:border-[rgba(0,143,240,0.4)]"
-                  >
-                    <IconCircle size={36}>
-                      <Icon size={17} />
-                    </IconCircle>
-                    <span className="font-bold text-[#171c23] text-[15px] text-right">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {NEXT_STEPS.map((step) => (
+                <a
+                  key={step.title}
+                  href="https://www.mitgaisim.idf.il"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group bg-white rounded-[10px] border border-[rgba(23,28,35,0.1)] px-4 py-3 flex flex-col gap-1 transition-colors hover:border-[rgba(0,143,240,0.4)]"
+                >
+                  <span className="flex items-center justify-between gap-2">
+                    <span className="font-semibold text-[#171c23] text-[15px] group-hover:text-[#008ff0]">
                       {step.title}
                     </span>
-                    <p className="text-[#171c23] text-[13px] opacity-60 leading-relaxed text-right">
-                      {step.text}
-                    </p>
-                    <span className="flex items-center gap-1 text-[#008ff0] text-[13px] font-semibold mt-auto pt-1">
-                      לכתבה המלאה
-                      <ChevronLeft
-                        size={14}
-                        className="shrink-0 transition-transform group-hover:-translate-x-0.5"
-                      />
-                    </span>
-                  </a>
-                );
-              })}
+                    <ChevronLeft
+                      size={15}
+                      className="shrink-0 text-[#171c23] opacity-35 transition-transform group-hover:-translate-x-0.5 group-hover:text-[#008ff0] group-hover:opacity-100"
+                    />
+                  </span>
+                  <p className="text-[#171c23] text-[13px] opacity-60 leading-snug text-right">
+                    {step.text}
+                  </p>
+                </a>
+              ))}
             </div>
           </div>
 
@@ -540,133 +729,66 @@ export default function FirstOrderSurveyPage({
 
   return (
     <section className="bg-white px-4 sm:px-6 md:px-10 flex flex-col flex-1">
-      {/* חיווי התקדמות + יציאה מהסקר */}
-      <div className="sticky top-[64px] md:top-[98px] z-30 -mx-4 sm:-mx-6 md:-mx-10 px-4 sm:px-6 md:px-10 py-3 bg-white/90 backdrop-blur-md border-b border-[rgba(23,28,35,0.06)]">
-        <div className="max-w-[760px] mx-auto flex flex-col gap-2">
-          <div className="flex items-center justify-between gap-3">
-            <span className="font-semibold text-[#171c23] text-[14px]">
-              סקר צו ראשון
-            </span>
-            <button
-              type="button"
-              onClick={() => setExitOpen(true)}
-              className="flex items-center gap-1.5 text-[#171c23] text-[13px] font-semibold opacity-60 hover:opacity-100"
-            >
-              <LogOut size={14} className="shrink-0" />
-              יציאה
-            </button>
-          </div>
-          <ProgressBar value={((index + 1) / TOTAL) * 100} />
-          <span className="text-[#171c23] text-[12px] opacity-55 text-right">
-            שאלה {index + 1} מתוך {TOTAL}
-          </span>
-        </div>
-      </div>
+      <FormTopBar
+        title="סקר צו ראשון"
+        counter={`שלב ${step + 1} מתוך ${STEPS.length} · ${current.section}`}
+        progress={((step + 1) / STEPS.length) * 100}
+        width={640}
+        onExit={() => setExitOpen(true)}
+      />
 
-      <div className="flex-1 w-full max-w-[760px] mx-auto py-6">
-        <div className="flex flex-col gap-5">
-          <div className="flex flex-col gap-2">
-            <span className="text-[#008ff0] text-[13px] font-semibold text-right">
-              {question.section}
-            </span>
-            <h3 className="font-bold text-[#122736] text-[22px] leading-snug text-right">
-              {question.text}
-            </h3>
-          </div>
+      <div className="flex-1 w-full max-w-[640px] mx-auto py-6">
+        <div className="flex flex-col gap-6">
+          <h3 className="font-bold text-[#122736] text-[24px] tracking-tight text-right">
+            {current.section}
+            <span className="text-[#69c600]">.</span>
+          </h3>
 
-          {/* ── פקד המענה לפי סוג השאלה ── */}
-          {question.type === "text" ? (
-            <div className="flex flex-col gap-2">
-              <textarea
-                value={answer.value ?? ""}
-                onChange={(e) => setValue(e.target.value)}
-                placeholder={question.hint}
-                rows={5}
-                className={`${FIELD_CLASS} resize-none leading-relaxed`}
-              />
-              <span className="text-[#171c23] text-[13px] opacity-55 text-right">
-                שאלה זו אינה חובה - ניתן להמשיך גם בלי למלא.
-              </span>
-            </div>
-          ) : question.type === "slider" ? (
-            <RatingBar value={answer.value} onChange={setValue} />
-          ) : (
-            <div className="flex flex-col gap-2">
-              {(question.type === "scale0to5"
-                ? SCALE_0_5.map((n) => ({
-                    label: SCALE_LABELS[n],
-                    badge: n,
-                  }))
-                : question.type === "scale1to5"
-                  ? SCALE_1_5.map((n) => ({
-                      label: SCALE_LABELS[n],
-                      badge: n,
-                    }))
-                  : (question.type === "yesNo"
-                      ? ["כן", "לא"]
-                      : (question.options ?? [])
-                    ).map((o) => ({
-                      label: o,
-                      badge: undefined,
-                    }))
-              ).map((opt) => (
-                <OptionButton
-                  key={opt.label}
-                  label={opt.label}
-                  badge={opt.badge}
-                  selected={
-                    answer.value ===
-                    (opt.badge !== undefined
-                      ? String(opt.badge)
-                      : opt.label)
-                  }
-                  onClick={() =>
-                    setValue(
-                      opt.badge !== undefined
-                        ? String(opt.badge)
-                        : opt.label,
-                    )
-                  }
+          {/* כל שאלות הנושא, מופרדות בקו דק */}
+          <div className="flex flex-col divide-y divide-[rgba(23,28,35,0.08)]">
+            {current.items.map(({ question, index }, i) => (
+              <div
+                key={index}
+                className={i === 0 ? "pb-6" : "py-6 last:pb-0"}
+              >
+                <QuestionBlock
+                  question={question}
+                  number={SPEC_NUMBERS[index]}
+                  answer={answers[index] ?? {}}
+                  disabled={stationSkipped && !question.gate}
+                  onValue={(v) => setValue(index, v)}
+                  onDetail={(v) => setDetail(index, v)}
                 />
-              ))}
-            </div>
-          )}
+              </div>
+            ))}
+          </div>
 
-          {/* שדה פירוט - מוצג תמיד או רק אחרי תשובה מסוימת */}
-          {showDetail && question.detail && (
-            <div className="flex flex-col gap-2">
-              <label className="font-semibold text-[#171c23] text-[15px] text-right">
-                {question.detail.label}
-                {question.detail.required ? (
-                  <span className="text-[#c43c3c]"> *</span>
-                ) : (
-                  <span className="text-[#171c23] opacity-50 font-normal">
-                    {" "}
-                    (רשות)
-                  </span>
-                )}
-              </label>
-              <textarea
-                value={answer.detail ?? ""}
-                onChange={(e) => setDetail(e.target.value)}
-                rows={3}
-                className={`${FIELD_CLASS} resize-none leading-relaxed`}
-              />
-            </div>
+          {stationSkipped ? (
+            <span className="text-[#171c23] text-[13px] opacity-60 text-right">
+              סימנת שלא ביצעת את התחנה - שאר שאלות הנושא אינן
+              נדרשות, וניתן להמשיך לנושא הבא.
+            </span>
+          ) : (
+            !canContinue && (
+              <span className="text-[#171c23] text-[13px] opacity-60 text-right">
+                יש לענות על כל שאלות החובה בנושא זה כדי להמשיך.
+                שאלות הערות פתוחות אינן חובה.
+              </span>
+            )
           )}
         </div>
       </div>
 
-      {/* ניווט בין השאלות */}
+      {/* ניווט בין הנושאים */}
       <div className="sticky bottom-0 z-30 -mx-4 sm:-mx-6 md:-mx-10 px-4 sm:px-6 md:px-10 py-3.5 bg-white/95 backdrop-blur-md border-t border-[rgba(23,28,35,0.08)] mt-auto">
-        <div className="max-w-[760px] mx-auto flex items-center justify-between gap-3">
+        <div className="max-w-[640px] mx-auto flex items-center justify-between gap-3">
           <Button
             variant="outline"
-            onClick={() => setIndex((i) => Math.max(0, i - 1))}
-            disabled={index === 0}
+            onClick={() => setStep((i) => Math.max(0, i - 1))}
+            disabled={step === 0}
           >
             <ChevronRight size={16} className="shrink-0" />
-            לשאלה הקודמת
+            לשלב הקודם
           </Button>
           {last ? (
             <Button onClick={submit} disabled={!canContinue}>
@@ -675,7 +797,7 @@ export default function FirstOrderSurveyPage({
             </Button>
           ) : (
             <Button
-              onClick={() => setIndex((i) => i + 1)}
+              onClick={() => setStep((i) => i + 1)}
               disabled={!canContinue}
             >
               המשך
@@ -710,7 +832,7 @@ export default function FirstOrderSurveyPage({
             </IconCircle>
             <p className="text-[#171c23] text-[14px] leading-relaxed text-right">
               התשובות שענית עד כה יישמרו כטיוטה, ובכניסה הבאה
-              תוכל/י להמשיך מאותה שאלה.
+              תוכל/י להמשיך מאותו שלב.
             </p>
           </div>
         </Dialog>

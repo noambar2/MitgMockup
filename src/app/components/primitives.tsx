@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown, Megaphone, X } from "lucide-react";
+import { ChevronDown, LogOut, Megaphone, X } from "lucide-react";
 import { useIsMobile } from "./ui/use-mobile";
 
 /**
@@ -311,6 +311,61 @@ export function LayoutSwitch({
           {labels ? labels[opt - 1] : `אופציה ${opt}`}
         </button>
       ))}
+    </div>
+  );
+}
+
+// ── Questionnaire top bar ───────────────────────────────────────────────────
+
+/**
+ * הכותרת הדביקה של שאלון או סקר: שם השאלון, יציאה, בר התקדמות
+ * ומונה השלב/השאלה. משותפת לכל הטפסים הרב-שלביים.
+ */
+export function FormTopBar({
+  title,
+  counter,
+  progress,
+  width = 760,
+  onExit,
+}: {
+  title: string;
+  /** לדוגמה "שאלה 8 מתוך 33" - מוצג רק יחד עם בר ההתקדמות */
+  counter?: string;
+  /** אחוז ההתקדמות; בלעדיו מוצגת רק שורת הכותרת */
+  progress?: number;
+  width?: number;
+  onExit: () => void;
+}) {
+  return (
+    <div className="sticky top-[64px] md:top-[98px] z-30 -mx-4 sm:-mx-6 md:-mx-10 px-4 sm:px-6 md:px-10 py-3 bg-white/90 backdrop-blur-md border-b border-[rgba(23,28,35,0.06)]">
+      <div
+        className="mx-auto flex flex-col gap-2"
+        style={{ maxWidth: width }}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <span className="font-semibold text-[#171c23] text-[14px]">
+            {title}
+          </span>
+          <button
+            type="button"
+            onClick={onExit}
+            className="flex items-center gap-1.5 text-[#171c23] text-[13px] font-semibold opacity-60 hover:opacity-100"
+          >
+            <LogOut size={14} className="shrink-0" />
+            יציאה
+          </button>
+        </div>
+        {progress !== undefined && (
+          <>
+            <ProgressBar value={progress} />
+            {counter && (
+              <span className="text-[#171c23] text-[12px] opacity-55 text-right">
+                {counter}
+              </span>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
