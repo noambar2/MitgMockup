@@ -350,6 +350,7 @@ export default function AtudaQuestionnaireSimple({
             <div className="flex flex-col gap-2">
               <Button
                 variant="outline"
+                className="justify-center"
                 onClick={addRow}
                 disabled={rows.length >= MAX_TRACKS}
               >

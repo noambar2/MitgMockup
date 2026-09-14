@@ -18,6 +18,7 @@ import TasksAppointmentsPage from './components/TasksAppointmentsPage';
 import MyAppointmentsPage from './components/MyAppointmentsPage';
 import HobbiesQuestionnairePage from './components/HobbiesQuestionnairePage';
 import AtudaQuestionnairePage from './components/AtudaQuestionnairePage';
+import FirstOrderSurveyPage from './components/FirstOrderSurveyPage';
 import SettingsPage from './components/SettingsPage';
 import InquiriesPage from './components/InquiriesPage';
 import MessagesPage, {
@@ -63,6 +64,7 @@ type Page =
   | "appointments"
   | "hobbiesForm"
   | "atudaForm"
+  | "surveyForm"
   | "settings"
   | "messages"
   | "inquiries";
@@ -1963,7 +1965,9 @@ export default function App() {
       {/* בתוך שאלון הטאב "משימות" נשאר מסומן */}
       <Header
         activePage={
-          page === "hobbiesForm" || page === "atudaForm"
+          page === "hobbiesForm" ||
+          page === "atudaForm" ||
+          page === "surveyForm"
             ? "tasks"
             : page
         }
@@ -1986,7 +1990,13 @@ export default function App() {
             onViewAllAppointments={() => setPage("appointments")}
             // כל שאלון נפתח בעמוד שלו
             onOpenTask={(id) =>
-              setPage(id === "atuda" ? "atudaForm" : "hobbiesForm")
+              setPage(
+                id === "atuda"
+                  ? "atudaForm"
+                  : id === "survey"
+                    ? "surveyForm"
+                    : "hobbiesForm",
+              )
             }
             // כרטיס המשימה של הלומדה פותח את הלומדה עצמה
             onOpenLearning={() => {
@@ -2000,6 +2010,11 @@ export default function App() {
           />
         ) : page === "atudaForm" ? (
           <AtudaQuestionnairePage
+            onExit={() => setPage("tasks")}
+            onGoHome={() => setPage("profile")}
+          />
+        ) : page === "surveyForm" ? (
+          <FirstOrderSurveyPage
             onExit={() => setPage("tasks")}
             onGoHome={() => setPage("profile")}
           />

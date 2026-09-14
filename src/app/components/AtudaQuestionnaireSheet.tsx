@@ -647,6 +647,7 @@ export default function AtudaQuestionnaireSheet({
             <div className="flex flex-col gap-2">
               <Button
                 variant="outline"
+                className="justify-center"
                 onClick={addSlot}
                 disabled={slots.length >= MAX_TRACKS}
               >
