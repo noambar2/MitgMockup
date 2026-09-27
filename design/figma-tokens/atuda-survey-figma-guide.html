@@ -1,0 +1,1116 @@
+<title>בניית שאלון עתודה וסקר צו ראשון</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Heebo:wght@300;400;500;700&display=swap">
+<style>
+  :root {
+    --ground: #ffffff;
+    --ground-2: #f4f6f8;
+    --ground-3: #eaeef2;
+    --ink: #171c23;
+    --ink-2: rgba(23, 28, 35, 0.66);
+    --ink-3: rgba(23, 28, 35, 0.45);
+    --line: rgba(23, 28, 35, 0.12);
+    --line-soft: rgba(23, 28, 35, 0.07);
+    --brand: #008ff0;
+    --brand-soft: rgba(0, 143, 240, 0.08);
+    --navy: #122736;
+    --green: #4e9400;
+    --green-soft: rgba(105, 198, 0, 0.14);
+    --red: #c43c3c;
+    --code-bg: rgba(0, 143, 240, 0.07);
+    --code-ink: #0b6fb8;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #10161d;
+      --ground-2: #161e27;
+      --ground-3: #1d2731;
+      --ink: #eef2f6;
+      --ink-2: rgba(238, 242, 246, 0.7);
+      --ink-3: rgba(238, 242, 246, 0.45);
+      --line: rgba(238, 242, 246, 0.16);
+      --line-soft: rgba(238, 242, 246, 0.09);
+      --brand: #4fb2f7;
+      --brand-soft: rgba(79, 178, 247, 0.14);
+      --navy: #cfe2f2;
+      --green: #8fd13a;
+      --green-soft: rgba(143, 209, 58, 0.16);
+      --red: #f08a8a;
+      --code-bg: rgba(79, 178, 247, 0.12);
+      --code-ink: #9ad4ff;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #10161d;
+    --ground-2: #161e27;
+    --ground-3: #1d2731;
+    --ink: #eef2f6;
+    --ink-2: rgba(238, 242, 246, 0.7);
+    --ink-3: rgba(238, 242, 246, 0.45);
+    --line: rgba(238, 242, 246, 0.16);
+    --line-soft: rgba(238, 242, 246, 0.09);
+    --brand: #4fb2f7;
+    --brand-soft: rgba(79, 178, 247, 0.14);
+    --navy: #cfe2f2;
+    --green: #8fd13a;
+    --green-soft: rgba(143, 209, 58, 0.16);
+    --red: #f08a8a;
+    --code-bg: rgba(79, 178, 247, 0.12);
+    --code-ink: #9ad4ff;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Heebo", "Arial Hebrew", system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    font-weight: 300;
+    direction: rtl;
+  }
+
+  .wrap {
+    display: grid;
+    grid-template-columns: 232px minmax(0, 1fr);
+    gap: 56px;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 32px 120px;
+  }
+
+  /* ── Masthead ───────────────────────────────── */
+  header.top {
+    border-bottom: 1px solid var(--line);
+    background: var(--ground-2);
+  }
+  .top-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 48px 32px 40px;
+  }
+  .kicker {
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    font-weight: 500;
+    color: var(--brand);
+    margin: 0 0 14px;
+  }
+  h1 {
+    font-family: "Frank Ruhl Libre", Georgia, serif;
+    font-weight: 900;
+    font-size: clamp(32px, 5vw, 52px);
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+    margin: 0 0 16px;
+    text-wrap: balance;
+    color: var(--navy);
+  }
+  .lede {
+    max-width: 62ch;
+    font-size: 17px;
+    color: var(--ink-2);
+    margin: 0 0 28px;
+  }
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 32px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+  .facts b {
+    display: block;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+    margin-bottom: 2px;
+  }
+
+  /* ── Side index ─────────────────────────────── */
+  nav.index {
+    position: sticky;
+    top: 24px;
+    align-self: start;
+    padding-top: 56px;
+    font-size: 13px;
+  }
+  nav.index p {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--ink-3);
+    font-weight: 500;
+    margin: 0 0 10px;
+  }
+  nav.index ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    counter-reset: idx;
+  }
+  nav.index a {
+    display: flex;
+    gap: 8px;
+    padding: 5px 0;
+    color: var(--ink-2);
+    text-decoration: none;
+    border-inline-start: 2px solid transparent;
+    padding-inline-start: 10px;
+  }
+  nav.index a::before {
+    counter-increment: idx;
+    content: counter(idx);
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+    font-size: 11px;
+    padding-top: 3px;
+  }
+  nav.index a:hover {
+    color: var(--brand);
+    border-inline-start-color: var(--brand);
+  }
+
+  main { padding-top: 56px; min-width: 0; }
+
+  /* ── Sections ───────────────────────────────── */
+  section { margin-bottom: 64px; scroll-margin-top: 24px; }
+  h2 {
+    font-family: "Frank Ruhl Libre", Georgia, serif;
+    font-size: 27px;
+    font-weight: 700;
+    line-height: 1.25;
+    margin: 0 0 6px;
+    color: var(--navy);
+    text-wrap: balance;
+  }
+  h2 .num {
+    font-family: "Heebo", sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--brand);
+    vertical-align: 6px;
+    margin-inline-end: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+  h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 32px 0 10px;
+    color: var(--ink);
+  }
+  h4 {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--ink-3);
+    margin: 24px 0 8px;
+  }
+  p { margin: 0 0 12px; max-width: 68ch; }
+  .sub { color: var(--ink-2); max-width: 68ch; margin-bottom: 20px; }
+
+  ul.plain, ol.steps {
+    max-width: 68ch;
+    margin: 0 0 16px;
+    padding-inline-start: 20px;
+  }
+  ul.plain li, ol.steps li { margin-bottom: 7px; }
+  ol.steps { counter-reset: step; list-style: none; padding-inline-start: 0; }
+  ol.steps > li {
+    position: relative;
+    padding-inline-start: 32px;
+    margin-bottom: 12px;
+  }
+  ol.steps > li::before {
+    counter-increment: step;
+    content: counter(step);
+    position: absolute;
+    inset-inline-start: 0;
+    top: 4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    background: var(--brand-soft);
+    color: var(--brand);
+    font-size: 11px;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  code, .tok {
+    font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 12.5px;
+    background: var(--code-bg);
+    color: var(--code-ink);
+    padding: 1px 5px;
+    border-radius: 4px;
+    direction: ltr;
+    display: inline-block;
+    unicode-bidi: embed;
+  }
+
+  /* ── Tables ─────────────────────────────────── */
+  .tablewrap { overflow-x: auto; margin: 0 0 18px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    min-width: 520px;
+  }
+  caption {
+    text-align: start;
+    font-size: 12px;
+    color: var(--ink-3);
+    padding-bottom: 8px;
+    font-weight: 500;
+  }
+  th {
+    text-align: start;
+    font-weight: 700;
+    font-size: 11.5px;
+    letter-spacing: 0.07em;
+    color: var(--ink-3);
+    border-bottom: 1px solid var(--line);
+    padding: 0 10px 7px;
+  }
+  td {
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: top;
+    font-variant-numeric: tabular-nums;
+  }
+  td:first-child { font-weight: 500; color: var(--ink); }
+  tbody tr:last-child td { border-bottom: 0; }
+
+  /* ── Blocks ─────────────────────────────────── */
+  .note {
+    border-inline-start: 3px solid var(--brand);
+    background: var(--ground-2);
+    padding: 14px 16px;
+    margin: 18px 0;
+    font-size: 14px;
+    color: var(--ink-2);
+    max-width: 68ch;
+  }
+  .note strong { color: var(--ink); font-weight: 700; }
+  .note.warn { border-inline-start-color: var(--red); }
+  .note.ok { border-inline-start-color: var(--green); }
+
+  .frames {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 10px;
+    margin: 14px 0 20px;
+  }
+  .frame {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    background: var(--ground-2);
+  }
+  .frame b {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .frame span { font-size: 12.5px; color: var(--ink-2); }
+
+  .pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: var(--brand-soft);
+    color: var(--brand);
+    vertical-align: 2px;
+    margin-inline-start: 8px;
+  }
+  .pill.green { background: var(--green-soft); color: var(--green); }
+
+  .checklist { list-style: none; padding: 0; margin: 0; max-width: 68ch; }
+  .checklist li {
+    display: flex;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line-soft);
+    font-size: 14px;
+  }
+  .checklist li::before {
+    content: "";
+    flex: none;
+    width: 15px;
+    height: 15px;
+    margin-top: 5px;
+    border: 1.5px solid var(--line);
+    border-radius: 4px;
+  }
+
+  hr.rule { border: 0; border-top: 1px solid var(--line); margin: 0 0 28px; }
+
+  footer.end {
+    border-top: 1px solid var(--line);
+    padding-top: 20px;
+    font-size: 13px;
+    color: var(--ink-3);
+    max-width: 68ch;
+  }
+
+  a { color: var(--brand); }
+  a:focus-visible, nav.index a:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
+
+  @media (max-width: 900px) {
+    .wrap { grid-template-columns: 1fr; gap: 0; padding: 0 20px 80px; }
+    nav.index { position: static; padding-top: 32px; }
+    nav.index ol { flex-direction: row; flex-wrap: wrap; gap: 4px 14px; }
+    main { padding-top: 32px; }
+    .top-inner { padding: 32px 20px 28px; }
+  }
+</style>
+
+<header class="top">
+  <div class="top-inner">
+    <p class="kicker">מיטב מתגייסים · מדריך בנייה ל‑Figma</p>
+    <h1>שאלון עתודה וסקר צו ראשון</h1>
+    <p class="lede">
+      כל מה שצריך כדי לבנות את שני המסכים החדשים בפיגמה, בדיוק כמו שהם בקוד:
+      אילו פריימים ליצור, אילו רכיבים לבנות פעם אחת, ומה הערך המדויק של כל
+      ריפוד, רדיוס וגודל טקסט. המספרים כאן נלקחו מהקוד עצמו, כך שמה שתבני יהיה
+      זהה למה שרץ באתר.
+    </p>
+    <div class="facts">
+      <div><b>מקור</b>AtudaQuestionnaireSheet · FirstOrderSurveyPage</div>
+      <div><b>רזולוציות</b>דסקטופ 1440 · מובייל 375</div>
+      <div><b>משתנים</b>Primitives (87) + Themes · mode בהיר</div>
+      <div><b>סה״כ פריימים</b>26</div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="index">
+    <p>תוכן העניינים</p>
+    <ol>
+      <li><a href="#prep">הכנת הקובץ</a></li>
+      <li><a href="#vars">משתנים להוסיף</a></li>
+      <li><a href="#type">סגנונות טקסט</a></li>
+      <li><a href="#shared">רכיבים משותפים</a></li>
+      <li><a href="#atuda">שאלון עתודה</a></li>
+      <li><a href="#survey">סקר צו ראשון</a></li>
+      <li><a href="#proto">פרוטוטייפ</a></li>
+      <li><a href="#checklist">צ׳קליסט מסירה</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <!-- 1 ─────────────────────────────────────── -->
+    <section id="prep">
+      <h2><span class="num">01</span>הכנת הקובץ</h2>
+      <p class="sub">
+        חמש דקות של הכנה שחוסכות תיקונים אחר כך. אם כבר יש קובץ מערכת עיצוב עם
+        המשתנים המיובאים — דלגי ישר לשלב 3.
+      </p>
+
+      <ol class="steps">
+        <li>
+          <strong>עמודים (Pages):</strong> <code>01 · Atuda</code>,
+          <code>02 · Survey</code>, <code>03 · Components</code>. הרכיבים
+          המשותפים נבנים פעם אחת בעמוד השלישי ומשמשים את שניהם.
+        </li>
+        <li>
+          <strong>משתנים:</strong> ודאי שהאוספים <code>Primitives</code>
+          ו‑<code>Themes</code> קיימים בקובץ (או מקושרים מקובץ הספרייה), ושה‑mode
+          הפעיל הוא <strong>בהיר</strong>. לאורך המדריך כל צבע מופיע גם בשם
+          המשתנה וגם ב‑HEX, כדי שתמיד תדעי מה לקשר.
+        </li>
+        <li>
+          <strong>פריימים ראשיים:</strong> לכל מסך שני פריימים —
+          <code>Desktop 1440 × auto</code> ו‑<code>Mobile 375 × auto</code>,
+          שניהם Auto layout אנכי, יישור לימין, <code>dir: RTL</code>.
+        </li>
+        <li>
+          <strong>ריפוד עמוד:</strong> דסקטופ 40 בצדדים, טאבלט 24, מובייל 16
+          (<code>space/page-x-*</code>). זה הריפוד היחיד שמשתנה בין הרזולוציות —
+          הכול בפנים נשאר זהה.
+        </li>
+        <li>
+          <strong>עמודת תוכן:</strong> בתוך כל פריים צרי מסגרת ממורכזת ברוחב
+          קבוע: <strong>760</strong> בשאלון עתודה, <strong>640</strong> בסקר.
+          במובייל — רוחב מלא.
+        </li>
+        <li>
+          <strong>סגנונות טקסט:</strong> פרק 03 מכיל את הרשימה המלאה. חשוב:
+          בכל סגנון קשרי את גודל הגופן למשתנה <code>type/…</code> ולא למספר
+          קשיח — כך אותו סגנון נותן 15 בדסקטופ ו‑14 במובייל לפי ה‑mode של
+          הפריים, ואין צורך בסט סגנונות נפרד למובייל.
+        </li>
+      </ol>
+
+      <div class="note">
+        <strong>למה זה חשוב.</strong> באתר כל הטקסט קטן בדרגה אחת מתחת
+        ל‑768px, וזו התנהגות אמיתית ולא קיצור של המדריך. כל עוד הסגנונות
+        קשורים למשתני <code>type</code>, מספיק להחליף את ה‑mode של פריים
+        המובייל ל‑<code>mobile</code> וכל הטקסט מתעדכן לבד.
+      </div>
+    </section>
+
+    <!-- 2 ─────────────────────────────────────── -->
+    <section id="vars">
+      <h2><span class="num">02</span>משתנים להוסיף ל‑Primitives</h2>
+      <p class="sub">
+        האוסף שלך כבר מכיל את כל מה שצריך חוץ מ‑14 מידות. הוסיפי אותן ידנית
+        (Number) לקבוצות הקיימות — אין צורך בייבוא מחדש. <strong>הערך זהה
+        בשלושת ה‑modes</strong> (desktop · md · mobile) בכל אחת מהן, כי כל
+        ההתאמה למובייל נעשית בטיפוגרפיה ובריפוד העמוד.
+      </p>
+
+      <h4>קבוצת layout · 4 חדשים</h4>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>שם</th><th>desktop</th><th>md</th><th>mobile</th><th>למה זה משמש</th></tr></thead>
+          <tbody>
+            <tr><td><code>form-content-width</code></td><td>640</td><td>640</td><td>640</td><td>עמודת התוכן של הסקר ושל שאלון תחביבים (שאלון עתודה ממשיך ב‑<code>content-max-width</code> 760)</td></tr>
+            <tr><td><code>side-panel-width</code></td><td>460</td><td>460</td><td>460</td><td>הפאנל הצדדי של בחירת המגמה. במובייל הוא הופך לבוטום‑שיט ברוחב מלא, ולכן הערך לא בשימוש שם</td></tr>
+            <tr><td><code>panel-height-vh</code></td><td>88</td><td>88</td><td>88</td><td>גובה הבוטום‑שיט של הפאנל. שונה מ‑<code>sheet-max-height-vh</code> (92) שנשאר לחלונות הרגילים</td></tr>
+            <tr><td><code>dialog-width-compact</code></td><td>420</td><td>420</td><td>420</td><td>חלון היציאה מהסקר — צר מ‑<code>dialog-width</code> הקיים (560/520/480)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>קבוצת size · 10 חדשים</h4>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>שם</th><th>ערך</th><th>למה זה משמש</th></tr></thead>
+          <tbody>
+            <tr><td><code>icon-circle-xl</code></td><td>72</td><td>העיגול הגדול במסכי הפתיחה והסיום (הגדול הקיים הוא 64)</td></tr>
+            <tr><td><code>icon-hero</code></td><td>34</td><td>האייקון שבתוך אותו עיגול</td></tr>
+            <tr><td><code>rating-cell</code></td><td>52</td><td>גובה תא בסרגל הדירוג 1–5</td></tr>
+            <tr><td><code>radio</code></td><td>22</td><td>קוטר עיגול הרדיו</td></tr>
+            <tr><td><code>radio-dot</code></td><td>11</td><td>הנקודה הפנימית ברדיו נבחר</td></tr>
+            <tr><td><code>badge-sm</code></td><td>20</td><td>מספר מוסד בצ׳יפ ובסיכום</td></tr>
+            <tr><td><code>badge-md</code></td><td>24</td><td>מספר התיעדוף בכפתור מוסד, וי בכרטיס אפשרות</td></tr>
+            <tr><td><code>badge-lg</code></td><td>32</td><td>מספר העדיפות בכרטיס ובסיכום</td></tr>
+            <tr><td><code>step-control</code></td><td>28</td><td>חצי ההזזה ופח האשפה בכרטיס עדיפות</td></tr>
+            <tr><td><code>progress-bar</code></td><td>6</td><td>עובי בר ההתקדמות בסרגל העליון</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note">
+        <strong>אייקונים בגדלים 14, 16 ו‑17.</strong> מופיעים בקוד בכמה מקומות
+        (חץ בכפתור, חץ בשורת מגמה, חץ אשכול). אל תיצרי משתנה לכל ערך — עגלי
+        ל‑<code>icon-sm</code> 13, <code>icon-md</code> 15 או
+        <code>icon-lg</code> 18 הקרוב. ההבדל אינו נראה לעין, והקבוצה נשארת
+        נקייה.
+      </div>
+
+      <h4>קבוצת space · 2 חדשים (רשות)</h4>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>שם</th><th>ערך</th><th>למה זה משמש</th></tr></thead>
+          <tbody>
+            <tr><td><code>2-5</code></td><td>10</td><td>הרווח בין אפשרויות רדיו, בין תאי סרגל הדירוג ובין כרטיסי הכתבות</td></tr>
+            <tr><td><code>3-5</code></td><td>14</td><td>הריפוד האנכי של הסרגל התחתון והריפוד האנכי של כרטיס אפשרות</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        שני הערכים האלה נופלים בין הדרגות של סולם ה‑4 (8 · 12 · 16). אם את
+        מעדיפה לא לשבור את הסולם — אפשר להזין אותם כמספר ישירות ברכיב; הם
+        מופיעים רק בשלושה מקומות.
+      </p>
+
+      <div class="note ok">
+        <strong>מה לא צריך לגעת:</strong> <code>radius</code> (8 · 10 · 16 ·
+        pill מכסים הכול), <code>type</code>, <code>line-height</code>,
+        <code>font-weight</code>, <code>elevation</code>,
+        <code>opacity</code> ו‑<code>duration</code> — כל המצבים המושבתים
+        משתמשים ב‑<code>opacity/faint</code> 0.4, והמעברים ב‑300ms
+        (<code>duration/base</code>).
+      </div>
+
+      <h3>הצבעים שבשימוש — כולם כבר קיימים</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>משתנה</th><th>HEX</th><th>תפקיד בשני המסכים</th></tr></thead>
+          <tbody>
+            <tr><td><code>brand/default</code></td><td>#008FF0</td><td>מילוי נבחר, מספרים, קישורים, כפתור ראשי</td></tr>
+            <tr><td><code>brand/tint-06</code></td><td>#008FF0 · 6%</td><td>רקע של אפשרות נבחרת ושל צ׳יפ מוסד</td></tr>
+            <tr><td><code>accent-2</code></td><td>#69C600</td><td>הנקודה הירוקה בסוף כל כותרת</td></tr>
+            <tr><td><code>ink/primary</code></td><td>#171C23</td><td>טקסט ראשי</td></tr>
+            <tr><td><code>ink/line</code></td><td>#171C23 · 10%</td><td>מסגרת כרטיס, קו מפריד בין שאלות</td></tr>
+            <tr><td><code>surface/chip-border</code></td><td>#171C23 · 12%</td><td>מסגרת שדה, מסגרת אפשרות לא נבחרת</td></tr>
+            <tr><td><code>surface/muted</code></td><td>#F5F5F7</td><td>בלוק ההצהרות, כותרת אשכול בפאנל</td></tr>
+            <tr><td><code>surface/overlay-scrim</code></td><td>#000000 · 20%</td><td>הרקע מאחורי פאנל וחלון</td></tr>
+            <tr><td><code>semantic/error</code></td><td>#C43C3C</td><td>כוכבית חובה, פעולת הסרה</td></tr>
+            <tr><td><code>elevation/overlay-shadow</code></td><td>0 12 32 · 16%</td><td>צל של פאנל צדדי ושל חלון</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 3 ─────────────────────────────────────── -->
+    <section id="type">
+      <h2><span class="num">03</span>סגנונות טקסט לכל האתר</h2>
+      <p class="sub">
+        הרשימה הזו נספרה מהקוד עצמו — כל צירוף של גודל, משקל וגובה שורה
+        שמופיע בפועל בכל המסכים, לא רק בשני השאלונים. 29 סגנונות מכסים את
+        האתר כולו.
+      </p>
+
+      <ol class="steps">
+        <li>
+          <strong>גודל הגופן — תמיד משתנה.</strong> בכל סגנון קשרי
+          <code>Font size</code> למשתנה <code>type/…</code>. כך סגנון אחד
+          משרת גם דסקטופ וגם מובייל, וההקטנה קורית בהחלפת ה‑mode של הפריים.
+        </li>
+        <li>
+          <strong>ארבעה משקלים בלבד.</strong> Regular 400 · SemiBold 600 ·
+          Bold 700 · Black 900. הגופן מציע גם Thin, Light, Medium ו‑ExtraBold —
+          הם לא בשימוש באתר, ואין ליצור סגנון שמשתמש בהם.
+        </li>
+        <li>
+          <strong>גובה שורה — באחוזים, לא במכפיל.</strong> פיגמה מקבל px או %,
+          והמכפילים שבקבוצת <code>line-height</code> (1 · 1.15 · 1.3 · 1.5 ·
+          1.65) לא נכנסים לשדה. הזיני אחוזים: <strong>150%</strong> לברירת
+          המחדל, <strong>162.5%</strong> לפסקה רצה, <strong>100%</strong>
+          למספרים גדולים. אחוז נשאר נכון בשני ה‑modes — px היה מחייב שני
+          סטים של סגנונות.
+        </li>
+        <li>
+          <strong>מרווח אותיות.</strong> <code>−2.5%</code> בכותרות עמוד,
+          מסך וסקשן ובכל המספרים הגדולים. בכל השאר — 0.
+        </li>
+      </ol>
+
+      <h4>אם את מזינה px במקום אחוז</h4>
+      <p>
+        כשמזינים px צריך שני ערכים שונים לדסקטופ ולמובייל, ולכן עדיף אחוז.
+        לנוחות — הנה ההמרה המלאה (הערך מעוגל לעשירית, כמו שפיגמה מציג):
+      </p>
+      <div class="tablewrap">
+        <table>
+          <caption>גובה שורה בפיקסלים · דסקטופ / מובייל</caption>
+          <thead><tr><th>משתנה גודל</th><th>150% (ברירת מחדל)</th><th>162.5% (פסקה)</th><th>100% (מספרים)</th></tr></thead>
+          <tbody>
+            <tr><td><code>display</code> 52 / 44</td><td>78 / 66</td><td>84.5 / 71.5</td><td>52 / 44</td></tr>
+            <tr><td><code>page-title</code> 34 / 30</td><td>51 / 45</td><td>55.2 / 48.8</td><td>34 / 30</td></tr>
+            <tr><td><code>gauge</code> 26 / 23</td><td>39 / 34.5</td><td>42.2 / 37.4</td><td>26 / 23</td></tr>
+            <tr><td><code>dialog-title</code> 24 / 21</td><td>36 / 31.5</td><td>39 / 34.1</td><td>24 / 21</td></tr>
+            <tr><td><code>section-title</code> 22 / 20</td><td>33 / 30</td><td>35.8 / 32.5</td><td>22 / 20</td></tr>
+            <tr><td><code>value</code> 20 / 18</td><td>30 / 27</td><td>32.5 / 29.2</td><td>20 / 18</td></tr>
+            <tr><td><code>card-title</code> 18 / 16</td><td>27 / 24</td><td>29.2 / 26</td><td>18 / 16</td></tr>
+            <tr><td><code>label</code> 16 / 15</td><td>24 / 22.5</td><td>26 / 24.4</td><td>16 / 15</td></tr>
+            <tr><td><code>body-emphasis</code> 15 / 14</td><td>22.5 / 21</td><td>24.4 / 22.8</td><td>15 / 14</td></tr>
+            <tr><td><code>body</code> 14 / 13</td><td>21 / 19.5</td><td>22.8 / 21.1</td><td>14 / 13</td></tr>
+            <tr><td><code>caption</code> 13 / 12</td><td>19.5 / 18</td><td>21.1 / 19.5</td><td>13 / 12</td></tr>
+            <tr><td><code>meta</code> 12 / 11</td><td>18 / 16.5</td><td>19.5 / 17.9</td><td>12 / 11</td></tr>
+            <tr><td><code>tag</code> 11 / 10</td><td>16.5 / 15</td><td>17.9 / 16.2</td><td>11 / 10</td></tr>
+            <tr><td><code>micro</code> 10 / 9</td><td>15 / 13.5</td><td>16.2 / 14.6</td><td>10 / 9</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note">
+        <strong>רוצה לקשר למשתנה?</strong> עדכני את ערכי קבוצת
+        <code>line-height</code> ממכפילים למספרי אחוז — <code>none</code> 100,
+        <code>tight</code> 115, <code>snug</code> 130, <code>normal</code> 150,
+        <code>relaxed</code> 162.5 — ואז אפשר לקשר אותם לשדה. כל עוד הם
+        מכפילים הם לא שימושיים בפיגמה.
+      </div>
+
+      <h4>Display · מספרים גדולים (Black 900 · גובה שורה 100% · מרווח −2.5%)</h4>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>שם הסגנון</th><th>משתנה גודל</th><th>איפה</th></tr></thead>
+          <tbody>
+            <tr><td><code>Display/score</code></td><td>display · 52 / 44</td><td>הציון הגדול בנתוני איכות ובדפ״ר</td></tr>
+            <tr><td><code>Display/score sm</code></td><td>page-title · 34 / 30</td><td>ציון משני, מספר בכרטיס מאוחד</td></tr>
+            <tr><td><code>Display/gauge</code></td><td>gauge · 26 / 23</td><td>אחוזי התקדמות בלומדות, טיימר</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note warn">
+        <strong>בדקי את <code>display</code>.</strong> בקובץ שלך הוא 36, ובקוד
+        הציון הגדול הוא <strong>52</strong> בדסקטופ ו‑44 במובייל. אם 36 נועד
+        למשהו אחר — הוסיפי <code>score</code> 52 / 52 / 44 בקבוצת
+        <code>type</code>.
+      </div>
+
+      <h4>Heading · כותרות (Bold 700)</h4>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>שם הסגנון</th><th>משתנה גודל</th><th>גובה שורה</th><th>איפה</th></tr></thead>
+          <tbody>
+            <tr><td><code>Heading/page</code></td><td>page-title · 34 / 30</td><td>150% · −2.5%</td><td>כותרת כל עמוד ראשי</td></tr>
+            <tr><td><code>Heading/screen</code></td><td>dialog-title · 24 / 21</td><td>150% · −2.5%</td><td>כותרת שלב בשאלון, שם תחנה בסקר, כותרת מסך סיום</td></tr>
+            <tr><td><code>Heading/section</code></td><td>section-title · 22 / 20</td><td>150% · −2.5%</td><td>כותרת מקטע בתוך עמוד</td></tr>
+            <tr><td><code>Heading/card lg</code></td><td>value · 20 / 18</td><td>150%</td><td>מספר פנייה, כותרת טופס, שם משתמש</td></tr>
+            <tr><td><code>Heading/card</code></td><td>card-title · 18 / 16</td><td>150%</td><td>כותרת כרטיס, כותרת הפאנל, "השלבים הבאים"</td></tr>
+            <tr><td><code>Heading/card semi</code></td><td>card-title · 18 / 16</td><td>150% · SemiBold</td><td>הספרות בסרגל הדירוג 1–5</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>UI · טקסט ממשק (SemiBold 600 ו‑Bold 700 · גובה שורה 150%)</h4>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>שם הסגנון</th><th>משתנה גודל</th><th>משקל</th><th>איפה</th></tr></thead>
+          <tbody>
+            <tr><td><code>UI/label</code></td><td>label · 16 / 15</td><td>600</td><td>נוסח שאלה, תווית שדה בכל טופס</td></tr>
+            <tr><td><code>UI/label bold</code></td><td>label · 16 / 15</td><td>700</td><td>שם פריט ברשימה, כותרת בתוך כרטיס</td></tr>
+            <tr><td><code>UI/emphasis</code></td><td>body-emphasis · 15 / 14</td><td>600</td><td>הסגנון הנפוץ ביותר: "עדיפות 1", כותרות משנה, אפשרות נבחרת</td></tr>
+            <tr><td><code>UI/emphasis bold</code></td><td>body-emphasis · 15 / 14</td><td>700</td><td>מספר בעיגול 32, ערך מודגש בשורה</td></tr>
+            <tr><td><code>UI/body</code></td><td>body · 14 / 13</td><td>600</td><td>כותרת אשכול, שם השאלון בסרגל, טקסט כפתור מקווקו</td></tr>
+            <tr><td><code>UI/body bold</code></td><td>body · 14 / 13</td><td>700</td><td>ערך בשורת נתונים, שם בכרטיס דחוס</td></tr>
+            <tr><td><code>UI/caption</code></td><td>caption · 13 / 12</td><td>600</td><td>כל הכפתורים, הקישורים, המונים ו"יציאה"</td></tr>
+            <tr><td><code>UI/caption bold</code></td><td>caption · 13 / 12</td><td>700</td><td>מספר בעיגול 24, תגית מצב</td></tr>
+            <tr><td><code>UI/meta</code></td><td>meta · 12 / 11</td><td>600</td><td>תווית קטנה מודגשת, שלב פעיל בסרגל ההתקדמות</td></tr>
+            <tr><td><code>UI/meta bold</code></td><td>meta · 12 / 11</td><td>700</td><td>מספר בעיגול 20</td></tr>
+            <tr><td><code>UI/tag bold</code></td><td>tag · 11 / 10</td><td>700</td><td>מספר בצ׳יפ, באדג׳ ספירה</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Body · טקסט רץ (Regular 400)</h4>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>שם הסגנון</th><th>משתנה גודל</th><th>גובה שורה</th><th>איפה</th></tr></thead>
+          <tbody>
+            <tr><td><code>Body/large relaxed</code></td><td>label · 16 / 15</td><td>162.5%</td><td>פסקאות מסך הפתיחה של השאלונים</td></tr>
+            <tr><td><code>Body/default</code></td><td>body-emphasis · 15 / 14</td><td>150%</td><td>תווית רדיו, טקסט אפשרות, תוכן שדה</td></tr>
+            <tr><td><code>Body/default relaxed</code></td><td>body-emphasis · 15 / 14</td><td>162.5%</td><td>פסקת הסבר מתחת לכותרת מסך</td></tr>
+            <tr><td><code>Body/small</code></td><td>body · 14 / 13</td><td>150%</td><td>הסגנון הנפוץ ביותר באתר: שורות רשימה, ערכים, תוכן כרטיס</td></tr>
+            <tr><td><code>Body/small relaxed</code></td><td>body · 14 / 13</td><td>162.5%</td><td>פסקאות בתוך כרטיס, טקסט הצהרה, "על המגמה"</td></tr>
+            <tr><td><code>Body/caption</code></td><td>caption · 13 / 12</td><td>150%</td><td>תוויות עזר, תוויות קצה, טקסט משני</td></tr>
+            <tr><td><code>Body/caption relaxed</code></td><td>caption · 13 / 12</td><td>162.5%</td><td>הסבר רב‑שורתי מתחת לפקד</td></tr>
+            <tr><td><code>Body/meta</code></td><td>meta · 12 / 11</td><td>150%</td><td>"שאלה 7", מונה שלבים, תאריכים קטנים</td></tr>
+            <tr><td><code>Body/micro</code></td><td>micro · 10 / 9</td><td>150%</td><td>הערת שוליים, תווית על גרף</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note ok">
+        <strong>מה משמש בשני השאלונים.</strong> מתוך הרשימה: <code>Heading/screen</code>,
+        <code>Heading/card</code>, <code>Heading/card semi</code>,
+        <code>UI/label</code>, <code>UI/emphasis</code>,
+        <code>UI/emphasis bold</code>, <code>UI/body</code>,
+        <code>UI/caption</code>, <code>UI/caption bold</code>,
+        <code>UI/meta bold</code>, <code>UI/tag bold</code>,
+        <code>Body/large relaxed</code>, <code>Body/default</code>,
+        <code>Body/small</code>, <code>Body/small relaxed</code>,
+        <code>Body/caption</code> ו‑<code>Body/meta</code>. שאר הסגנונות
+        משרתים את שאר העמודים.
+      </div>
+    </section>
+
+    <!-- 4 ─────────────────────────────────────── -->
+    <section id="shared">
+      <h2><span class="num">04</span>רכיבים משותפים <span class="pill">לבנות פעם אחת</span></h2>
+      <p class="sub">
+        עשרה רכיבים מכסים כמעט את כל שני המסכים. בנייה שלהם כ‑Components עם
+        Variants היא ההבדל בין קובץ שמתחזק את עצמו לבין מאה שכבות ידניות.
+      </p>
+
+      <div class="note">
+        <strong>מכאן והלאה הטיפוגרפיה מופיעה כשם סגנון</strong> מתוך פרק 03 —
+        למשל <code>UI/caption</code> במקום ״13/600״. אל תזיני גודל או משקל
+        ידנית בשום שכבה: החילי את הסגנון, והוא כבר מביא איתו גודל, משקל,
+        גובה שורה ומרווח אותיות נכונים לשני ה‑modes.
+      </div>
+
+      <h3>סרגל עליון · FormTopBar</h3>
+      <p>
+        רצועה דביקה שמופיעה בסקר (ובשאלון תחביבים). Auto layout אנכי, רוחב מלא,
+        ריפוד 12 למעלה ולמטה, רווח 8, רקע לבן 90% + Background blur 12, קו תחתון
+        <code>#171C23 · 6%</code>.
+      </p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>שכבה</th><th>מפרט</th></tr></thead>
+          <tbody>
+            <tr><td>שורת כותרת</td><td>Auto layout אופקי, space‑between. מימין: שם השאלון — <code>UI/body</code>. משמאל: אייקון יציאה 14 + ״יציאה״ <code>UI/caption</code>, שקיפות 60%</td></tr>
+            <tr><td>בר התקדמות</td><td>גובה 6, רדיוס pill. מסלול <code>#171C23 · 8%</code>, מילוי <code>brand/default</code>, רוחב = שלב נוכחי ÷ סה״כ</td></tr>
+            <tr><td>מונה</td><td><code>Body/meta</code>, שקיפות 55%, יישור לימין — ״שלב 3 מתוך 8 · תחנת המבחנים״</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <strong>Variants:</strong> <code>progress = true / false</code> (במסכי
+        פתיחה וסיום מוצגת רק שורת הכותרת).
+      </p>
+
+      <h3>סרגל תחתון · BottomBar</h3>
+      <p>
+        רוחב מלא, ריפוד 14 למעלה ולמטה, רקע לבן 95% + blur, קו עליון
+        <code>#171C23 · 8%</code>, Auto layout אופקי space‑between. מימין כפתור
+        משני, משמאל כפתור ראשי.
+      </p>
+
+      <h3>כפתור · Button</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>וריאנט</th><th>מפרט</th></tr></thead>
+          <tbody>
+            <tr><td>Primary</td><td>רדיוס pill, ריפוד 20 אופקי / 6 אנכי, טקסט <code>UI/caption</code> לבן, מילוי <code>brand/default</code>, רווח 6 בין אייקון לטקסט</td></tr>
+            <tr><td>Outline</td><td>אותן מידות, מילוי שקוף, מסגרת 1 <code>brand/default</code>, טקסט <code>brand/default</code></td></tr>
+            <tr><td>Link</td><td>בלי רקע ובלי מסגרת, <code>UI/caption</code> <code>brand/default</code>, רווח 4</td></tr>
+            <tr><td>Link danger</td><td>כמו Link, בצבע <code>semantic/error</code></td></tr>
+            <tr><td>Disabled</td><td>כל וריאנט בשקיפות 40%</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>תווית שאלה · FieldLabel</h3>
+      <p>
+        טקסט בסגנון <code>UI/label</code>, מרווח 10 מתחתיו. שאלת חובה מקבלת כוכבית
+        <code>semantic/error</code> אחרי הטקסט. שדה רשות מקבל את המילה ״(רשות)״
+        ב‑400 ובשקיפות 50%.
+      </p>
+
+      <h3>בחירה יחידה · Radio</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>מצב</th><th>עיגול</th><th>טקסט</th></tr></thead>
+          <tbody>
+            <tr><td>לא נבחר</td><td>22 × 22, מסגרת 2 <code>#171C23 · 30%</code></td><td><code>Body/default</code></td></tr>
+            <tr><td>נבחר</td><td>מסגרת 2 <code>brand/default</code> + נקודה 11 במילוי brand</td><td><code>Body/default</code></td></tr>
+            <tr><td>מושבת</td><td>כל הקבוצה בשקיפות 40%</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>רווח 10 בין העיגול לטקסט, רווח 10 בין אפשרות לאפשרות, יישור לימין.</p>
+
+      <h3>סרגל דירוג 1–5 · RatingRow <span class="pill green">הפקד המרכזי</span></h3>
+      <p>
+        אותו פקד בדיוק בשאלון תחביבים, בסקר ובשאלות הסולם — חמישה תאים בשורה
+        אחת, <strong>1 מימין ו‑5 משמאל</strong> (נמוך מימין, גבוה משמאל, לפי כיוון
+        הקריאה בעברית).
+      </p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>שכבה</th><th>מפרט</th></tr></thead>
+          <tbody>
+            <tr><td>תא</td><td>Fill container ברוחב, גובה 52, רדיוס 10, טקסט <code>Heading/card semi</code>, רווח 10 בין תאים</td></tr>
+            <tr><td>תא רגיל</td><td>מילוי לבן, מסגרת 1 <code>surface/chip-border</code>, טקסט <code>ink/primary</code></td></tr>
+            <tr><td>תא נבחר</td><td>מילוי <code>brand/tint-06</code>, מסגרת 1 <code>brand/default</code>, טקסט <code>brand/default</code></td></tr>
+            <tr><td>תוויות קצה</td><td>מתחת לשורה, space‑between, <code>Body/caption</code> בשקיפות 60%. מימין ״במידה מועטה מאוד״, משמאל ״במידה רבה מאוד״</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>כרטיס אפשרות · OptionCard</h3>
+      <p>
+        לשאלות עם רשימת אפשרויות מותאמת (למשל ״אתר מתגייסים / דואר אלקטרוני /
+        פקס״). רוחב מלא, רדיוס 10, ריפוד 16 אופקי ו‑14 אנכי, רווח 12, יישור
+        לימין. לא נבחר: מסגרת <code>surface/chip-border</code>. נבחר: מסגרת
+        <code>brand/default</code> + מילוי <code>brand/tint-06</code> + טקסט <code>UI/emphasis</code>.
+        בצד ימין עיגול 24 — אפור <code>#171C23 · 6%</code> כשאינו נבחר, ומילוי
+        brand עם וי לבן 14 כשנבחר.
+      </p>
+
+      <h3>שדה טקסט · TextArea</h3>
+      <p>
+        רוחב מלא, רדיוס 10, מסגרת 1 <code>surface/chip-border</code>, ריפוד 16
+        אופקי / 12 אנכי, טקסט <code>Body/default</code>, פלייסהולדר <code>ink/primary · 40%</code>,
+        גובה 4 שורות (3 בשדה פירוט). מצב פוקוס: מסגרת <code>brand/default</code>.
+      </p>
+
+      <h3>חלון · Dialog</h3>
+      <p>
+        דסקטופ: ממורכז, רוחב 420 (חלון היציאה), רדיוס 10, צל
+        <code>elevation/overlay-shadow</code>. מובייל: נצמד לתחתית, רוחב מלא,
+        רדיוס עליון 16, ידית אחיזה 40 × 4 בצבע <code>#171C23 · 15%</code>.
+        כותרת <code>Heading/card</code> בריפוד 20/16 עם קו תחתון; גוף בריפוד 20; פוטר בריפוד 20/16
+        עם קו עליון ושני כפתורים. מאחור רקע <code>surface/overlay-scrim</code>.
+      </p>
+
+      <h3>עיגול אייקון · IconCircle</h3>
+      <p>
+        40 לשימוש בתוך חלון, 72 במסכי סיום. רקע <code>brand/tint-10</code>
+        ואייקון brand; בגרסת ההצלחה — רקע <code>semantic/success-bg</code>
+        ואייקון <code>accent-2</code>.
+      </p>
+    </section>
+
+    <!-- 4 ─────────────────────────────────────── -->
+    <section id="atuda">
+      <h2><span class="num">05</span>שאלון עתודה</h2>
+      <p class="sub">
+        שני שלבים: בחירת ההעדפות וסיכום ושליחה. כל הבחירה עצמה קורית בפאנל צדדי
+        (דסקטופ) או בבוטום‑שיט (מובייל), כך שהעמוד עצמו נשאר רשימה קצרה.
+      </p>
+
+      <div class="frames">
+        <div class="frame"><b>A1 · פתיחה</b><span>מסך ההסבר לפני תחילת השאלון</span></div>
+        <div class="frame"><b>A2 · שלב 1 ריק</b><span>שתי עדיפויות ריקות</span></div>
+        <div class="frame"><b>A3 · פאנל · רשימת מגמות</b><span>חיפוש + אשכולות</span></div>
+        <div class="frame"><b>A4 · פאנל · פרטי מגמה</b><span>הסבר + בחירת מוסדות</span></div>
+        <div class="frame"><b>A5 · פאנל · מכסה מלאה</b><span>3 מוסדות, השאר מעומעמים</span></div>
+        <div class="frame"><b>A6 · שלב 1 מלא</b><span>שתי עדיפויות מאוישות</span></div>
+        <div class="frame"><b>A7 · שלב 2 סיכום</b><span>כרטיסים + הצהרות</span></div>
+        <div class="frame"><b>A8 · סיום</b><span>אישור שליחה</span></div>
+      </div>
+
+      <hr class="rule">
+
+      <h3>A1 · מסך הפתיחה</h3>
+      <ol class="steps">
+        <li>IconCircle 72 עם אייקון כובע סיום 34, ממורכז.</li>
+        <li>כותרת <code>Heading/screen</code>: ״ישראלה, ברוכה הבאה לשאלון העתודה״ + נקודה
+          ירוקה <code>accent-2</code>. ממורכזת.</li>
+        <li>שלוש פסקאות נפרדות — משפט בכל פסקה — <code>Body/large relaxed</code>, רווח
+          12 ביניהן, יישור לימין.</li>
+        <li>קישור ״למד עוד על מסלול העתודה האקדמית״ — Link <code>UI/body</code> + חץ 15,
+          צמוד לימין.</li>
+        <li>סרגל תחתון: ״חזרה למשימות״ (Outline) · ״בואו נתחיל״ (Primary).</li>
+      </ol>
+
+      <h3>A2 / A6 · שלב 1 — רשימת העדיפויות</h3>
+      <p>
+        מעל התוכן: סרגל התקדמות של שני שלבים — שני בארים בגובה 6 ברוחב שווה,
+        רווח 8, ומתחת לכל אחד תווית <code>Body/meta</code> (״1. בחירת ההעדפות״ / ״2. סיכום
+        ושליחה״). הפעיל בצבע brand ו‑600, השאר בשקיפות 50%.
+      </p>
+      <div class="tablewrap">
+        <table>
+          <caption>בלוק הכותרת של השלב — Auto layout אנכי, רווח 8 בין השורות</caption>
+          <thead><tr><th>שורה</th><th>סגנון</th><th>מפרט</th></tr></thead>
+          <tbody>
+            <tr><td>כותרת השלב</td><td><code>Heading/screen</code></td><td>״בחירת ההעדפות״ + נקודה בצבע <code>accent-2</code>. צבע <code>ink/primary</code></td></tr>
+            <tr><td>הסבר השלב</td><td><code>Body/small relaxed</code></td><td><code>ink/primary</code> בשקיפות <strong>70%</strong>. קבוע — מוצג תמיד</td></tr>
+            <tr><td>שורת מצב</td><td><code>Body/caption</code></td><td><code>ink/primary</code> בשקיפות <strong>60%</strong>. מוצגת רק כל עוד אין שתי עדיפויות מלאות, ונעלמת כשאפשר להמשיך</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <caption>כרטיס עדיפות — מסגרת <code>ink/line</code>, רדיוס 10, ריפוד 16, רווח פנימי 12</caption>
+          <thead><tr><th>אזור</th><th>מפרט</th></tr></thead>
+          <tbody>
+            <tr><td>שורת כותרת</td><td>עיגול 32 במילוי brand, מספר <code>UI/emphasis bold</code> לבן · ״עדיפות 1״ <code>UI/emphasis</code> (תופס את הרווח) · שלושה כפתורים 28 × 28, רדיוס 8, מסגרת <code>surface/chip-border</code>: חץ למעלה, חץ למטה, פח אשפה בצבע <code>semantic/error</code>. כפתור לא זמין — שקיפות 30%</td></tr>
+            <tr><td>מצב ריק</td><td>כפתור ברוחב מלא, ריפוד אנכי 16, רדיוס 10, מסגרת מקווקוות 1 <code>brand/default · 40%</code>, מילוי <code>brand/default · 3%</code>, תוכן ממורכז: ״+ בחירת מגמה ומוסדות לימוד״ — <code>UI/body</code> brand</td></tr>
+            <tr><td>מצב מלא</td><td>שם המגמה <code>UI/label bold</code> · שם האשכול <code>Body/caption</code> בשקיפות 50% · משמאל ״עריכה״ (Link + עיפרון 13) ו״ניקוי״ (Link danger)</td></tr>
+            <tr><td>צ׳יפ מוסד</td><td>רדיוס pill, מילוי <code>brand/tint-06</code>, מסגרת <code>brand/default · 20%</code>, ריפוד 6 מימין ו‑12 משמאל, ריפוד אנכי 4. בתוכו עיגול 20 במילוי brand עם מספר <code>UI/tag bold</code> לבן, ואז שם המוסד <code>Body/caption</code>. הצ׳יפים נערמים בשורה עם גלישה, רווח 8</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        מתחת לרשימה: כפתור Outline ברוחב מלא עם תוכן ממורכז — ״+ הוספת עדיפות״,
+        ומתחתיו שורת מונה <code>Body/caption</code> בשקיפות 60%: ״נוספו 2 מתוך 4 עדיפויות״.
+        כשארבע העדיפויות קיימות הכפתור עובר למצב Disabled והמונה נקרא ״בחרת את
+        מלוא 4 העדיפויות״.
+      </p>
+      <div class="note">
+        <strong>מצב חסום.</strong> כל עוד אין שתי עדיפויות מלאות, כפתור ״המשך
+        לסיכום״ נשאר Disabled ומתחת לכותרת מופיעה שורה אפורה: ״כדי להמשיך לסיכום
+        יש למלא לפחות 2 העדפות — מגמה ולפחות מוסד לימודים אחד בכל אחת״. אין
+        הודעת שגיאה אדומה — בפיגמה זה פריים נפרד, A2.
+      </div>
+
+      <h3>A3–A5 · הפאנל</h3>
+      <p>
+        אותו תוכן בשתי מעטפות. <strong>דסקטופ:</strong> נצמד לימין המסך, רוחב
+        460, גובה מלא, צל <code>elevation/overlay-shadow</code>.
+        <strong>מובייל:</strong> נצמד לתחתית, גובה 88% מהמסך, רדיוס עליון 16,
+        ידית אחיזה 40 × 4. בשניהם מאחור <code>surface/overlay-scrim</code>.
+      </p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>אזור</th><th>מפרט</th></tr></thead>
+          <tbody>
+            <tr><td>כותרת</td><td>ריפוד 20 אופקי / 16 אנכי, קו תחתון <code>#171C23 · 8%</code>. במסך הפרטים מופיע חץ חזרה 20 בצד ימין. כותרת <code>Heading/card</code>, תת‑כותרת <code>Body/caption</code> בשקיפות 60%, ו‑X 20 בשקיפות 60% בצד שמאל</td></tr>
+            <tr><td>חיפוש</td><td>גובה 40, רדיוס pill, מסגרת <code>surface/chip-border</code>, ריפוד 16, אייקון זכוכית 15 בשקיפות 40%, טקסט <code>Body/small</code>. נעוץ לראש אזור הגלילה</td></tr>
+            <tr><td>כותרת אשכול</td><td>גובה 48, ריפוד 20, מילוי <code>surface/muted</code>, טקסט <code>UI/body</code>, חץ 17 שמסתובב 180° כשפתוח</td></tr>
+            <tr><td>שורת מגמה</td><td>גובה 50, ריפוד 20, קו תחתון <code>#171C23 · 6%</code>, טקסט <code>Body/small</code>, חץ שמאלה 16 בשקיפות 35%</td></tr>
+            <tr><td>מגמה שנבחרה כבר</td><td>כל השורה בשקיפות 40%, ובמקום החץ הטקסט ״כבר נבחרה״ <code>Body/meta</code> בשקיפות 60%</td></tr>
+            <tr><td>על המגמה</td><td>תווית <code>Body/caption</code> בשקיפות 50% + פסקה <code>Body/small relaxed</code></td></tr>
+            <tr><td>בחירת מוסדות</td><td>כותרת <code>UI/emphasis</code>, הסבר <code>Body/caption</code> בשקיפות 60%, ואז שורת מונה: ״נבחרו 2 מתוך 3 מוסדות לימוד״ <code>UI/caption</code> מימין ו״איפוס בחירה״ (Link) משמאל</td></tr>
+            <tr><td>כפתור מוסד</td><td>רוחב מלא, רדיוס 10, ריפוד 16/12, טקסט <code>Body/small</code>. נבחר: מסגרת brand + מילוי <code>brand/tint-06</code> + טקסט <code>UI/body</code> + עיגול 24 עם מספר התיעדוף. מכסה מלאה: כל מה שלא נבחר בשקיפות 40%</td></tr>
+            <tr><td>פוטר</td><td>ריפוד 20/16, קו עליון, ״ביטול״ (Outline) מימין ו״שמירת הבחירה״ (Primary) משמאל — Disabled עד שנבחר מוסד אחד לפחות</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <strong>A5</strong> הוא אותו פריים אחרי שלוש בחירות: שלושה כפתורים
+        נבחרים עם 1 · 2 · 3, חמישה מעומעמים, ושורת הסבר <code>Body/caption</code> בשקיפות 60%:
+        ״בחרת את מלוא 3 המוסדות. כדי להחליף מוסד יש ללחוץ שוב על אחד מהמוסדות
+        שנבחרו״.
+      </p>
+
+      <h3>A7 · סיכום ושליחה</h3>
+      <ol class="steps">
+        <li>כותרת ״סיכום ושליחה.״ + פסקה מסבירה <code>Body/small</code> בשקיפות 70%.</li>
+        <li>כרטיס לכל עדיפות: ריפוד 20, רווח 12. שורה עליונה — עיגול 32 עם
+          המספר, שם המגמה <code>UI/label bold</code> ומתחתיו האשכול <code>Body/caption</code> בשקיפות 50%.</li>
+        <li>מתחתיה רשימת המוסדות עם הזחה 44 מימין: עיגול 20 במילוי
+          <code>brand/tint-12</code> עם מספר <code>UI/meta bold</code> בצבע brand, ולידו שם המוסד
+          <code>Body/small</code>. רווח 10 בין שורות.</li>
+        <li>בלוק ההצהרות: מילוי <code>surface/muted</code>, רדיוס 10, ריפוד 20.
+          כותרת ״הצהרות״ <code>UI/emphasis</code>, ושלוש שורות — ריבוע 20 ברדיוס 6 עם מסגרת
+          <code>#171C23 · 25%</code>, שמתמלא brand עם וי לבן 13 כשמסומן, וטקסט
+          <code>Body/small relaxed</code>.</li>
+        <li>כפתור ״שליחה״ נשאר Disabled עד שכל שלוש ההצהרות מסומנות.</li>
+      </ol>
+
+      <h3>A8 · מסך הסיום</h3>
+      <p>
+        IconCircle 72 ירוק עם וי 34, כותרת ״העדפותיך נשלחו בהצלחה.״, פסקה <code>Body/default</code>
+        בשקיפות 60% ברוחב מרבי 380, והכל ממורכז. בסרגל התחתון כפתור יחיד
+        ממורכז: ״לעמוד הבית״.
+      </p>
+    </section>
+
+    <!-- 5 ─────────────────────────────────────── -->
+    <section id="survey">
+      <h2><span class="num">06</span>סקר צו ראשון</h2>
+      <p class="sub">
+        שמונה שלבים — נושא בכל שלב, עם כל שאלותיו באותו מסך וגלילה לפי הצורך.
+        חמש התחנות נפתחות בשאלת סינון שקובעת אם שאר השאלות בכלל נדרשות.
+      </p>
+
+      <div class="frames">
+        <div class="frame"><b>S1 · שלב ריק</b><span>תחנה לפני מענה</span></div>
+        <div class="frame"><b>S2 · תחנה בוצעה</b><span>״כן״ + סולמות פעילים</span></div>
+        <div class="frame"><b>S3 · תחנה לא בוצעה</b><span>״לא״ + שאלות מעומעמות</span></div>
+        <div class="frame"><b>S4 · שדה פירוט</b><span>כן/לא עם ״פרט״</span></div>
+        <div class="frame"><b>S5 · שלב אחרון</b><span>כפתור ״סיום ושליחה״</span></div>
+        <div class="frame"><b>S6 · חלון יציאה</b><span>אישור לפני עזיבה</span></div>
+        <div class="frame"><b>S7 · סיום</b><span>אישור + כתבות המשך</span></div>
+      </div>
+
+      <hr class="rule">
+
+      <h3>שלד השלב</h3>
+      <ol class="steps">
+        <li><strong>סרגל עליון</strong> (FormTopBar) עם מונה ״שלב 3 מתוך 8 ·
+          תחנת המבחנים״ ובר התקדמות לפי מספר השלב.</li>
+        <li><strong>כותרת הנושא</strong> — <code>Heading/screen</code> + נקודה ירוקה. זו
+          ההדגשה של התחנה, ולכן היא הדבר הגדול ביותר במסך.</li>
+        <li><strong>שאלת הסינון</strong> (רק בחמש התחנות) — ״האם ביצעת את תחנת
+          …?״ עם רדיו כן/לא. אין לה מספר שאלה.</li>
+        <li><strong>שאלות הנושא</strong> — מחסנית אנכית, ריפוד 24 מעל ומתחת לכל
+          שאלה וקו מפריד 1 בצבע <code>#171C23 · 8%</code> ביניהן.</li>
+        <li><strong>שורת מצב</strong> (אם צריך) — <code>Body/caption</code> בשקיפות 60%.</li>
+        <li><strong>סרגל תחתון</strong> — ״לשלב הקודם״ (Outline, עם חץ ימינה)
+          משמאלו ״המשך״ (Primary, עם חץ שמאלה), ובשלב האחרון ״סיום ושליחה״ עם
+          אייקון שליחה.</li>
+      </ol>
+
+      <h3>מבנה שאלה בודדת</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>שכבה</th><th>מפרט</th></tr></thead>
+          <tbody>
+            <tr><td>מספר השאלה</td><td><code>Body/meta</code> בשקיפות 45%, מרווח 4 מתחת — ״שאלה 7״. שאלת סינון: אין שורה כזו</td></tr>
+            <tr><td>נוסח השאלה</td><td><code>UI/label</code> + כוכבית אדומה בשאלת חובה, מרווח 10 מתחת</td></tr>
+            <tr><td>סולם 1–5</td><td>RatingRow (ראו רכיבים) — זהו הפקד של כל שאלות הסולם וכל שאלות הסרגל</td></tr>
+            <tr><td>כן / לא</td><td>שני רדיו במחסנית, רווח 10</td></tr>
+            <tr><td>רשימת אפשרויות</td><td>OptionCard לכל אפשרות, רווח 8</td></tr>
+            <tr><td>טקסט חופשי</td><td>TextArea 4 שורות עם הפלייסהולדר ״רשום הערתך/הארתך כאן.״ — ללא כוכבית</td></tr>
+            <tr><td>שדה פירוט</td><td>מתחת לתשובה, מרווח 16: תווית ״פרט (רשות)״ או תווית חובה עם כוכבית, ואז TextArea 3 שורות</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note ok">
+        <strong>S3 — התחנה לא בוצעה.</strong> אחרי ״לא״ בשאלת הסינון: כל שאר
+        שאלות הנושא עוברות לשקיפות 40% ולמצב מושבת, מתחת לרשימה מופיעה שורה
+        ״סימנת שלא ביצעת את התחנה — שאר שאלות הנושא אינן נדרשות, וניתן להמשיך
+        לנושא הבא״, וכפתור ״המשך״ נפתח. זה פריים חובה למסירה, כי הוא מסביר
+        למפתחים את כל הלוגיקה.
+      </div>
+
+      <h3>S6 · חלון היציאה</h3>
+      <p>
+        כותרת ״האם ברצונך לצאת מהסקר?״ <code>Heading/card</code>. בגוף — IconCircle 40 עם אייקון
+        לוח, ולידו טקסט <code>Body/small</code>: ״התשובות שענית עד כה יישמרו כטיוטה, ובכניסה
+        הבאה תוכל/י להמשיך מאותו שלב״. בפוטר ״המשך מילוי הסקר״ (Outline) ו״יציאה
+        מהסקר״ (Primary). במובייל אותו חלון כבוטום‑שיט.
+      </p>
+
+      <h3>S7 · מסך הסיום</h3>
+      <ol class="steps">
+        <li>IconCircle 72 ירוק + כותרת ״מילאת את השאלון בהצלחה.״ + פסקה <code>Body/default</code>
+          בשקיפות 60% ברוחב מרבי 420 — הכול ממורכז.</li>
+        <li>כותרת אזור הכתבות: <code>Heading/card</code> ״השלבים הבאים בתהליך הגיוס״, ומתחתיה שורת
+          משנה <code>Body/caption</code> בשקיפות 60%.</li>
+        <li>כרטיסי כתבה ברשת: שתי עמודות בדסקטופ, אחת במובייל, רווח 10. כל כרטיס
+          — מסגרת <code>ink/line</code>, רדיוס 10, ריפוד 16 אופקי / 12 אנכי,
+          רווח פנימי 4. שורה עליונה: שם הכתבה <code>UI/emphasis</code> מימין וחץ 15 בשקיפות 35%
+          משמאל; מתחת תקציר <code>Body/caption</code> בשקיפות 60% בשתי שורות.</li>
+        <li>כפתור ״חזרה לעמוד הבית״ (Primary) ממורכז מתחת לרשת.</li>
+      </ol>
+    </section>
+
+    <!-- 6 ─────────────────────────────────────── -->
+    <section id="proto">
+      <h2><span class="num">07</span>פרוטוטייפ</h2>
+      <p class="sub">
+        שני מסלולים קצרים, בלי אנימציות מיוחדות חוץ מהכניסה של הפאנל.
+      </p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>מ־</th><th>אל</th><th>אינטראקציה</th></tr></thead>
+          <tbody>
+            <tr><td>A1 ״בואו נתחיל״</td><td>A2</td><td>Instant</td></tr>
+            <tr><td>A2 כפתור מקווקו</td><td>A3</td><td>Move in · מימין · 300ms · Ease out (מובייל: Move in מלמטה)</td></tr>
+            <tr><td>A3 שורת מגמה</td><td>A4</td><td>Instant — אותו פאנל, מסך פנימי</td></tr>
+            <tr><td>A4 ״שמירת הבחירה״</td><td>A6</td><td>Move out · 280ms</td></tr>
+            <tr><td>A6 ״המשך לסיכום״</td><td>A7</td><td>Instant</td></tr>
+            <tr><td>A7 ״שליחה״</td><td>A8</td><td>Dissolve 200ms</td></tr>
+            <tr><td>S1 רדיו ״כן״</td><td>S2</td><td>Instant</td></tr>
+            <tr><td>S1 רדיו ״לא״</td><td>S3</td><td>Instant</td></tr>
+            <tr><td>S2/S3 ״המשך״</td><td>השלב הבא</td><td>Instant · גלילה חוזרת לראש המסך</td></tr>
+            <tr><td>סרגל עליון ״יציאה״</td><td>S6</td><td>Open overlay · Dissolve 300ms + רקע כהה</td></tr>
+            <tr><td>S5 ״סיום ושליחה״</td><td>S7</td><td>Dissolve 200ms</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 7 ─────────────────────────────────────── -->
+    <section id="checklist">
+      <h2><span class="num">08</span>צ׳קליסט מסירה</h2>
+      <p class="sub">
+        עוברים על זה לפני שמעבירים למפתחים — כל שורה היא משהו שנשאלת עליו אחר כך.
+      </p>
+      <ul class="checklist">
+        <li>כל 15 הפריימים קיימים בשתי רזולוציות (8 עתודה + 7 סקר = 26 פריימים בסך הכול, כולל גרסאות המובייל של שלושת הפאנלים)</li>
+        <li>פריימי המובייל משתמשים בסט סגנונות ה‑<code>Mobile/…</code> ולא בסגנונות הדסקטופ</li>
+        <li>כל צבע מקושר למשתנה — אין HEX ידני בשכבות</li>
+        <li>המצבים המושבתים קיימים כפריים ולא רק כתיאור: A2 (פחות משתי עדיפויות), A5 (מכסת מוסדות), S3 (תחנה לא בוצעה)</li>
+        <li>הסרגל 1–5 בכל המסכים עם 1 מימין — כולל בשאלון תחביבים הקיים</li>
+        <li>כל כותרת נגמרת בנקודה הירוקה <code>accent-2</code></li>
+        <li>הכוכבית האדומה מופיעה רק בשאלות חובה, ו״(רשות)״ רק בשדות פירוט לא נדרשים</li>
+        <li>הפאנל והחלונות מוצגים מעל רקע כהה 20% ולא על רקע לבן</li>
+        <li>הסרגל העליון והתחתון נעוצים — בפיגמה: Fix position when scrolling</li>
+        <li>לכל פריים יש שם לפי הקוד (A1…A8 / S1…S7) כדי שהמפתחים ימצאו התאמה מהירה</li>
+      </ul>
+
+      <footer class="end">
+        המספרים במדריך נלקחו מהקבצים
+        <code>AtudaQuestionnaireSheet.tsx</code>,
+        <code>FirstOrderSurveyPage.tsx</code> ו‑<code>primitives.tsx</code>.
+        אם משהו בקוד משתנה — זה המקום לעדכן.
+      </footer>
+    </section>
+  </main>
+</div>

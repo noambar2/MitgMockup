@@ -685,7 +685,7 @@ export default function FirstOrderSurveyPage({
           {/* כרטיסי מאמרים - כל שלב בתהליך עם הסבר קצר וקישור לקריאה */}
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1">
-              <span className="font-bold text-[#171c23] text-[17px] text-right">
+              <span className="font-bold text-[#171c23] text-[18px] text-right">
                 השלבים הבאים בתהליך הגיוס
               </span>
               <span className="text-[#171c23] text-[13px] opacity-60 text-right">
