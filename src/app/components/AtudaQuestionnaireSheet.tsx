@@ -48,6 +48,9 @@ interface Slot {
   institutions: string[];
 }
 
+/** שם העדיפות נקרא כמילה - ולכן אין צורך בעיגול מספר צבעוני לצדו */
+const ORDINALS = ["ראשונה", "שנייה", "שלישית", "רביעית"];
+
 const emptySlot = (key: number): Slot => ({
   key,
   trackId: null,
@@ -526,8 +529,9 @@ export default function AtudaQuestionnaireSheet({
             <StepHeading title="בחירת ההעדפות">
               <p className="text-[#171c23] text-[14px] leading-relaxed text-right opacity-70">
                 לכל עדיפות בוחרים מגמה ואת מוסדות הלימוד
-                המועדפים עליכם בה. סדר העדיפויות ניתן לשינוי
-                בעזרת החיצים.
+                המועדפים עליכם בה. העדיפות הראשונה היא המגמה
+                שהכי תרצו ללמוד, והאחרונה זו שהכי פחות - אפשר
+                לשנות את הסדר בעזרת החיצים.
               </p>
               {!canContinue && (
                 <span className="text-[#171c23] text-[13px] opacity-60 text-right">
@@ -547,12 +551,25 @@ export default function AtudaQuestionnaireSheet({
                     key={slot.key}
                     className="bg-white rounded-[10px] border border-[rgba(23,28,35,0.1)] p-4 flex flex-col gap-3"
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="w-8 h-8 rounded-full bg-[#008ff0] text-white font-bold text-[15px] flex items-center justify-center shrink-0">
+                    <div className="flex items-center gap-2 -mx-4 px-4 pb-3 border-b border-[rgba(23,28,35,0.08)]">
+                      <span className="w-7 h-7 rounded-[8px] bg-[rgba(0,143,240,0.08)] text-[#008ff0] font-bold text-[13px] flex items-center justify-center shrink-0">
                         {i + 1}
                       </span>
-                      <span className="font-semibold text-[#171c23] text-[15px] flex-1 text-right">
-                        עדיפות {i + 1}
+                      <span className="flex-1 flex flex-wrap items-baseline gap-x-1.5 text-right">
+                        <span className="font-semibold text-[#171c23] text-[15px]">
+                          עדיפות {ORDINALS[i] ?? i + 1}
+                        </span>
+                        {/* מסמנים רק את שני הקצוות - הם שמסבירים את כל הסולם */}
+                        {i === 0 && (
+                          <span className="text-[#171c23] text-[13px] opacity-55">
+                            · הכי רוצה ללמוד
+                          </span>
+                        )}
+                        {i === slots.length - 1 && slots.length > 1 && (
+                          <span className="text-[#171c23] text-[13px] opacity-55">
+                            · הכי פחות
+                          </span>
+                        )}
                       </span>
                       <button
                         type="button"
@@ -576,7 +593,7 @@ export default function AtudaQuestionnaireSheet({
                         type="button"
                         onClick={() => removeSlot(slot.key)}
                         disabled={slots.length <= 1}
-                        aria-label={`הסרת עדיפות ${i + 1}`}
+                        aria-label={`הסרת עדיפות ${ORDINALS[i] ?? i + 1}`}
                         className="w-7 h-7 rounded-[8px] border border-[rgba(23,28,35,0.12)] flex items-center justify-center text-[#c43c3c] disabled:opacity-30 hover:border-[rgba(196,60,60,0.4)]"
                       >
                         <Trash2 size={15} />
@@ -683,7 +700,7 @@ export default function AtudaQuestionnaireSheet({
                     className="bg-white rounded-[10px] border border-[rgba(23,28,35,0.1)] p-5 flex flex-col gap-3"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="w-8 h-8 rounded-full bg-[#008ff0] text-white font-bold text-[15px] flex items-center justify-center shrink-0">
+                      <span className="w-7 h-7 rounded-[8px] bg-[rgba(0,143,240,0.08)] text-[#008ff0] font-bold text-[13px] flex items-center justify-center shrink-0">
                         {i + 1}
                       </span>
                       <div className="flex flex-col items-start min-w-0">

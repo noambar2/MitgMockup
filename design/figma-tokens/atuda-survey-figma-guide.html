@@ -894,7 +894,7 @@
           <thead><tr><th>שורה</th><th>סגנון</th><th>מפרט</th></tr></thead>
           <tbody>
             <tr><td>כותרת השלב</td><td><code>Heading/screen</code></td><td>״בחירת ההעדפות״ + נקודה בצבע <code>accent-2</code>. צבע <code>ink/primary</code></td></tr>
-            <tr><td>הסבר השלב</td><td><code>Body/small relaxed</code></td><td><code>ink/primary</code> בשקיפות <strong>70%</strong>. קבוע — מוצג תמיד</td></tr>
+            <tr><td>הסבר השלב</td><td><code>Body/small relaxed</code></td><td><code>ink/primary</code> בשקיפות <strong>70%</strong>. קבוע — מוצג תמיד. הנוסח אומר במפורש מה המשמעות של הסדר: ״העדיפות הראשונה היא המגמה שהכי תרצו ללמוד, והאחרונה זו שהכי פחות״</td></tr>
             <tr><td>שורת מצב</td><td><code>Body/caption</code></td><td><code>ink/primary</code> בשקיפות <strong>60%</strong>. מוצגת רק כל עוד אין שתי עדיפויות מלאות, ונעלמת כשאפשר להמשיך</td></tr>
           </tbody>
         </table>
@@ -905,7 +905,9 @@
           <caption>כרטיס עדיפות — מסגרת <code>ink/line</code>, רדיוס 10, ריפוד 16, רווח פנימי 12</caption>
           <thead><tr><th>אזור</th><th>מפרט</th></tr></thead>
           <tbody>
-            <tr><td>שורת כותרת</td><td>עיגול 32 במילוי brand, מספר <code>UI/emphasis bold</code> לבן · ״עדיפות 1״ <code>UI/emphasis</code> (תופס את הרווח) · שלושה כפתורים 28 × 28, רדיוס 8, מסגרת <code>surface/chip-border</code>: חץ למעלה, חץ למטה, פח אשפה בצבע <code>semantic/error</code>. כפתור לא זמין — שקיפות 30%</td></tr>
+            <tr><td>שורת כותרת</td><td>מונה 28 × 28, רדיוס 8, מילוי <code>brand/tint-08</code> ומספר <code>UI/caption bold</code> בצבע <code>brand/default</code> · שם העדיפות במילים <code>UI/emphasis</code> (תופס את הרווח) · שלושה כפתורים 28 × 28, רדיוס 8, מסגרת <code>surface/chip-border</code>: חץ למעלה, חץ למטה, פח אשפה בצבע <code>semantic/error</code>. כפתור לא זמין — שקיפות 30%</td></tr>
+            <tr><td>סימון הקצוות</td><td>בכרטיס הראשון, אחרי שם העדיפות: ״· הכי רוצה ללמוד״ <code>Body/caption</code> בשקיפות 55%. בכרטיס האחרון: ״· הכי פחות״ באותו סגנון. בכרטיסים שבאמצע — אין תווית</td></tr>
+            <tr><td>קו הפרדה</td><td>קו 1 בצבע <code>#171C23 · 8%</code> מתחת לשורת הכותרת, לכל רוחב הכרטיס (יוצא מהריפוד: <code>-mx-16 px-16</code>), עם 12 מעליו ומתחתיו</td></tr>
             <tr><td>מצב ריק</td><td>כפתור ברוחב מלא, ריפוד אנכי 16, רדיוס 10, מסגרת מקווקוות 1 <code>brand/default · 40%</code>, מילוי <code>brand/default · 3%</code>, תוכן ממורכז: ״+ בחירת מגמה ומוסדות לימוד״ — <code>UI/body</code> brand</td></tr>
             <tr><td>מצב מלא</td><td>שם המגמה <code>UI/label bold</code> · שם האשכול <code>Body/caption</code> בשקיפות 50% · משמאל ״עריכה״ (Link + עיפרון 13) ו״ניקוי״ (Link danger)</td></tr>
             <tr><td>צ׳יפ מוסד</td><td>רדיוס pill, מילוי <code>brand/tint-06</code>, מסגרת <code>brand/default · 20%</code>, ריפוד 6 מימין ו‑12 משמאל, ריפוד אנכי 4. בתוכו עיגול 20 במילוי brand עם מספר <code>UI/tag bold</code> לבן, ואז שם המוסד <code>Body/caption</code>. הצ׳יפים נערמים בשורה עם גלישה, רווח 8</td></tr>
@@ -923,6 +925,13 @@
         לסיכום״ נשאר Disabled ומתחת לכותרת מופיעה שורה אפורה: ״כדי להמשיך לסיכום
         יש למלא לפחות 2 העדפות — מגמה ולפחות מוסד לימודים אחד בכל אחת״. אין
         הודעת שגיאה אדומה — בפיגמה זה פריים נפרד, A2.
+      </div>
+
+      <div class="note">
+        <strong>למה הכותרת שקטה.</strong> הכחול בכרטיס שמור לתיעדוף המוסדות
+        ולפעולות. המונה הוא לכן מילוי תכלת בהיר (<code>brand/tint-08</code>)
+        עם ספרה בצבע המותג ולא עיגול מלא, ושם העדיפות מופיע במילים — ״עדיפות
+        ראשונה״ ולא ״1״ — כך שגם בלי הגרפיקה ברור מה המשמעות של הסדר.
       </div>
 
       <h3>A3–A5 · הפאנל</h3>
@@ -958,8 +967,9 @@
       <h3>A7 · סיכום ושליחה</h3>
       <ol class="steps">
         <li>כותרת ״סיכום ושליחה.״ + פסקה מסבירה <code>Body/small</code> בשקיפות 70%.</li>
-        <li>כרטיס לכל עדיפות: ריפוד 20, רווח 12. שורה עליונה — עיגול 32 עם
-          המספר, שם המגמה <code>UI/label bold</code> ומתחתיו האשכול <code>Body/caption</code> בשקיפות 50%.</li>
+        <li>כרטיס לכל עדיפות: ריפוד 20, רווח 12. שורה עליונה — אותו מונה 28
+          (<code>brand/tint-08</code> + מספר בצבע המותג), שם המגמה
+          <code>UI/label bold</code> ומתחתיו האשכול <code>Body/caption</code> בשקיפות 50%.</li>
         <li>מתחתיה רשימת המוסדות עם הזחה 44 מימין: עיגול 20 במילוי
           <code>brand/tint-12</code> עם מספר <code>UI/meta bold</code> בצבע brand, ולידו שם המוסד
           <code>Body/small</code>. רווח 10 בין שורות.</li>
