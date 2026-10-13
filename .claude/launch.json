@@ -6,6 +6,12 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["run", "dev"],
       "port": 5173
+    },
+    {
+      "name": "vue-chat",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--dir", "vue-chat", "run", "dev"],
+      "port": 5291
     }
   ]
 }
