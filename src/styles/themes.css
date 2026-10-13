@@ -411,3 +411,12 @@
 .dark {
   --gauge-track: rgba(255, 255, 255, 0.1);
 }
+
+/* צ'אט אימות הנתונים - כניסת הודעות ונקודות "מקליד" */
+@keyframes chat-rise {
+  from { opacity: 0; transform: translateY(8px); }
+}
+@keyframes chat-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: .4; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}

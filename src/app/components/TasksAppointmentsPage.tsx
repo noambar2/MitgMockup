@@ -20,6 +20,7 @@ import {
   BookOpen,
   MessageSquare,
   SlidersHorizontal,
+  Sparkles,
 } from "lucide-react";
 import { useIsMobile } from "./ui/use-mobile";
 import { GLASS_CARD } from "./ui/utils";
@@ -64,6 +65,8 @@ interface Task {
   action: string;
   /** שורת התקדמות (למשל מסמכים שהועלו) - אופציונלית */
   progress?: string;
+  /** משימה בפורמט חדש (צ'אט) - תג "חדש" ואייקון משלה */
+  isNew?: boolean;
 }
 
 interface DocumentItem {
@@ -77,6 +80,17 @@ const taskDocuments: DocumentItem[] = [
 ];
 
 const tasks: Task[] = [
+  {
+    id: "data-verification",
+    name: "אימות נתונים",
+    kind: "אחר",
+    status: "טרם בוצע",
+    timeLeft: "נותרו 10 ימים להשלמה",
+    preview:
+      "במקום טופס - שיחה קצרה עם העוזר החכם. נעבור יחד על הכתובת, הקרובים לשעת חירום ופרטי חשבון הבנק שלך, תאשר/י או תתקנ/י, ותחנת אימות הנתונים ביום הגיוס כבר תהיה מאחוריך.",
+    action: "מעבר לצ׳אט",
+    isNew: true,
+  },
   {
     id: "hobbies",
     name: "שאלון תחביבים",
@@ -426,7 +440,7 @@ function TaskCard({
   expanded?: boolean;
   children?: ReactNode;
 }) {
-  const Icon = TASK_ICONS[task.kind];
+  const Icon = task.isNew ? Sparkles : TASK_ICONS[task.kind];
   const isPanel = task.kind === "מסמך";
   return (
     <div className="bg-white rounded-[10px] flex flex-col h-full transition-all duration-200 border border-transparent hover:[box-shadow:0_0_20px_0_rgba(0,143,240,0.25)] hover:border-[rgba(0,143,240,0.2)]">
@@ -438,7 +452,14 @@ function TaskCard({
           <div className="bg-[rgba(0,143,240,0.1)] w-10 h-10 rounded-full flex items-center justify-center shrink-0">
             <Icon size={18} className="text-[#008ff0]" />
           </div>
-          <TaskStatusBadge status={task.status} />
+          <span className="flex items-center gap-1.5">
+            {task.isNew && (
+              <span className="text-[12px] font-bold px-2.5 py-1 rounded-full bg-[rgba(105,198,0,0.14)] text-[#4e9400]">
+                חדש
+              </span>
+            )}
+            <TaskStatusBadge status={task.status} />
+          </span>
         </div>
 
         <div className="flex flex-col items-start gap-1 w-full min-w-0">

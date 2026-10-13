@@ -19,6 +19,7 @@ import MyAppointmentsPage from './components/MyAppointmentsPage';
 import HobbiesQuestionnairePage from './components/HobbiesQuestionnairePage';
 import AtudaQuestionnairePage from './components/AtudaQuestionnairePage';
 import FirstOrderSurveyPage from './components/FirstOrderSurveyPage';
+import DataVerificationChatPage from './components/DataVerificationChatPage';
 import SettingsPage from './components/SettingsPage';
 import InquiriesPage from './components/InquiriesPage';
 import MessagesPage, {
@@ -65,6 +66,7 @@ type Page =
   | "hobbiesForm"
   | "atudaForm"
   | "surveyForm"
+  | "dataChat"
   | "settings"
   | "messages"
   | "inquiries";
@@ -1953,6 +1955,8 @@ export default function App() {
           isMobile ? 1 : 1.4,
           isMobile ? 1 : 0.7,
           accent,
+          // בצ'אט אימות הנתונים - בלי הטבעות הלבנות, רק הגרדיאנט
+          page !== "dataChat",
         ),
         backgroundSize: "cover",
         backgroundRepeat: "no-repeat",
@@ -1967,7 +1971,8 @@ export default function App() {
         activePage={
           page === "hobbiesForm" ||
           page === "atudaForm" ||
-          page === "surveyForm"
+          page === "surveyForm" ||
+          page === "dataChat"
             ? "tasks"
             : page
         }
@@ -1995,7 +2000,9 @@ export default function App() {
                   ? "atudaForm"
                   : id === "survey"
                     ? "surveyForm"
-                    : "hobbiesForm",
+                    : id === "data-verification"
+                      ? "dataChat"
+                      : "hobbiesForm",
               )
             }
             // כרטיס המשימה של הלומדה פותח את הלומדה עצמה
@@ -2015,6 +2022,11 @@ export default function App() {
           />
         ) : page === "surveyForm" ? (
           <FirstOrderSurveyPage
+            onExit={() => setPage("tasks")}
+            onGoHome={() => setPage("profile")}
+          />
+        ) : page === "dataChat" ? (
+          <DataVerificationChatPage
             onExit={() => setPage("tasks")}
             onGoHome={() => setPage("profile")}
           />

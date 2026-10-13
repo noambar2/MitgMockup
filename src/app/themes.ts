@@ -303,6 +303,8 @@ function heroGradientSvg(
   blobScale: number,
   blobOpacityScale: number,
   accent?: PageAccent,
+  /** הטבעות הלבנות והכתם התחתון - מוסתרים בצ'אט אימות הנתונים, שם אזור התשובה יושב בתחתית */
+  rings = true,
 ) {
   const o = blobOpacityScale * theme.blobOpacity;
   const blobA = accent?.blobA ?? theme.blobA;
@@ -325,12 +327,16 @@ function heroGradientSvg(
   <g filter="url(#blob-blur)">
     <ellipse cx="380" cy="530" rx="${250 * blobScale}" ry="${200 * blobScale}" fill="${blobA}" opacity="${0.16 * o}" />
     <ellipse cx="${1180 + blueOffsetX}" cy="340" rx="${340 * blobScale}" ry="${270 * blobScale}" fill="${blobA}" opacity="${0.18 * o}" />
-    <ellipse cx="600" cy="750" rx="${150 * blobScale}" ry="${120 * blobScale}" fill="${blobB}" opacity="${0.2 * o}" />
+    ${rings ? `<ellipse cx="600" cy="750" rx="${150 * blobScale}" ry="${120 * blobScale}" fill="${blobB}" opacity="${0.2 * o}" />` : ""}
   </g>
-  <g stroke-width="140" fill="none">
+  ${
+    rings
+      ? `<g stroke-width="140" fill="none">
     <circle cx="130" cy="520" r="260" stroke="url(#line-fade-bottom)" />
     <circle cx="${1260 + blueOffsetX}" cy="380" r="260" stroke="url(#line-fade-top)" />
-  </g>
+  </g>`
+      : ""
+  }
 </svg>`.trim();
 }
 
@@ -340,6 +346,8 @@ export function heroGradientBg(
   blobScale: number,
   blobOpacityScale: number,
   accent?: PageAccent,
+  /** הטבעות הלבנות והכתם התחתון - מוסתרים בצ'אט אימות הנתונים, שם אזור התשובה יושב בתחתית */
+  rings = true,
 ) {
   return `url("data:image/svg+xml,${encodeURIComponent(
     heroGradientSvg(
@@ -348,6 +356,7 @@ export function heroGradientBg(
       blobScale,
       blobOpacityScale,
       accent,
+      rings,
     ),
   )}")`;
 }
