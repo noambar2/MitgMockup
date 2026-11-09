@@ -1,4 +1,5 @@
 import { Fragment, useState, type ReactNode } from "react";
+import { useClassicVersion } from "./PageHero";
 import {
   ClipboardList,
   Clock,
@@ -38,6 +39,7 @@ import {
   StatusBadge,
   useDialogClose,
   PAGE_CONTAINER,
+  BUTTON_SIZE,
 } from "./primitives";
 
 // ── Data ────────────────────────────────────────────────────────────────────
@@ -374,11 +376,18 @@ export function SectionHeading({
   title,
   subtitle,
   className = "mb-5",
+  heroTitle = false,
 }: {
   title: string;
   subtitle?: string;
   className?: string;
+  /** הכותרת זהה לכותרת ה-hero, ולכן מוסתרת בגרסה הקלאסית */
+  heroTitle?: boolean;
 }) {
+  const classic = useClassicVersion();
+  // נשאר div ריק כדי שכפתורים באותה שורה לא יזוזו מהמקום
+  if (heroTitle && classic) return <div />;
+
   return (
     <div className={`text-right ${className}`}>
       <h2 className="font-bold text-[#122736] text-[28px] sm:text-[34px] tracking-tight inline">
@@ -1109,12 +1118,12 @@ export default function TasksAppointmentsPage({
     <section className="px-4 sm:px-6 md:px-10 pt-8 pb-12">
       {/* כותרת + כפתור סינון; הסינון עצמו נפתח בחלון */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-        <SectionHeading title="משימות" className="mb-0" />
+        <SectionHeading title="משימות" className="mb-0" heroTitle />
         <button
           onClick={() => setFiltersOpen(true)}
-          className="flex items-center gap-2 bg-white text-[#171c23] text-[13px] font-semibold px-4 py-2 rounded-full whitespace-nowrap transition-shadow hover:[box-shadow:0_0_20px_0_rgba(0,143,240,0.25)]"
+          className={`flex items-center gap-1 ${BUTTON_SIZE} bg-white text-[#171c23] font-semibold whitespace-nowrap transition-shadow hover:[box-shadow:0_0_20px_0_rgba(0,143,240,0.25)]`}
         >
-          <SlidersHorizontal size={15} className="shrink-0" />
+          <SlidersHorizontal size={14} className="shrink-0" />
           סינון
           {activeFilters > 0 && (
             <span className="min-w-5 h-5 px-1.5 rounded-full bg-[#008ff0] text-white text-[12px] font-bold flex items-center justify-center">

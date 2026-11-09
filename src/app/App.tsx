@@ -29,6 +29,11 @@ import MessagesPage, {
 } from './components/MessagesPage';
 import { GLASS_CARD } from './components/ui/utils';
 import {
+  ClassicVersionContext,
+  PageHero,
+  useClassicVersion,
+} from './components/PageHero';
+import {
   THEMES,
   DEFAULT_THEME,
   accentFor,
@@ -45,6 +50,7 @@ import {
   IconCircle,
   StatusBadge,
   useDialogClose,
+  CONTROL_SIZE,
 } from './components/primitives';
 import {
   ContactEditDialog,
@@ -341,7 +347,7 @@ function GaugeTooltip({
           {label}
         </span>
         {value > 0 && (
-          <span className="font-bold text-[#008ff0] text-[20px]">
+          <span className="stat-number text-[#008ff0] text-[20px]">
             {value}
           </span>
         )}
@@ -372,7 +378,7 @@ function BottomSheet({
           title={
             <span className="flex items-baseline gap-1.5">
               {label}
-              <span className="font-bold text-[#008ff0] text-[24px]">
+              <span className="stat-number text-[#008ff0] text-[24px]">
                 {value}
               </span>
             </span>
@@ -427,7 +433,7 @@ function SemiGauge({
         />
       </svg>
       <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-center leading-none pb-1">
-        <span className="font-bold text-[#171c23] text-[28px] tracking-tight">
+        <span className="stat-number text-[#171c23] text-[28px] tracking-tight">
           {value}
         </span>
         <span className="text-[rgba(23,28,35,0.5)] text-[13px]">
@@ -491,7 +497,7 @@ function GaugeCard({
       {/* הערך ממורכז במרחב שנותר - הכרטיסים נמתחים לגובה כרטיס המא"ה */}
       <div className="flex-1 w-full flex items-center justify-center">
         {display === "number" ? (
-          <p className="font-black text-[#008ff0] text-[44px] sm:text-[52px] leading-none tracking-tight">
+          <p className="stat-number text-[#008ff0] text-[44px] sm:text-[52px] leading-none tracking-tight">
             {value}
           </p>
         ) : (
@@ -541,7 +547,7 @@ function KpiCard({
         {label}
       </p>
       <p
-        className={`font-black text-[#008ff0] leading-none tracking-tight ${valueClassName ?? "text-[44px] sm:text-[52px]"}`}
+        className={`stat-number text-[#008ff0] leading-none tracking-tight ${valueClassName ?? "text-[44px] sm:text-[52px]"}`}
       >
         {value}
       </p>
@@ -562,63 +568,74 @@ function KpiCard({
 }
 
 // כרטיס משולב: ספירה לאחור לגיוס + תאריך משוער (לועזי ועברי) + שיבוץ חזוי
+/** זכוכית שקופה לכרטיס שיושב על תמונה - מוגדרת ב-themes.css */
+const PHOTO_GLASS_CARD = "photo-glass";
+
 function EnlistmentCard({
   days,
   date,
   hebrewDate,
   assignment,
+  onPhoto = false,
 }: {
   days: number;
   date: string;
   hebrewDate: string;
   assignment: string;
+  /** על תמונה כהה הזכוכית צריכה להיות בהירה יותר כדי שהטקסט ייקרא */
+  onPhoto?: boolean;
 }) {
+  // על זכוכית שקופה מעל תמונה כהה הטקסט והקווים הופכים לבהירים
+  const labelColor = onPhoto ? "text-white" : "text-[#171c23]";
+  const valueColor = onPhoto ? "text-white" : "text-[#008ff0]";
+  const dividerColor = onPhoto
+    ? "bg-white/25"
+    : "bg-[rgba(23,28,35,0.08)]";
+
   return (
     <div
-      className={`${GLASS_CARD} rounded-[10px] col-span-2 md:col-span-3 min-w-0 flex flex-col md:flex-row md:items-stretch`}
+      className={`${onPhoto ? PHOTO_GLASS_CARD : `${GLASS_CARD} rounded-[10px]`} col-span-2 md:col-span-3 min-w-0 flex flex-col md:flex-row md:items-stretch`}
     >
       {/* ימים לגיוס + תאריך משוער */}
       <div className="flex items-stretch min-w-0 md:flex-[2]">
         <div className="flex-1 min-w-0 px-3 py-3 sm:px-4 flex flex-col items-center justify-between gap-1">
-          <p className="font-bold text-[#171c23] text-[14px] sm:text-[15px] text-center w-full">
+          <p className={`font-normal ${labelColor} text-[14px] sm:text-[15px] text-center w-full`}>
             ימים לגיוס
           </p>
-          <p className="font-black text-[#008ff0] text-[30px] sm:text-[34px] leading-none tracking-tight">
+          <p className={`stat-number ${valueColor} text-[30px] sm:text-[34px] leading-none tracking-tight`}>
             {days}
           </p>
-          <p
-            aria-hidden
-            className="invisible text-[12px] sm:text-[13px] w-full"
-          >
-            &nbsp;
+          <p className={`${labelColor} text-[12px] sm:text-[13px] opacity-70 whitespace-nowrap`}>
+            {Math.floor(days / 30.44)} חודשים ו-
+            {days - Math.round(Math.floor(days / 30.44) * 30.44)} ימים
           </p>
         </div>
 
         {/* קו מפריד עדין */}
-        <div className="w-px bg-[rgba(23,28,35,0.08)] my-3 sm:my-4 shrink-0" />
+        <div className={`w-px ${dividerColor} my-3 sm:my-4 shrink-0`} />
 
         <div className="flex-1 min-w-0 px-3 py-3 sm:px-4 flex flex-col items-center justify-between gap-1">
-          <p className="font-bold text-[#171c23] text-[14px] sm:text-[15px] text-center w-full">
+          <p className={`font-normal ${labelColor} text-[14px] sm:text-[15px] text-center w-full`}>
             תאריך גיוס משוער
           </p>
-          <p className="font-black text-[#008ff0] text-[24px] sm:text-[22px] leading-none tracking-tight whitespace-nowrap">
+          <p className={`stat-number ${valueColor} text-[24px] sm:text-[22px] leading-none tracking-tight whitespace-nowrap`}>
             {date}
           </p>
-          <p className="text-[#171c23] text-[12px] sm:text-[13px] opacity-70 whitespace-nowrap">
+          <p className={`${labelColor} text-[12px] sm:text-[13px] opacity-70 whitespace-nowrap`}>
             {hebrewDate}
           </p>
         </div>
       </div>
 
       {/* קו מפריד: אופקי במובייל, אנכי בדסקטופ */}
-      <div className="h-px w-auto mx-4 md:h-auto md:w-px md:mx-0 md:my-4 bg-[rgba(23,28,35,0.08)] shrink-0" />
+      <div className={`h-px w-auto mx-4 md:h-auto md:w-px md:mx-0 md:my-4 ${dividerColor} shrink-0`} />
 
       {/* שיבוץ חזוי */}
       <div className="min-w-0 md:flex-[1] px-3 py-3 sm:px-4 flex flex-col items-center justify-between gap-1">
-        <p className="font-bold text-[#171c23] text-[14px] sm:text-[15px] text-center w-full">
+        <p className={`font-normal ${labelColor} text-[14px] sm:text-[15px] text-center w-full`}>
           שיבוץ חזוי
         </p>
-        <p className="font-black text-[#008ff0] text-[24px] sm:text-[22px] leading-none tracking-tight text-center">
+        <p className={`font-semibold ${valueColor} text-[24px] sm:text-[22px] leading-none tracking-tight text-center`}>
           {assignment}
         </p>
         <p
@@ -631,6 +648,13 @@ function EnlistmentCard({
     </div>
   );
 }
+
+const ENLISTMENT = {
+  days: 186,
+  date: "01.01.27",
+  hebrewDate: 'כ"ב בטבת התשפ"ז',
+  assignment: "ע.ח מבצעים אוויר",
+};
 
 function InfoField({
   label,
@@ -997,7 +1021,7 @@ function MaahCard() {
               {item.label}
             </span>
             <span className="flex items-center gap-1">
-              <span className="font-semibold text-[#122736] text-[20px]">
+              <span className="stat-number text-[#122736] text-[20px]">
                 {item.value}
               </span>
               <MaahSkillInfo label={item.label} />
@@ -1037,7 +1061,7 @@ function ScoreDetails({ label }: { label: string }) {
               {item.label}
             </span>
             <span className="flex items-center gap-1">
-              <span className="font-semibold text-[#122736] text-[20px]">
+              <span className="stat-number text-[#122736] text-[20px]">
                 {item.value}
               </span>
               <MaahSkillInfo label={item.label} />
@@ -1085,7 +1109,7 @@ function ScoreTitle({ label }: { label: string }) {
     <span className="flex items-baseline gap-1.5">
       {label}
       {score && (
-        <span className="font-bold text-[#008ff0] text-[20px]">
+        <span className="stat-number text-[#008ff0] text-[20px]">
           {score.value}
         </span>
       )}
@@ -1101,15 +1125,17 @@ function ScoreTileContent({ label }: { label: string }) {
       <span className="font-bold text-[#171c23] text-[14px] text-center leading-tight">
         {label}
       </span>
-      {score ? (
-        <span className="font-black text-[#008ff0] text-[32px] leading-none tracking-tight">
-          {score.value}
-        </span>
-      ) : (
-        <StatusBadge variant="success" dot>
-          הושלם
-        </StatusBadge>
-      )}
+      <span className="flex items-center justify-center">
+        {score ? (
+          <span className="stat-number text-[#008ff0] text-[32px] leading-none tracking-tight">
+            {score.value}
+          </span>
+        ) : (
+          <StatusBadge variant="success" dot>
+            הושלם
+          </StatusBadge>
+        )}
+      </span>
     </>
   );
 }
@@ -1193,7 +1219,7 @@ function ScoreTabs() {
             <button
               key={label}
               onClick={() => setSheet(label)}
-              className="snap-start shrink-0 w-[112px] bg-white rounded-[10px] p-3 flex flex-col items-center justify-between gap-2"
+              className="snap-start shrink-0 w-[112px] bg-white rounded-[10px] p-2.5 flex flex-col items-center justify-between gap-1.5"
             >
               <ScoreTileContent label={label} />
             </button>
@@ -1232,7 +1258,7 @@ function ScoreTabs() {
               role="tab"
               aria-selected={isActive}
               onClick={() => setActive(label)}
-              className={`flex items-center gap-2 text-[13px] font-semibold px-4 py-1.5 rounded-full whitespace-nowrap border backdrop-blur-lg text-[#171c23] transition-all ${
+              className={`flex items-center gap-1 ${CONTROL_SIZE} font-semibold whitespace-nowrap border backdrop-blur-lg text-[#171c23] transition-all ${
                 isActive
                   ? "bg-white border-transparent shadow-[0_8px_32px_rgba(18,39,54,0.12)]"
                   : "bg-white/30 border-white/50 shadow-[0_8px_32px_rgba(18,39,54,0.12)] hover:bg-white hover:shadow-[0_0_20px_0_rgba(0,143,240,0.25)]"
@@ -1240,7 +1266,7 @@ function ScoreTabs() {
             >
               {label}
               {score ? (
-                <span className="font-black text-[16px] leading-none text-[#008ff0]">
+                <span className="stat-number text-[16px] leading-none text-[#008ff0]">
                   {score.value}
                 </span>
               ) : (
@@ -1269,6 +1295,7 @@ function ScoreTabs() {
 
 function QualitySection() {
   const isMobile = useIsMobile();
+  const classic = useClassicVersion();
   const [layout, setLayout] = useState<1 | 2>(1);
 
   // Desktop tooltip: which card + cursor position
@@ -1324,19 +1351,16 @@ function QualitySection() {
         />
       )}
 
-      {/* כותרת העמוד */}
-      <h2 className="font-bold text-[#122736] text-[28px] sm:text-[34px] tracking-tight text-right mb-6">
-        פרופיל אישי<span className="text-[#69c600]">.</span>
-      </h2>
+      {/* כותרת העמוד - בגרסה הקלאסית היא מוצגת ב-hero */}
+      {!classic && (
+        <h2 className="font-bold text-[#122736] text-[28px] sm:text-[34px] tracking-tight text-right mb-6">
+          פרופיל אישי<span className="text-[#69c600]">.</span>
+        </h2>
+      )}
 
       <div className="flex flex-col gap-4">
         {/* נתוני גיוס - רוחב מלא */}
-        <EnlistmentCard
-          days={186}
-          date="01.01.27"
-          hebrewDate='כ"ב בטבת התשפ"ז'
-          assignment="ע.ח מבצעים אוויר"
-        />
+        {!classic && <EnlistmentCard {...ENLISTMENT} />}
 
         {/* כותרת נתוני האיכות + מתג הפריסה - יושבת ישירות מעל מה שהיא משנה */}
         <div className="pt-2">
@@ -1914,6 +1938,8 @@ function PersonalSection() {
 
 // ── App ───────────────────────────────────────────────────────────────────────
 
+const CLASSIC_VERSION_KEY = "mitgaisim-classic-version";
+
 export default function App() {
   const isMobile = useIsMobile();
   const [page, setPage] = useState<Page>("profile");
@@ -1926,6 +1952,22 @@ export default function App() {
   const theme = getTheme(themeId);
   // בערכה הצבעונית לכל עמוד גוון אקסנט משלו
   const accent = accentFor(theme, page);
+  // הגרסה עם התמונות היא ברירת המחדל; בחירה בהגדרות נשמרת בדפדפן
+  const [classicVersion, setClassicVersion] = useState(() => {
+    try {
+      return localStorage.getItem(CLASSIC_VERSION_KEY) !== "0";
+    } catch {
+      return true;
+    }
+  });
+  const changeClassicVersion = (next: boolean) => {
+    setClassicVersion(next);
+    try {
+      localStorage.setItem(CLASSIC_VERSION_KEY, next ? "1" : "0");
+    } catch {
+      // בלי גישה לאחסון הבחירה פשוט לא תישמר
+    }
+  };
 
   // מצב ההודעות מוחזק כאן כדי שהבאדג' בפעמון ישקף הודעות שלא נקראו
   const [messageReadIds, setMessageReadIds] = useState<Set<string>>(
@@ -1940,6 +1982,7 @@ export default function App() {
   );
 
   return (
+    <ClassicVersionContext.Provider value={classicVersion}>
     <div
       dir="rtl"
       lang="he"
@@ -1984,6 +2027,13 @@ export default function App() {
         unreadCount={unreadMessages}
         navGradient={accent.navGradient}
       />
+      {classicVersion && (
+        <PageHero page={page}>
+          {page === "profile" && (
+            <EnlistmentCard {...ENLISTMENT} onPhoto />
+          )}
+        </PageHero>
+      )}
       <main className="flex-1 flex flex-col">
         {page === "learnings" ? (
           <LearningsPage
@@ -2038,6 +2088,8 @@ export default function App() {
             themes={THEMES}
             themeId={themeId}
             onThemeChange={setThemeId}
+            classicVersion={classicVersion}
+            onClassicVersionChange={changeClassicVersion}
           />
         ) : page === "messages" ? (
           <MessagesPage
@@ -2059,5 +2111,6 @@ export default function App() {
         )}
       </main>
     </div>
+    </ClassicVersionContext.Provider>
   );
 }

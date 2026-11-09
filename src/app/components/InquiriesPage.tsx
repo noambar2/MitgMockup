@@ -928,11 +928,11 @@ export default function InquiriesPage({
 
   const filters: { key: InquiryFilter; label: string; count: number }[] =
     [
-      { key: "all", label: "כל הפניות", count: counts.all },
-      { key: "open", label: "פניות פתוחות", count: counts.open },
+      { key: "all", label: "הכל", count: counts.all },
+      { key: "open", label: "פתוחות", count: counts.open },
       {
         key: "closed",
-        label: "פניות סגורות",
+        label: "סגורות",
         count: counts.closed,
       },
     ];
@@ -941,36 +941,39 @@ export default function InquiriesPage({
     <section className="px-4 sm:px-6 md:px-10 pt-8 pb-12">
       <div className={PAGE_CONTAINER}>
 
-        {/* כותרת + מתג התצוגה + יצירת פנייה */}
-        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-3 mb-5">
-          <div className="flex flex-wrap items-center gap-3">
-            <SectionHeading title="פניות" className="mb-0" />
-            {ADMIN_VIEW_ENABLED && (
-              <LayoutSwitch
-                value={role}
-                onChange={setRole}
-                labels={["לא מנהלן", "מנהלן"]}
-              />
-            )}
+        {/* כותרת + מתג התצוגה; בגרסה הקלאסית הכותרת ב-hero ואין צורך ברווח */}
+        <div className="flex flex-wrap items-center gap-3 has-[h2]:mb-5">
+          <SectionHeading title="פניות" className="mb-0" heroTitle />
+          {ADMIN_VIEW_ENABLED && (
+            <LayoutSwitch
+              value={role}
+              onChange={setRole}
+              labels={["לא מנהלן", "מנהלן"]}
+            />
+          )}
+        </div>
+
+        {/* סינון + יצירת פנייה באותה שורה */}
+        <div className="flex items-center justify-between gap-2 mb-5">
+          <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+            {filters.map((f) => (
+              <FilterChip
+                key={f.key}
+                active={filter === f.key}
+                onClick={() => setFilter(f.key)}
+                count={f.count}
+              >
+                {f.label}
+              </FilterChip>
+            ))}
           </div>
-          <Button onClick={() => setCreateOpen(true)}>
+          <Button
+            className="shrink-0"
+            onClick={() => setCreateOpen(true)}
+          >
             <span className="text-[16px] leading-none">+</span>
             פנייה חדשה
           </Button>
-        </div>
-
-        {/* סינון */}
-        <div className="flex flex-wrap items-center gap-2 mb-5">
-          {filters.map((f) => (
-            <FilterChip
-              key={f.key}
-              active={filter === f.key}
-              onClick={() => setFilter(f.key)}
-              count={f.count}
-            >
-              {f.label}
-            </FilterChip>
-          ))}
         </div>
 
         {/* רשימת פניות */}

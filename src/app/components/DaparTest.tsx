@@ -580,7 +580,7 @@ function StatCard({
         </p>
         {icon}
       </div>
-      <p className="font-black text-[#171c23] text-[28px] leading-none tracking-tight tabular-nums">
+      <p className="stat-number text-[#171c23] text-[28px] leading-none tracking-tight tabular-nums">
         {value}
       </p>
       {bar !== undefined ? (

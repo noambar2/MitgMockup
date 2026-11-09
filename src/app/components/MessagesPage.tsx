@@ -24,6 +24,7 @@ import {
   Dialog,
   FilterChip,
   PAGE_CONTAINER,
+  BUTTON_SIZE,
 } from "./primitives";
 
 // ── Data ────────────────────────────────────────────────────────────────────
@@ -469,7 +470,7 @@ export default function MessagesPage({
   return (
     <section className="px-4 sm:px-6 md:px-10 pt-8 pb-12">
       <div className={PAGE_CONTAINER}>
-        <SectionHeading title="הודעות" />
+        <SectionHeading title="הודעות" heroTitle />
 
         {/* חיפוש וסינונים */}
         <div className="flex flex-col gap-3 mb-5">
@@ -521,7 +522,7 @@ export default function MessagesPage({
             {isMobile ? (
               <button
                 onClick={() => setFiltersOpen(true)}
-                className="flex items-center gap-2 bg-white text-[#171c23] text-[13px] font-semibold px-4 py-1.5 rounded-full whitespace-nowrap transition-shadow hover:[box-shadow:0_0_20px_0_rgba(0,143,240,0.25)]"
+                className={`flex items-center gap-1 ${BUTTON_SIZE} bg-white text-[#171c23] font-semibold whitespace-nowrap transition-shadow hover:[box-shadow:0_0_20px_0_rgba(0,143,240,0.25)]`}
               >
                 <SlidersHorizontal size={14} className="shrink-0" />
                 סינון

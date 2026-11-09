@@ -49,9 +49,11 @@ const BUTTON_TONES: Record<ButtonVariant, string> = {
   linkDanger: "text-[#c43c3c] hover:underline",
 };
 
-/** גודל אחיד יחיד לכל הכפתורים המלאים במערכת */
-const BUTTON_SIZE =
-  "rounded-full px-5 py-1.5 text-[13px] border border-transparent";
+/** הגודל האחיד של כל הכפתורים והצ'יפים במערכת */
+export const CONTROL_SIZE = "rounded-full px-2.5 py-1 text-[12px]";
+
+/** אותו גודל לכפתור בלי מסגרת - המסגרת השקופה שומרת על הגובה */
+export const BUTTON_SIZE = `${CONTROL_SIZE} border border-transparent`;
 
 export function Button({
   variant = "primary",
@@ -66,7 +68,7 @@ export function Button({
     <button
       {...props}
       className={`flex items-center font-semibold whitespace-nowrap transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-        isLink ? "gap-1 text-[13px]" : `gap-1.5 ${BUTTON_SIZE}`
+        isLink ? "gap-1 text-[13px]" : `gap-1 ${BUTTON_SIZE}`
       } ${BUTTON_TONES[variant]} ${className}`}
     >
       {children}
@@ -214,7 +216,7 @@ export function ProgressRing({
       </svg>
       <span className="absolute inset-0 flex flex-col items-center justify-center leading-none">
         <span
-          className={`font-black text-[#171c23] tabular-nums tracking-tight ${valueClassName}`}
+          className={`stat-number text-[#171c23] tabular-nums tracking-tight ${valueClassName}`}
         >
           {value}
           {suffix}
@@ -264,9 +266,9 @@ export function FilterChip({
       onClick={onClick}
       disabled={disabled}
       aria-pressed={active}
-      className={`flex items-center gap-1.5 text-[13px] font-semibold px-4 py-1.5 rounded-full whitespace-nowrap border transition-colors ${
+      className={`flex items-center gap-1 ${CONTROL_SIZE} font-semibold whitespace-nowrap border transition-colors ${
         active
-          ? "bg-[#008ff0] border-[#008ff0] text-white"
+          ? "bg-[rgba(0,143,240,0.1)] border-[#008ff0] text-[#008ff0]"
           : disabled
             ? "bg-[rgba(23,28,35,0.05)] border-[rgba(23,28,35,0.12)] text-[#171c23] opacity-35 cursor-not-allowed"
             : "bg-[rgba(23,28,35,0.05)] border-[rgba(23,28,35,0.12)] text-[#171c23] hover:border-[rgba(0,143,240,0.35)]"
@@ -275,7 +277,7 @@ export function FilterChip({
       {children}
       {count !== undefined && (
         <span
-          className={`text-[13px] font-bold ${active ? "opacity-75" : "opacity-45"}`}
+          className={`text-[12px] font-bold ${active ? "opacity-75" : "opacity-45"}`}
         >
           {count}
         </span>
@@ -302,7 +304,7 @@ export function LayoutSwitch({
           key={opt}
           onClick={() => onChange(opt)}
           aria-pressed={value === opt}
-          className={`rounded-full px-4 py-1.5 text-[13px] whitespace-nowrap transition-colors ${
+          className={`${CONTROL_SIZE} whitespace-nowrap transition-colors ${
             value === opt
               ? "bg-white text-[#008ff0] font-semibold shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
               : "text-[rgba(23,28,35,0.62)] hover:text-[#171c23]"

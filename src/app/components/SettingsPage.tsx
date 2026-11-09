@@ -174,11 +174,15 @@ export default function SettingsPage({
   themes,
   themeId,
   onThemeChange,
+  classicVersion,
+  onClassicVersionChange,
 }: {
   onNavigateHome?: () => void;
   themes: Theme[];
   themeId: string;
   onThemeChange: (id: string) => void;
+  classicVersion: boolean;
+  onClassicVersionChange: (next: boolean) => void;
 }) {
   // כל ההגדרות מאושרות כברירת מחדל
   const [enabled, setEnabled] = useState<Record<string, boolean>>(
@@ -211,9 +215,27 @@ export default function SettingsPage({
             { label: "הגדרות" },
           ]}
         />
-        <SectionHeading title="הגדרות" />
+        <SectionHeading title="הגדרות" heroTitle />
 
         <div className="flex flex-col gap-5">
+          <div className={`${GLASS_CARD} rounded-[10px]`}>
+            <div className="h-[60px] flex items-center justify-start px-5 border-b border-[rgba(23,28,35,0.05)]">
+              <h3 className="font-bold text-[#171c23] text-[18px]">
+                גרסת האתר
+              </h3>
+            </div>
+            <div className="p-5 flex items-center justify-between gap-4">
+              <p className="text-[#171c23] text-[15px] text-right leading-relaxed">
+                הצגת האתר בגרסה הקלאסית, בדומה לאתר מתגייסים המקורי
+              </p>
+              <Toggle
+                checked={classicVersion}
+                onChange={() =>
+                  onClassicVersionChange(!classicVersion)
+                }
+              />
+            </div>
+          </div>
           <ThemePicker
             themes={themes}
             themeId={themeId}

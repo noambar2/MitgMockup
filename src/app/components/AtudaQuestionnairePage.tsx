@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronLeft } from "lucide-react";
+import { CONTROL_SIZE } from "./primitives";
 import AtudaQuestionnaireDetailed from "./AtudaQuestionnaireDetailed";
 import AtudaQuestionnaireSimple from "./AtudaQuestionnaireSimple";
 import AtudaQuestionnaireSheet from "./AtudaQuestionnaireSheet";
@@ -35,7 +36,7 @@ function VariantSwitch({
           type="button"
           onClick={() => onChange(opt)}
           aria-pressed={value === opt}
-          className={`rounded-full px-4 py-1.5 text-[13px] whitespace-nowrap transition-colors ${
+          className={`${CONTROL_SIZE} whitespace-nowrap transition-colors ${
             value === opt
               ? "bg-white text-[#008ff0] font-semibold shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
               : "text-[rgba(23,28,35,0.62)] hover:text-[#171c23]"

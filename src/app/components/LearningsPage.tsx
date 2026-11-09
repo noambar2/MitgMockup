@@ -15,6 +15,7 @@ import {
   ProgressBar,
 } from "./primitives";
 import { Breadcrumbs } from "./TasksAppointmentsPage";
+import { useClassicVersion } from "./PageHero";
 import { GLASS_CARD } from "./ui/utils";
 import DaparTestRunner, {
   type AnswerState,
@@ -305,7 +306,7 @@ function ProgressPanel({
     <div
       className={`${GLASS_CARD} rounded-[10px] px-4 py-3 flex items-center gap-3.5 w-full`}
     >
-      <span className="font-black text-[#008ff0] text-[26px] leading-none tracking-tight tabular-nums shrink-0">
+      <span className="stat-number text-[#008ff0] text-[26px] leading-none tracking-tight tabular-nums shrink-0">
         {value}%
       </span>
       <div className="flex-1 min-w-0 flex flex-col gap-1.5 text-right">
@@ -325,12 +326,16 @@ function PageHead({
   title,
   subtitle,
   panel,
+  heroTitle = false,
 }: {
   icon?: ReactNode;
   title: string;
   subtitle?: string;
   panel?: ReactNode;
+  /** הכותרת זהה לכותרת ה-hero, ולכן מוסתרת בגרסה הקלאסית */
+  heroTitle?: boolean;
 }) {
+  const classic = useClassicVersion();
   return (
     <div
       className={`relative mb-6 ${panel ? "md:min-h-[68px]" : ""}`}
@@ -340,10 +345,12 @@ function PageHead({
       >
         {icon}
         <div className="min-w-0 text-right">
-          <h2 className="font-bold text-[#122736] text-[28px] sm:text-[34px] tracking-tight">
-            {title}
-            <span className="text-[#69c600]">.</span>
-          </h2>
+          {!(heroTitle && classic) && (
+            <h2 className="font-bold text-[#122736] text-[28px] sm:text-[34px] tracking-tight">
+              {title}
+              <span className="text-[#69c600]">.</span>
+            </h2>
+          )}
           {subtitle && (
             <p className="text-[#171c23] text-[14px] opacity-50 mt-0.5">
               {subtitle}
@@ -511,14 +518,17 @@ function LearningCard({
 
 /** מסך הפתיחה: סרטון הסבר וכפתור מעבר לרשימת הלומדות */
 function LearningsIntro({ onContinue }: { onContinue: () => void }) {
+  const classic = useClassicVersion();
   return (
     <section className="px-4 sm:px-6 md:px-10 pt-8 pb-12">
       <div className="md:max-w-[760px] md:mx-auto">
-        <div className="text-right mb-1">
-          <h2 className="font-bold text-[#122736] text-[28px] sm:text-[34px] tracking-tight inline">
-            לומדות<span className="text-[#69c600]">.</span>
-          </h2>
-        </div>
+        {!classic && (
+          <div className="text-right mb-1">
+            <h2 className="font-bold text-[#122736] text-[28px] sm:text-[34px] tracking-tight inline">
+              לומדות<span className="text-[#69c600]">.</span>
+            </h2>
+          </div>
+        )}
         <p className="text-[#171c23] text-[14px] opacity-50 text-right mb-6">
           לפני שמתחילים - כדאי לצפות בסרטון הקצר שמסביר איך
           הלומדות עובדות ואיך להפיק מהן את המרב
@@ -808,7 +818,7 @@ function CompletedTestCard({
           <span className="text-[#171c23] text-[12px] opacity-50 whitespace-nowrap">
             ציון משוקלל
           </span>
-          <span className="font-black text-[#008ff0] text-[26px] tracking-tight tabular-nums mt-1">
+          <span className="stat-number text-[#008ff0] text-[26px] tracking-tight tabular-nums mt-1">
             {pct(test.correct, test.questions)}
           </span>
         </span>
@@ -992,6 +1002,7 @@ export default function LearningsPage({
     <section className="px-4 sm:px-6 md:px-10 pt-8 pb-12">
       <PageHead
         title="לומדות"
+        heroTitle
         subtitle="כאן תוכלו למצוא את כל הלומדות שלכם, לתרגל ולעקוב אחר ההתקדמות"
         panel={
           <ProgressPanel
