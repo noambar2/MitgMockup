@@ -12,7 +12,9 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { Button, ELEVATION } from "./primitives";
+import { Button, ELEVATION,
+  useModalA11y,
+} from "./primitives";
 import { useIsMobile } from "./ui/use-mobile";
 import {
   ALL_TRACKS,
@@ -88,13 +90,15 @@ function SidePanel({
     setTimeout(onClose, 280);
   };
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  });
+  const { panelRef, onKeyDown } = useModalA11y(close);
+  const panelProps = {
+    ref: panelRef,
+    role: "dialog",
+    "aria-modal": true,
+    "aria-label": title,
+    tabIndex: -1,
+    onKeyDown,
+  };
 
   const body = (
     <div className="flex flex-col flex-1 min-h-0" dir="rtl">
@@ -148,7 +152,8 @@ function SidePanel({
       />
       {isMobile ? (
         <div
-          className="app-sheet absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl transition-transform duration-300 ease-out flex flex-col h-[88vh]"
+          {...panelProps}
+          className="app-sheet outline-none absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl transition-transform duration-300 ease-out flex flex-col h-[88vh]"
           style={{
             transform: visible
               ? "translateY(0)"
@@ -162,7 +167,8 @@ function SidePanel({
         </div>
       ) : (
         <div
-          className="absolute top-0 bottom-0 right-0 w-[460px] max-w-[92vw] bg-white flex flex-col transition-transform duration-300 ease-out"
+          {...panelProps}
+          className="outline-none absolute top-0 bottom-0 right-0 w-[460px] max-w-[92vw] bg-white flex flex-col transition-transform duration-300 ease-out"
           style={{
             transform: visible
               ? "translateX(0)"

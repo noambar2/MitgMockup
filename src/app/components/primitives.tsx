@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useId,
   useRef,
   useState,
   type ReactNode,
@@ -268,7 +269,7 @@ export function FilterChip({
       aria-pressed={active}
       className={`flex items-center gap-1 ${CONTROL_SIZE} font-semibold whitespace-nowrap border transition-colors ${
         active
-          ? "bg-[rgba(0,143,240,0.1)] border-[#008ff0] text-[#008ff0]"
+          ? "bg-white border-[#008ff0] text-[#008ff0]"
           : disabled
             ? "bg-[rgba(23,28,35,0.05)] border-[rgba(23,28,35,0.12)] text-[#171c23] opacity-35 cursor-not-allowed"
             : "bg-[rgba(23,28,35,0.05)] border-[rgba(23,28,35,0.12)] text-[#171c23] hover:border-[rgba(0,143,240,0.35)]"
@@ -277,7 +278,7 @@ export function FilterChip({
       {children}
       {count !== undefined && (
         <span
-          className={`text-[12px] font-bold ${active ? "opacity-75" : "opacity-45"}`}
+          className={`text-[12px] font-bold ${active ? "" : "opacity-70"}`}
         >
           {count}
         </span>
@@ -501,6 +502,47 @@ export function SelectField({
     flip: boolean;
   } | null>(null);
 
+  const menu = useRef<HTMLDivElement>(null);
+
+  // פתיחה ממקלדת: הפוקוס עובר לאפשרות הנבחרת, או לראשונה
+  const menuReady = open && pos !== null;
+  useEffect(() => {
+    if (!menuReady || !menu.current) return;
+    const selected = menu.current.querySelector<HTMLElement>(
+      '[aria-selected="true"]',
+    );
+    (selected ?? menu.current.querySelector<HTMLElement>("button"))?.focus({
+      preventScroll: true,
+    });
+  }, [menuReady]);
+
+  const closeMenu = () => {
+    setOpen(false);
+    trigger.current?.focus({ preventScroll: true });
+  };
+
+  const onMenuKeyDown = (e: React.KeyboardEvent) => {
+    // האירוע לא עובר הלאה - Esc סוגר את הרשימה ולא את החלון שמאחוריה
+    e.stopPropagation();
+    if (e.key === "Escape" || e.key === "Tab") {
+      e.preventDefault();
+      closeMenu();
+      return;
+    }
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+    e.preventDefault();
+    const items = Array.from(
+      menu.current?.querySelectorAll<HTMLElement>("button") ?? [],
+    );
+    const step = e.key === "ArrowDown" ? 1 : -1;
+    const next =
+      (items.indexOf(document.activeElement as HTMLElement) +
+        step +
+        items.length) %
+      items.length;
+    items[next]?.focus();
+  };
+
   useEffect(() => {
     if (!open) return;
     const place = () => {
@@ -537,6 +579,8 @@ export function SelectField({
         <button
           ref={trigger}
           type="button"
+          aria-haspopup="listbox"
+          aria-expanded={open}
           onClick={() => setOpen(!open)}
           className={`w-full bg-white border rounded-[10px] px-4 py-3 flex items-center justify-between gap-2 text-right transition-colors ${
             open
@@ -563,6 +607,9 @@ export function SelectField({
                 onClick={() => setOpen(false)}
               />
               <div
+                ref={menu}
+                role="listbox"
+                onKeyDown={onMenuKeyDown}
                 className="fixed z-[510] bg-white rounded-[10px] border border-[rgba(23,28,35,0.08)] overflow-y-auto py-1"
                 style={{
                   top: pos.top,
@@ -579,6 +626,8 @@ export function SelectField({
                   <button
                     key={option}
                     type="button"
+                    role="option"
+                    aria-selected={option === value}
                     onClick={() => {
                       onChange(option);
                       setOpen(false);
@@ -638,6 +687,55 @@ const DialogCloseContext = createContext<() => void>(() => {});
 /** סוגר את הדיאלוג עם האנימציה - זמין לכל צאצא */
 export const useDialogClose = () => useContext(DialogCloseContext);
 
+/** מזהה הכותרת - כדי שקורא מסך יכריז על שם החלון */
+const DialogTitleIdContext = createContext<string | undefined>(undefined);
+
+const FOCUSABLE =
+  'button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+
+/**
+ * התנהגות מקלדת של חלון: הפוקוס נכנס לחלון בפתיחה וחוזר בסגירה,
+ * Tab נשאר בתוך החלון ו-Esc סוגר אותו.
+ */
+export function useModalA11y(close: () => void) {
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const previous = document.activeElement as HTMLElement | null;
+    panelRef.current?.focus({ preventScroll: true });
+    return () => previous?.focus?.({ preventScroll: true });
+  }, []);
+
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") {
+      e.stopPropagation();
+      close();
+      return;
+    }
+    if (e.key !== "Tab" || !panelRef.current) return;
+    const panel = panelRef.current;
+    const items = Array.from(
+      panel.querySelectorAll<HTMLElement>(FOCUSABLE),
+    ).filter((el) => el.offsetParent !== null);
+    if (items.length === 0) {
+      e.preventDefault();
+      return;
+    }
+    const first = items[0];
+    const last = items[items.length - 1];
+    const active = document.activeElement;
+    if (e.shiftKey && (active === first || active === panel)) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && active === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
+
+  return { panelRef, onKeyDown };
+}
+
 export function DialogHeader({
   title,
   subtitle,
@@ -649,12 +747,16 @@ export function DialogHeader({
   children?: ReactNode;
 }) {
   const close = useDialogClose();
+  const titleId = useContext(DialogTitleIdContext);
   return (
     <div className="flex flex-col gap-2.5 px-5 py-4 border-b border-[rgba(23,28,35,0.08)] shrink-0">
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col min-w-0">
           {title && (
-            <span className="font-bold text-[#171c23] text-[18px]">
+            <span
+              id={titleId}
+              className="font-bold text-[#171c23] text-[18px]"
+            >
               {title}
             </span>
           )}
@@ -711,6 +813,19 @@ export function Dialog({
     setTimeout(onClose, 280);
   }, [onClose]);
 
+  const { panelRef, onKeyDown } = useModalA11y(close);
+  const titleId = useId();
+  const hasTitle = Boolean(title || header);
+  const panelProps = {
+    ref: panelRef,
+    role: "dialog",
+    "aria-modal": true,
+    "aria-labelledby": hasTitle ? titleId : undefined,
+    "aria-label": hasTitle ? undefined : "חלון",
+    tabIndex: -1,
+    onKeyDown,
+  };
+
   const content = (
     // שרשרת flex-1/min-h-0 - כך הגוף נגלל והפוטר תמיד נעוץ למטה
     <div className="flex flex-col flex-1 min-h-0" dir="rtl">
@@ -734,6 +849,7 @@ export function Dialog({
   // הופך את ה-fixed לממוקם ביחס אליו, והחלון נפתח בתוך הכרטיס
   return createPortal(
     <DialogCloseContext.Provider value={close}>
+    <DialogTitleIdContext.Provider value={titleId}>
       {isMobile ? (
         <div className="fixed inset-0 z-[400]" dir="rtl">
           <div
@@ -742,7 +858,8 @@ export function Dialog({
             onClick={close}
           />
           <div
-            className="app-sheet absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl transition-transform duration-300 ease-out flex flex-col min-h-[50vh] max-h-[92vh]"
+            {...panelProps}
+            className="app-sheet outline-none absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl transition-transform duration-300 ease-out flex flex-col min-h-[50vh] max-h-[92vh]"
             style={{
               transform: visible
                 ? "translateY(0)"
@@ -766,7 +883,8 @@ export function Dialog({
             onClick={close}
           />
           <div
-            className="relative bg-white rounded-[10px] w-full max-h-[85vh] flex flex-col transition-all duration-300"
+            {...panelProps}
+            className="outline-none relative bg-white rounded-[10px] w-full max-h-[85vh] flex flex-col transition-all duration-300"
             style={{
               maxWidth: width,
               opacity: visible ? 1 : 0,
@@ -780,6 +898,7 @@ export function Dialog({
           </div>
         </div>
       )}
+    </DialogTitleIdContext.Provider>
     </DialogCloseContext.Provider>,
     // שורש האפליקציה (ולא body) - שם יושבים משתני ערכת הנושא
     document.querySelector("[data-app-root]") ?? document.body,

@@ -899,6 +899,8 @@ function Header({
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label={mobileOpen ? "סגירת התפריט" : "פתיחת התפריט"}
+              aria-expanded={mobileOpen}
               className="w-9 h-9 flex items-center justify-center"
             >
               {mobileOpen ? (

@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import {
   ChevronDown,
+  ChevronLeft,
   Phone,
   Globe,
   Paperclip,
@@ -253,12 +254,58 @@ function InfoPair({
   );
 }
 
+function InquiryStatusBadge({ inquiry }: { inquiry: Inquiry }) {
+  if (inquiry.status === "closed")
+    return (
+      <StatusBadge variant="success" dot>
+        נסגרה
+      </StatusBadge>
+    );
+  if (inquiry.awaitingRecruit)
+    return (
+      <StatusBadge
+        variant="warning"
+        icon={<Paperclip size={13} className="shrink-0" />}
+      >
+        ממתינה לך
+      </StatusBadge>
+    );
+  if (inquiry.status === "inProgress")
+    return (
+      <StatusBadge
+        variant="warning"
+        icon={<Clock size={13} className="shrink-0" />}
+      >
+        בטיפול
+      </StatusBadge>
+    );
+  return (
+    <StatusBadge
+      variant="neutral"
+      icon={<Inbox size={13} className="shrink-0" />}
+    >
+      התקבלה
+    </StatusBadge>
+  );
+}
+
+/** קובץ שנבחר בדפדפן, כרשומת מסמך של פנייה */
+const toInquiryFiles = (picked: File[]): InquiryFile[] =>
+  picked.map((f, i) => ({
+    id: `${Date.now()}-${i}`,
+    name: f.name,
+    kind: f.type.startsWith("image/") ? "image" : "doc",
+    // כתובת בזיכרון הדפדפן, כדי להציג את הקובץ בצפייה
+    url: URL.createObjectURL(f),
+  }));
+
 function InquiryCard({
   inquiry,
   admin = false,
   onRespond,
   onReopen,
   onAddFiles,
+  onSendForReview,
 }: {
   inquiry: Inquiry;
   /** תצוגת מנהלן - מוסיפה גורם מטפל, היסטוריה ופעולות טיפול */
@@ -266,8 +313,10 @@ function InquiryCard({
   onRespond?: (response: string, status: InquiryStatus) => void;
   onReopen?: (team: string) => void;
   onAddFiles?: (files: File[]) => void;
+  onSendForReview?: (files: File[]) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [respondOpen, setRespondOpen] = useState(false);
   const [reopenOpen, setReopenOpen] = useState(false);
   const [viewFile, setViewFile] = useState<InquiryFile | null>(
@@ -277,11 +326,11 @@ function InquiryCard({
   const closed = inquiry.status === "closed";
 
   return (
-    <div className="bg-white rounded-[10px] flex flex-col">
-      {/* כותרת: נושא + תגית סטטוס */}
+    <div className="relative bg-white rounded-[10px] flex flex-col transition-shadow hover:[box-shadow:0_0_20px_0_rgba(0,143,240,0.2)]">
+      {/* כותרת: נושא + תגית סטטוס. שכבת ה-after הופכת את כל הכרטיס ללחיץ */}
       <button
-        onClick={() => setOpen(!open)}
-        className="p-5 flex items-start justify-between gap-3 text-right w-full"
+        onClick={() => (admin ? setOpen(!open) : setDetailsOpen(true))}
+        className="p-5 flex items-start justify-between gap-3 text-right w-full after:absolute after:inset-0 after:rounded-[10px]"
       >
         <div className="flex flex-col items-start gap-1 min-w-0">
           <h3 className="font-bold text-[#171c23] text-[18px] text-right">
@@ -290,36 +339,15 @@ function InquiryCard({
           <span className="text-[#171c23] text-[13px] opacity-50">
             {inquiry.topic}
           </span>
-          {!closed && inquiry.awaitingRecruit && (
-            <span className="text-[#e07000] text-[13px] font-semibold text-right">
-              {inquiry.awaitingRecruit}
-            </span>
-          )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          {closed ? (
-            <StatusBadge variant="success" dot>
-              נסגרה
-            </StatusBadge>
-          ) : inquiry.status === "inProgress" ? (
-            <StatusBadge
-              variant="warning"
-              icon={<Clock size={13} className="shrink-0" />}
-            >
-              בטיפול
-            </StatusBadge>
-          ) : (
-            <StatusBadge
-              variant="neutral"
-              icon={<Inbox size={13} className="shrink-0" />}
-            >
-              התקבלה
-            </StatusBadge>
+          <InquiryStatusBadge inquiry={inquiry} />
+          {admin && (
+            <ChevronDown
+              size={20}
+              className={`text-[#171c23] shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+            />
           )}
-          <ChevronDown
-            size={20}
-            className={`text-[#171c23] shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-          />
         </div>
       </button>
 
@@ -356,8 +384,15 @@ function InquiryCard({
         )}
       </div>
 
-      {/* תוכן מורחב: מסלול סטטוס + ערוץ + תשובה */}
-      {open && (
+      {!admin && (
+        <span className="px-5 pb-4 -mt-1 flex items-center gap-1 text-[#008ff0] text-[13px] font-semibold">
+          לחצ/י לפרטים נוספים
+          <ChevronLeft size={15} className="shrink-0" />
+        </span>
+      )}
+
+      {/* תוכן מורחב - תצוגת מנהלן בלבד; למלש"ב הפרטים נפתחים בגיליון */}
+      {open && admin && (
         <div className="px-5 pb-5 flex flex-col gap-5 border-t border-[rgba(23,28,35,0.05)] pt-5">
           <div className="flex flex-col items-start gap-1">
             <span className="text-[#171c23] text-[13px] opacity-50">
@@ -505,6 +540,13 @@ function InquiryCard({
         </div>
       )}
 
+      {detailsOpen && (
+        <InquiryDetailsDialog
+          inquiry={inquiry}
+          onClose={() => setDetailsOpen(false)}
+          onSendForReview={onSendForReview}
+        />
+      )}
       {respondOpen && (
         <RespondDialog
           inquiry={inquiry}
@@ -713,25 +755,253 @@ function FileViewerDialog({
 
 // ── Create inquiry dialog ────────────────────────────────────────────────────
 
+/** אזור העלאת הקבצים - משותף לפנייה חדשה ולהשלמת פנייה קיימת */
+function FileUploadField({
+  files,
+  setFiles,
+}: {
+  files: File[];
+  setFiles: React.Dispatch<React.SetStateAction<File[]>>;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const addFiles = (list: FileList | null) => {
+    if (!list) return;
+    const picked = Array.from(list);
+    setFiles((prev) => [...prev, ...picked].slice(0, MAX_FILES));
+  };
+
+  return (
+    <div>
+      <FieldLabel>העלאת קבצים</FieldLabel>
+      <p className="text-[#171c23] text-[13px] opacity-50 mb-2 leading-relaxed">
+        ניתן לצרף עד {MAX_FILES} קבצים מסוג PDF / JPG, במשקל
+        כולל של עד 5MB.
+      </p>
+      <input
+        ref={inputRef}
+        type="file"
+        multiple
+        accept=".pdf,.jpg,.jpeg"
+        className="hidden"
+        onChange={(e) => addFiles(e.target.files)}
+      />
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        disabled={files.length >= MAX_FILES}
+        className="w-full flex items-center justify-center gap-2 bg-[#f5f5f7] border border-dashed border-[rgba(23,28,35,0.25)] rounded-[10px] px-4 py-4 text-[#171c23] text-[14px] opacity-70 hover:opacity-100 hover:border-[#008ff0] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        <Paperclip size={16} className="shrink-0" />
+        גררו את הקבצים או לחצו על מנת לבחור
+      </button>
+
+      {files.length > 0 && (
+        <div className="flex flex-col gap-2 mt-3">
+          {files.map((file, i) => (
+            <div
+              key={`${file.name}-${i}`}
+              className="flex items-center justify-between gap-2 bg-[#f5f5f7] rounded-[8px] px-3 py-2"
+            >
+              <span className="flex items-center gap-2 min-w-0 text-[#171c23] text-[14px]">
+                <FileText
+                  size={15}
+                  className="text-[#008ff0] shrink-0"
+                />
+                <span className="truncate">{file.name}</span>
+              </span>
+              <button
+                onClick={() =>
+                  setFiles((prev) =>
+                    prev.filter((_, idx) => idx !== i),
+                  )
+                }
+                aria-label="הסרת קובץ"
+                className="w-6 h-6 flex items-center justify-center text-[#171c23] opacity-50 hover:opacity-100 shrink-0"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ))}
+          <span className="text-[13px] text-[#171c23] opacity-50">
+            {files.length} מתוך {MAX_FILES} קבצים
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** כל פרטי הפנייה, היסטוריית הטיפול והשלמת מידע לבדיקה */
+function InquiryDetailsDialog({
+  inquiry,
+  onClose,
+  onSendForReview,
+}: {
+  inquiry: Inquiry;
+  onClose: () => void;
+  onSendForReview?: (files: File[]) => void;
+}) {
+  const [files, setFiles] = useState<File[]>([]);
+  const [sent, setSent] = useState(false);
+  const [viewFile, setViewFile] = useState<InquiryFile | null>(null);
+  const closed = inquiry.status === "closed";
+  const canSend = files.length > 0;
+
+  if (sent) {
+    return (
+      <Dialog onClose={onClose} footer={<Button onClick={onClose}>סגירה</Button>}>
+        <div className="flex flex-col items-center text-center gap-3 py-4">
+          <IconCircle size={64} bg="rgba(105,198,0,0.12)" color="#69c600">
+            <Check size={30} />
+          </IconCircle>
+          <p className="font-bold text-[#171c23] text-[20px]">
+            נשלח לבדיקה
+          </p>
+          <p className="text-[#171c23] text-[14px] opacity-60 max-w-[320px] leading-relaxed">
+            קיבלנו את הקבצים לפנייה. נעדכן אותך כאן ובמייל ברגע
+            שהבדיקה תסתיים.
+          </p>
+        </div>
+      </Dialog>
+    );
+  }
+
+  return (
+    <Dialog
+      title={inquiry.subject}
+      subtitle={inquiry.topic}
+      width={560}
+      onClose={onClose}
+      footer={
+        closed ? (
+          <Button onClick={onClose}>סגירה</Button>
+        ) : (
+          <>
+            <Button variant="ghost" onClick={onClose}>
+              ביטול
+            </Button>
+            <Button
+              disabled={!canSend}
+              onClick={() => {
+                onSendForReview?.(files);
+                setSent(true);
+              }}
+            >
+              <Send size={14} className="shrink-0" />
+              שליחה לבדיקה
+            </Button>
+          </>
+        )
+      }
+    >
+      <div className="flex flex-col gap-5">
+        <div className="flex flex-col items-start gap-2">
+          <InquiryStatusBadge inquiry={inquiry} />
+          {!closed && inquiry.awaitingRecruit && (
+            <p className="w-full rounded-[8px] bg-[rgba(224,112,0,0.1)] p-3 text-[#e07000] text-[14px] font-semibold text-right">
+              {inquiry.awaitingRecruit}
+            </p>
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 gap-x-5 gap-y-4">
+          <InfoPair label="מספר פנייה" value={inquiry.number} />
+          <InfoPair label="תאריך פתיחת פנייה" value={inquiry.openDate} />
+          {closed && inquiry.closeDate && (
+            <InfoPair label="נסגר בתאריך" value={inquiry.closeDate} />
+          )}
+          <InfoPair label="ערוץ הפנייה" value={inquiry.channel} />
+        </div>
+
+        {inquiry.response ? (
+          <div className="flex flex-col items-start gap-1">
+            <span className="text-[#171c23] text-[13px] opacity-50">
+              תשובה לפנייה
+            </span>
+            <p className="text-[#171c23] text-[15px] font-semibold text-right leading-relaxed">
+              {inquiry.response}
+            </p>
+          </div>
+        ) : (
+          !inquiry.awaitingRecruit && (
+            <div className="flex items-center gap-2 text-[#171c23] text-[14px] bg-[#f5f5f7] rounded-[8px] px-4 py-3">
+              <Clock size={15} className="text-[#008ff0] shrink-0" />
+              הפנייה בטיפול. נעדכן אותך כאן ברגע שתתקבל תשובה.
+            </div>
+          )
+        )}
+
+        {inquiry.files.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <FieldLabel>מסמכי הפנייה</FieldLabel>
+            {inquiry.files.map((f) => (
+              <div
+                key={f.id}
+                className="flex items-center justify-between gap-3 bg-[#f5f5f7] rounded-[8px] px-3 py-2"
+              >
+                <span className="flex items-center gap-2 min-w-0 text-[#171c23] text-[14px]">
+                  <FileText size={15} className="text-[#008ff0] shrink-0" />
+                  <span className="truncate">{f.name}</span>
+                </span>
+                <Button
+                  variant="link"
+                  onClick={() => setViewFile(f)}
+                  className="shrink-0"
+                >
+                  <Eye size={14} className="shrink-0" />
+                  צפייה
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!closed && <FileUploadField files={files} setFiles={setFiles} />}
+
+        <div className="flex flex-col gap-2">
+          <FieldLabel>היסטוריית טיפול</FieldLabel>
+          <ol className="flex flex-col gap-3">
+            {inquiry.history.map((h, i) => (
+              <li
+                key={`${h.date}-${i}`}
+                className="flex items-start gap-2.5 text-right"
+              >
+                <span className="w-2 h-2 rounded-full bg-[#008ff0] shrink-0 mt-1.5" />
+                <span className="min-w-0">
+                  <span className="block text-[#171c23] text-[14px]">
+                    {h.text}
+                  </span>
+                  <span className="block text-[#171c23] text-[12px] opacity-60">
+                    {h.date}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+
+      {viewFile && (
+        <FileViewerDialog
+          file={viewFile}
+          onClose={() => setViewFile(null)}
+        />
+      )}
+    </Dialog>
+  );
+}
+
 function CreateInquiryDialog({ onClose }: { onClose: () => void }) {
   const [mainTopic, setMainTopic] = useState<string | null>(null);
   const [subTopic, setSubTopic] = useState<string | null>(null);
   const [text, setText] = useState("");
-  const [files, setFiles] = useState<string[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
   const [submitted, setSubmitted] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const subOptions = mainTopic ? TOPICS[mainTopic] : [];
   const valid =
     !!mainTopic && !!subTopic && text.trim() !== "";
-
-  const addFiles = (list: FileList | null) => {
-    if (!list) return;
-    const names = Array.from(list).map((f) => f.name);
-    setFiles((prev) =>
-      [...prev, ...names].slice(0, MAX_FILES),
-    );
-  };
 
   if (submitted) {
     return (
@@ -810,64 +1080,7 @@ function CreateInquiryDialog({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
-        {/* העלאת קבצים */}
-        <div>
-          <FieldLabel>העלאת קבצים</FieldLabel>
-          <p className="text-[#171c23] text-[13px] opacity-50 mb-2 leading-relaxed">
-            ניתן לצרף עד {MAX_FILES} קבצים מסוג PDF / JPG, במשקל
-            כולל של עד 5MB.
-          </p>
-          <input
-            ref={inputRef}
-            type="file"
-            multiple
-            accept=".pdf,.jpg,.jpeg"
-            className="hidden"
-            onChange={(e) => addFiles(e.target.files)}
-          />
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            disabled={files.length >= MAX_FILES}
-            className="w-full flex items-center justify-center gap-2 bg-[#f5f5f7] border border-dashed border-[rgba(23,28,35,0.25)] rounded-[10px] px-4 py-4 text-[#171c23] text-[14px] opacity-70 hover:opacity-100 hover:border-[#008ff0] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <Paperclip size={16} className="shrink-0" />
-            גררו את הקבצים או לחצו על מנת לבחור
-          </button>
-
-          {files.length > 0 && (
-            <div className="flex flex-col gap-2 mt-3">
-              {files.map((name, i) => (
-                <div
-                  key={`${name}-${i}`}
-                  className="flex items-center justify-between gap-2 bg-[#f5f5f7] rounded-[8px] px-3 py-2"
-                >
-                  <span className="flex items-center gap-2 min-w-0 text-[#171c23] text-[14px]">
-                    <FileText
-                      size={15}
-                      className="text-[#008ff0] shrink-0"
-                    />
-                    <span className="truncate">{name}</span>
-                  </span>
-                  <button
-                    onClick={() =>
-                      setFiles((prev) =>
-                        prev.filter((_, idx) => idx !== i),
-                      )
-                    }
-                    aria-label="הסרת קובץ"
-                    className="w-6 h-6 flex items-center justify-center text-[#171c23] opacity-50 hover:opacity-100 shrink-0"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ))}
-              <span className="text-[13px] text-[#171c23] opacity-50">
-                {files.length} מתוך {MAX_FILES} קבצים
-              </span>
-            </div>
-          )}
-        </div>
+        <FileUploadField files={files} setFiles={setFiles} />
       </div>
     </Dialog>
   );
@@ -928,13 +1141,19 @@ export default function InquiriesPage({
 
   const visible = useMemo(
     () =>
-      inquiries.filter((q) =>
-        filter === "all"
-          ? true
-          : filter === "closed"
-            ? q.status === "closed"
-            : q.status !== "closed",
-      ),
+      inquiries
+        .filter((q) =>
+          filter === "all"
+            ? true
+            : filter === "closed"
+              ? q.status === "closed"
+              : q.status !== "closed",
+        )
+        // פניות שמחכות למלש"ב ראשונות
+        .sort(
+          (a, b) =>
+            Number(!a.awaitingRecruit) - Number(!b.awaitingRecruit),
+        ),
     [filter, inquiries],
   );
 
@@ -1039,22 +1258,29 @@ export default function InquiriesPage({
                   updateInquiry(
                     inquiry.id,
                     {
+                      awaitingRecruit: undefined,
                       files: [
                         ...inquiry.files,
-                        ...picked.map((f, i) => ({
-                          id: `${Date.now()}-${i}`,
-                          name: f.name,
-                          kind: f.type.startsWith("image/")
-                            ? ("image" as const)
-                            : ("doc" as const),
-                          // כתובת בזיכרון הדפדפן, כדי להציג את הקובץ עצמו
-                          url: URL.createObjectURL(f),
-                        })),
+                        ...toInquiryFiles(picked),
                       ],
                     },
                     picked.length === 1
                       ? `צורף מסמך: ${picked[0].name}`
                       : `צורפו ${picked.length} מסמכים`,
+                  )
+                }
+                onSendForReview={(picked) =>
+                  updateInquiry(
+                    inquiry.id,
+                    {
+                      awaitingRecruit: undefined,
+                      status: "inProgress",
+                      files: [
+                        ...inquiry.files,
+                        ...toInquiryFiles(picked),
+                      ],
+                    },
+                    'המלש"ב צירף/ה קבצים ושלח/ה לבדיקה',
                   )
                 }
               />

@@ -136,10 +136,10 @@
 
 /* צבעים סמנטיים */
 .text-\[\#4e9400\] {
-  color: var(--ink-success, #4e9400);
+  color: var(--ink-success, #3f7700);
 }
 .text-\[\#e07000\] {
-  color: var(--ink-warn, #e07000);
+  color: var(--ink-warn, #a85200);
 }
 .text-\[\#c43c3c\] {
   color: var(--ink-danger, #c43c3c);
@@ -568,4 +568,36 @@
 /* רווח אחיד וקטן יותר בין תמונת ה-hero לתוכן העמוד */
 .page-hero + main > section:first-child {
   padding-top: 20px;
+}
+
+/* ════════ נגישות ════════ */
+
+/* טקסט משני - שקיפות שעומדת ביחס ניגודיות 4.5:1 */
+.text-\[\#171c23\].opacity-50,
+.text-\[\#171c23\].opacity-60 {
+  opacity: 0.68;
+}
+.text-\[rgba\(23\,28\,35\,0\.4\)\],
+.placeholder\:text-\[rgba\(23\,28\,35\,0\.4\)\]::placeholder {
+  color: rgba(23, 28, 35, 0.68);
+}
+.dark .text-\[rgba\(23\,28\,35\,0\.4\)\],
+.dark .placeholder\:text-\[rgba\(23\,28\,35\,0\.4\)\]::placeholder {
+  color: rgba(234, 240, 245, 0.68);
+}
+
+/* סימון פוקוס ברור לניווט במקלדת */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex="0"]:focus-visible {
+  outline: 2px solid var(--brand, #006bbf);
+  outline-offset: 2px;
+}
+header button:focus-visible,
+header a:focus-visible,
+header input:focus-visible {
+  outline-color: #ffffff;
 }

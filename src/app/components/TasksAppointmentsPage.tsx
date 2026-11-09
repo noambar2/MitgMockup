@@ -100,7 +100,7 @@ const tasks: Task[] = [
     name: "אימות נתונים",
     kind: "אחר",
     status: "טרם בוצע",
-    timeLeft: "נותרו 10 ימים להשלמה",
+    timeLeft: "נותרו 2 ימים להשלמה",
     preview:
       "במקום טופס - שיחה קצרה עם העוזר החכם. נעבור יחד על הכתובת, הקרובים לשעת חירום ופרטי חשבון הבנק שלך, תאשר/י או תתקנ/י, ותחנת אימות הנתונים ביום הגיוס כבר תהיה מאחוריך.",
     action: "מעבר לצ׳אט",
@@ -889,7 +889,7 @@ export function AppointmentCard({
 
   return (
     <div
-      className={`${glass ? GLASS_CARD : "bg-white"} w-full rounded-[10px] p-5 flex flex-col gap-2 ${past ? "opacity-80" : ""}`}
+      className={`${glass ? GLASS_CARD : "bg-white"} w-full rounded-[10px] p-5 flex flex-col gap-2`}
     >
       {rescheduleOpen && (
         <RescheduleDialog

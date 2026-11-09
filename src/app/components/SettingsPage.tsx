@@ -6,7 +6,6 @@ import {
   Breadcrumbs,
 } from "./TasksAppointmentsPage";
 import {
-  Button,
   CONTROL_SIZE,
   ELEVATION,
   PAGE_CONTAINER,
@@ -72,9 +71,12 @@ const settingsGroups: SettingsGroup[] = [
 // ── Toggle ──────────────────────────────────────────────────────────────────
 
 function Toggle({
+  label,
   checked,
   onChange,
 }: {
+  /** שם המתג לקורא מסך */
+  label: string;
   checked: boolean;
   onChange: () => void;
 }) {
@@ -82,6 +84,7 @@ function Toggle({
     <button
       type="button"
       role="switch"
+      aria-label={label}
       aria-checked={checked}
       onClick={onChange}
       className={`relative w-11 h-6 rounded-full shrink-0 transition-colors duration-200 cursor-pointer ${
@@ -294,16 +297,9 @@ export default function SettingsPage({
         ),
       ),
   );
-  const [saved, setSaved] = useState(false);
 
   const toggle = (id: string) => {
     setEnabled((prev) => ({ ...prev, [id]: !prev[id] }));
-    setSaved(false);
-  };
-
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
   };
 
   return (
@@ -332,6 +328,7 @@ export default function SettingsPage({
                   גרסה עם תמונות
                 </p>
                 <Toggle
+                  label="גרסה עם תמונות"
                   checked={classicVersion}
                   onChange={() =>
                     onClassicVersionChange(!classicVersion)
@@ -380,6 +377,7 @@ export default function SettingsPage({
                     {item.label}
                   </p>
                   <Toggle
+                    label={item.label}
                     checked={!!enabled[item.id]}
                     onChange={() => toggle(item.id)}
                   />
@@ -389,15 +387,9 @@ export default function SettingsPage({
             </div>
           ))}
 
-          <div className="flex items-center justify-end gap-3">
-            {saved && (
-              <span className="flex items-center gap-1.5 text-[#4e9400] text-[14px] font-semibold">
-                <Check size={15} className="shrink-0" />
-                ההגדרות נשמרו בהצלחה
-              </span>
-            )}
-            <Button onClick={handleSave}>שמירה</Button>
-          </div>
+          <p className="text-[#171c23] text-[13px] opacity-60 text-right">
+            השינויים נשמרים אוטומטית
+          </p>
         </div>
       </div>
     </section>

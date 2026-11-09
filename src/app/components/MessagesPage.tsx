@@ -244,7 +244,7 @@ function MessageCard({
         ref={textRef}
         className={`text-[#171c23] text-[14px] text-right leading-relaxed whitespace-pre-line ${
           // במובייל שתי שורות, בדסקטופ שלוש
-          expanded ? "" : "line-clamp-2 sm:line-clamp-3 opacity-70"
+          expanded ? "" : "line-clamp-2 sm:line-clamp-3 opacity-90"
         }`}
       >
         <Linkify text={message.content} />
