@@ -79,7 +79,7 @@ export function PageHero({
         style={{ objectPosition: hero.position }}
       />
       {/* שכבה כהה בגוון של האתר המקורי, מעט בהירה יותר */}
-      <div className="absolute inset-0 bg-[rgba(13,25,37,0.55)]" />
+      <div className="hero-overlay absolute inset-0" />
       <div className="relative px-4 sm:px-6 md:px-10 pt-10 md:pt-6 pb-5 md:pb-6">
         {/* אותה טיפוגרפיה כמו כותרות העמודים, בלבן על התמונה */}
         <h1 className="font-bold text-white text-[28px] sm:text-[34px] tracking-tight text-right">

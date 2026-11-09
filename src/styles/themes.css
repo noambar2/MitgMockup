@@ -421,6 +421,14 @@
   30% { transform: translateY(-5px); opacity: 1; }
 }
 
+/* השכבה הכהה מעל תמונות ה-hero - כהה יותר במצב כהה */
+.hero-overlay {
+  background-color: rgba(13, 25, 37, 0.55);
+}
+.dark .hero-overlay {
+  background-color: rgba(13, 25, 37, 0.75);
+}
+
 /* זכוכית שקופה - כרטיס שיושב על תמונה כהה: ציפוי בהיר אחיד ושפה דקה */
 .photo-glass {
   position: relative;
@@ -432,6 +440,15 @@
   );
   -webkit-backdrop-filter: blur(12px) saturate(1.5);
   backdrop-filter: blur(12px) saturate(1.5);
+}
+
+/* במצב כהה - אותה זכוכית בצבע הכרטיסיות של הערכה הכהה */
+.dark .photo-glass {
+  background: linear-gradient(
+    135deg,
+    rgba(22, 36, 47, 0.62),
+    rgba(22, 36, 47, 0.42)
+  );
 }
 
 /* השפה תופסת אור בשתי פינות נגדיות ודועכת באמצע */
@@ -456,6 +473,20 @@
   mask:
     linear-gradient(#000 0 0) content-box exclude,
     linear-gradient(#000 0 0);
+}
+
+/* במצב כהה השפה והקווים המפרידים עדינים יותר */
+.dark .photo-glass::before {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.28),
+    rgba(255, 255, 255, 0.06) 45%,
+    rgba(255, 255, 255, 0.06) 60%,
+    rgba(255, 255, 255, 0.18)
+  );
+}
+.dark .photo-glass .bg-white\/25 {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* מספרים גדולים בלבד - Inter, עם גיבוי לעברית אם מופיע טקסט באותו שדה */
