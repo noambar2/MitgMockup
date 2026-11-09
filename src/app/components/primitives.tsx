@@ -737,12 +737,12 @@ export function Dialog({
       {isMobile ? (
         <div className="fixed inset-0 z-[400]" dir="rtl">
           <div
-            className="absolute inset-0 bg-black/20 transition-opacity duration-300"
+            className="app-sheet-backdrop absolute inset-0 transition-opacity duration-300"
             style={{ opacity: visible ? 1 : 0 }}
             onClick={close}
           />
           <div
-            className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl transition-transform duration-300 ease-out flex flex-col min-h-[50vh] max-h-[92vh]"
+            className="app-sheet absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl transition-transform duration-300 ease-out flex flex-col min-h-[50vh] max-h-[92vh]"
             style={{
               transform: visible
                 ? "translateY(0)"
@@ -750,7 +750,7 @@ export function Dialog({
             }}
           >
             <div className="flex justify-center pt-3 pb-1 shrink-0">
-              <div className="w-10 h-1 rounded-full bg-[rgba(23,28,35,0.15)]" />
+              <div className="app-sheet-handle w-10 h-1 rounded-full bg-[rgba(23,28,35,0.15)]" />
             </div>
             {content}
           </div>
