@@ -693,6 +693,8 @@ function RescheduleDialog({
               </p>
               <div className="flex justify-center">
                 <Calendar
+                  // צבע מפורש - במצב כהה הוא מתחלף לטקסט בהיר
+                  className="app-calendar text-[#171c23]"
                   mode="range"
                   selected={range}
                   onSelect={setRange}
@@ -708,16 +710,16 @@ function RescheduleDialog({
                       "text-muted-foreground w-9 font-normal text-[0.8rem]",
                     // הרקע הבהיר של הטווח יושב על התא (cell) כפס רציף;
                     // בקצוות (בימין תא ההתחלה, בשמאל תא הסיום) הפס מתעגל סביב העיגול הכחול
-                    cell: "relative p-0 text-center text-sm size-9 [&:has([aria-selected])]:bg-[rgba(0,143,240,0.12)] [&:has(.day-range-start)]:rounded-r-full [&:has(.day-range-end)]:rounded-l-full first:[&:has([aria-selected])]:rounded-r-full last:[&:has([aria-selected])]:rounded-l-full",
+                    cell: "relative p-0 text-center text-sm size-9 [&:has([aria-selected])]:bg-[rgba(var(--brand-rgb,0,143,240),0.16)] [&:has(.day-range-start)]:rounded-r-full [&:has(.day-range-end)]:rounded-l-full first:[&:has([aria-selected])]:rounded-r-full last:[&:has([aria-selected])]:rounded-l-full",
                     day: "inline-flex items-center justify-center size-9 p-0 font-normal rounded-full cursor-pointer transition-colors hover:bg-[rgba(0,143,240,0.08)] aria-selected:opacity-100",
-                    day_selected:
-                      "bg-[#008ff0] text-white rounded-full hover:bg-[#008ff0] hover:text-white focus:bg-[#008ff0] focus:text-white",
+                    // הצבע המלא רק בקצוות - הימים שבאמצע מקבלים את הפס של התא
+                    day_selected: "",
                     day_range_start:
-                      "day-range-start bg-[#008ff0] text-white rounded-full",
+                      "day-range-start bg-[#008ff0] !text-white rounded-full hover:bg-[#008ff0]",
                     day_range_end:
-                      "day-range-end bg-[#008ff0] text-white rounded-full",
+                      "day-range-end bg-[#008ff0] !text-white rounded-full hover:bg-[#008ff0]",
                     day_range_middle:
-                      "aria-selected:bg-transparent aria-selected:text-[#171c23] rounded-none hover:aria-selected:bg-transparent",
+                      "text-[#171c23] rounded-none hover:bg-transparent",
                     day_today:
                       "border border-[#008ff0] text-[#008ff0]",
                   }}
