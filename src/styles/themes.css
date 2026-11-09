@@ -553,3 +553,14 @@
   padding-inline: 16px;
   font-size: 15px;
 }
+
+/* במובייל הפעולות הראשיות בכרטיס הזימון גדולות ונוחות ללחיצה */
+@media (max-width: 767px) {
+  .app-card-actions > button {
+    flex: 1 1 0;
+    justify-content: center;
+    min-height: 46px;
+    padding-inline: 12px;
+    font-size: 14px;
+  }
+}

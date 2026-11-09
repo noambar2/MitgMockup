@@ -81,6 +81,19 @@ const taskDocuments: DocumentItem[] = [
   { id: "other-medical", name: "בדיקה רפואית אחרת" },
 ];
 
+/** מספר הימים שנותרו, מתוך הטקסט המוצג */
+const daysLeft = (task: Task) =>
+  Number(task.timeLeft.match(/\d+/)?.[0] ?? Infinity);
+
+/** דחופות קודם; משימות שבוצעו בסוף */
+const byUrgency = (a: Task, b: Task) =>
+  Number(a.status === "בוצע") - Number(b.status === "בוצע") ||
+  daysLeft(a) - daysLeft(b);
+
+/** המשימה הפתוחה עם הכי פחות ימים */
+export const mostUrgentTask = () =>
+  tasks.filter((t) => t.status !== "בוצע").sort(byUrgency)[0];
+
 const tasks: Task[] = [
   {
     id: "data-verification",
@@ -455,11 +468,11 @@ function TaskCard({
     <div className="bg-white rounded-[10px] flex flex-col h-full transition-all duration-200 border border-transparent hover:[box-shadow:0_0_20px_0_rgba(0,143,240,0.25)] hover:border-[rgba(0,143,240,0.2)]">
       <button
         onClick={onClick}
-        className="group p-5 flex flex-col gap-3 text-right w-full flex-1 cursor-pointer"
+        className="group p-4 md:p-5 flex flex-col gap-2 md:gap-3 text-right w-full flex-1 cursor-pointer"
       >
         <div className="flex items-center justify-between gap-3 w-full">
-          <div className="bg-[rgba(0,143,240,0.1)] w-10 h-10 rounded-full flex items-center justify-center shrink-0">
-            <Icon size={18} className="text-[#008ff0]" />
+          <div className="bg-[rgba(0,143,240,0.1)] w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center shrink-0">
+            <Icon size={16} className="text-[#008ff0]" />
           </div>
           <span className="flex items-center gap-1.5">
             {task.isNew && (
@@ -489,7 +502,7 @@ function TaskCard({
           {/* העטיפה נדרשת כי line-clamp לא שורד כשהפסקה היא פריט פלקס */}
           <div className="w-full">
             <p
-              className={`text-[#171c23] text-[13px] opacity-60 leading-snug ${expanded ? "" : "line-clamp-2"}`}
+              className={`text-[#171c23] text-[13px] opacity-60 leading-snug ${expanded ? "" : "line-clamp-1 md:line-clamp-2"}`}
             >
               {task.preview}
             </p>
@@ -983,7 +996,7 @@ export function AppointmentCard({
         )}
 {/* card outside */}
       {!past && (
-        <div className="flex flex-wrap items-center justify-end gap-2 mt-auto pt-3 border-t border-[rgba(23,28,35,0.05)]">
+        <div className="app-card-actions flex flex-wrap items-center justify-end gap-2 mt-auto pt-3 border-t border-[rgba(23,28,35,0.05)]">
           {/* {appointment.digitalOrder && (
             <Button variant="tint">
               <Download size={14} className="shrink-0" />
@@ -1087,10 +1100,12 @@ export default function TasksAppointmentsPage({
   const matchKind = (t: Task, f: KindFilter) =>
     f === "all" || t.kind === f;
 
-  const visible = tasks.filter(
-    (t) =>
-      matchStatus(t, statusFilter) && matchKind(t, kindFilter),
-  );
+  const visible = tasks
+    .filter(
+      (t) =>
+        matchStatus(t, statusFilter) && matchKind(t, kindFilter),
+    )
+    .sort(byUrgency);
 
   /** ספירה לצ'יפ - בהתחשב בסינון של הקבוצה השנייה בלבד */
   const countStatus = (f: StatusFilter) =>

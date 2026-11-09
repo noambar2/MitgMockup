@@ -234,6 +234,10 @@ const learnings: Learning[] = [
   },
 ];
 
+/** הלומדה שהמלש"ב באמצע התרגול בה */
+export const learningInProgress = () =>
+  learnings.find((l) => l.status === "בתהליך");
+
 /** אחוז ההשלמה הכללי - לפי יחס המבחנים שהושלמו בכל הלומדות */
 const totalTests = learnings.reduce((sum, l) => sum + l.tests, 0);
 const totalTestsDone = learnings.reduce(

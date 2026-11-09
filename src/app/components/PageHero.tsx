@@ -22,7 +22,7 @@ interface Hero {
 // עמודים שלא מופיעים כאן (שאלונים וצ'אט) מוצגים בלי hero
 const HEROES: Record<string, Hero> = {
   profile: {
-    title: "פרופיל אישי",
+    title: "שלום ישראלה",
     image: profileHero,
     // קו האופק עובר מאחורי הכרטיס, כך שהזכוכית מקבלת גם שמיים וגם אדמה
     position: "center 23%",

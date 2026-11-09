@@ -28,6 +28,7 @@ import MessagesPage, {
   countUnreadMessages,
 } from './components/MessagesPage';
 import { GLASS_CARD } from './components/ui/utils';
+import { NextSteps } from './components/NextSteps';
 import {
   ClassicVersionContext,
   PageHero,
@@ -763,13 +764,13 @@ function Header({
     "לומדות",
     "משימות",
     "זימונים",
-    "פרופיל אישי",
+    "אזור אישי",
   ];
   const tabToPage: Record<string, Page> = {
     הודעות: "messages",
     פניות: "inquiries",
     לומדות: "learnings",
-    "פרופיל אישי": "profile",
+    "אזור אישי": "profile",
     "משימות": "tasks",
     "זימונים": "appointments",
   };
@@ -1293,7 +1294,15 @@ function ScoreTabs() {
   );
 }
 
-function QualitySection() {
+function QualitySection({
+  onNavigate,
+  onOpenLearning,
+  unreadCount,
+}: {
+  onNavigate: (page: Page) => void;
+  onOpenLearning: () => void;
+  unreadCount: number;
+}) {
   const isMobile = useIsMobile();
   const classic = useClassicVersion();
   const [layout, setLayout] = useState<1 | 2>(1);
@@ -1354,13 +1363,22 @@ function QualitySection() {
       {/* כותרת העמוד - בגרסה הקלאסית היא מוצגת ב-hero */}
       {!classic && (
         <h2 className="font-bold text-[#122736] text-[28px] sm:text-[34px] tracking-tight text-right mb-6">
-          פרופיל אישי<span className="text-[#69c600]">.</span>
+          שלום ישראלה<span className="text-[#69c600]">.</span>
         </h2>
       )}
 
       <div className="flex flex-col gap-4">
         {/* נתוני גיוס - רוחב מלא */}
         {!classic && <EnlistmentCard {...ENLISTMENT} />}
+
+        <NextSteps
+          unreadCount={unreadCount}
+          onOpenTasks={() => onNavigate("tasks")}
+          onOpenAppointments={() => onNavigate("appointments")}
+          onOpenInquiries={() => onNavigate("inquiries")}
+          onOpenLearning={onOpenLearning}
+          onOpenMessages={() => onNavigate("messages")}
+        />
 
         {/* כותרת נתוני האיכות + מתג הפריסה - יושבת ישירות מעל מה שהיא משנה */}
         <div className="pt-2">
@@ -2105,7 +2123,15 @@ export default function App() {
           />
         ) : (
           <>
-            <QualitySection />
+            <QualitySection
+              onNavigate={setPage}
+              // ישירות ללומדה, בלי מסך הפתיחה
+              onOpenLearning={() => {
+                setLearningsEntry("dapar");
+                setPage("learnings");
+              }}
+              unreadCount={unreadMessages}
+            />
             <PersonalSection />
           </>
         )}

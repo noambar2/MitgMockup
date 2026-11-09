@@ -61,9 +61,10 @@ export const THEMES: Theme[] = [
     id: "light",
     name: "בהיר",
     dark: false,
-    brand: "#008ff0",
-    brandHover: "#0080d6",
-    brandRgb: "0,143,240",
+    // כחול כהה יותר - ניגודיות AA עם טקסט לבן ועל רקע לבן
+    brand: "#006bbf",
+    brandHover: "#005ca5",
+    brandRgb: "0,107,191",
     pageBg: "#f5f5f7",
     blobA: "#008ff0",
     blobB: "#69c600",

@@ -59,6 +59,8 @@ interface Inquiry {
   openDate: string;
   closeDate?: string;
   status: InquiryStatus;
+  /** מה נדרש מהמלש"ב כדי שהטיפול בפנייה יימשך */
+  awaitingRecruit?: string;
   channel: Channel;
   files: InquiryFile[];
   response?: string;
@@ -102,6 +104,7 @@ const INQUIRIES: Inquiry[] = [
     topic: "רפואי",
     openDate: "12.09.2026",
     status: "inProgress",
+    awaitingRecruit: "יש לצרף טופס בקשה חתום",
     channel: "מקוון",
     files: [
       {
@@ -164,6 +167,10 @@ const TEAMS = [
  */
 const LIST_SCROLL =
   "flex flex-col gap-2 w-full max-h-[200px] md:max-h-[280px] overflow-y-auto pe-1";
+
+/** פנייה פתוחה שממתינה לפעולה של המלש"ב */
+export const inquiryAwaitingRecruit = () =>
+  INQUIRIES.find((i) => i.awaitingRecruit && i.status !== "closed");
 
 const STATUS_LABELS: Record<InquiryStatus, string> = {
   received: "התקבלה",
@@ -283,6 +290,11 @@ function InquiryCard({
           <span className="text-[#171c23] text-[13px] opacity-50">
             {inquiry.topic}
           </span>
+          {!closed && inquiry.awaitingRecruit && (
+            <span className="text-[#e07000] text-[13px] font-semibold text-right">
+              {inquiry.awaitingRecruit}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {closed ? (
