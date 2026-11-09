@@ -650,8 +650,8 @@ function RescheduleDialog({
       bodyClassName={submitted ? "px-5 py-10" : "px-5 py-4"}
       footer={
         !submitted && !maxedOut ? (
-          <div className="flex items-center justify-between gap-3 w-full">
-            <span className="text-[#171c23] text-[13px] opacity-60 text-right">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-3 w-full">
+            <span className="text-[#171c23] text-[13px] opacity-60 text-center md:text-right">
               {rangeLabel
                 ? `טווח נבחר: ${rangeLabel}`
                 : "טרם נבחר טווח תאריכים"}

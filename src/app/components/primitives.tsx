@@ -723,7 +723,7 @@ export function Dialog({
         {children}
       </div>
       {footer && (
-        <div className="flex flex-wrap items-center justify-end gap-2 px-5 py-4 border-t border-[rgba(23,28,35,0.08)] shrink-0">
+        <div className={`${isMobile ? "app-sheet-footer " : ""}flex flex-wrap items-center justify-end gap-2 px-5 py-4 border-t border-[rgba(23,28,35,0.08)] shrink-0`}>
           {footer}
         </div>
       )}

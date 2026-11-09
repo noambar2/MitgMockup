@@ -132,7 +132,7 @@ function SidePanel({
       <div className="overflow-y-auto flex-1 min-h-0">{children}</div>
 
       {footer && (
-        <div className="flex items-center justify-between gap-2 px-5 py-4 border-t border-[rgba(23,28,35,0.08)] shrink-0">
+        <div className={`${isMobile ? "app-sheet-footer " : ""}flex items-center justify-between gap-2 px-5 py-4 border-t border-[rgba(23,28,35,0.08)] shrink-0`}>
           {footer}
         </div>
       )}
