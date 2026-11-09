@@ -71,7 +71,7 @@ export function PageHero({
   if (!hero) return null;
 
   return (
-    <section className="relative isolate min-h-[140px] md:min-h-[200px] flex flex-col justify-end overflow-hidden bg-[#122736]">
+    <section className="page-hero relative isolate min-h-[140px] md:min-h-[200px] flex flex-col justify-end overflow-hidden bg-[#122736]">
       <img
         src={hero.image}
         alt=""

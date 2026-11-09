@@ -564,3 +564,8 @@
     font-size: 14px;
   }
 }
+
+/* רווח אחיד וקטן יותר בין תמונת ה-hero לתוכן העמוד */
+.page-hero + main > section:first-child {
+  padding-top: 20px;
+}

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useLayoutEffect, useState, type ReactNode } from "react";
 import {
   ChevronLeft,
   ChevronDown,
@@ -541,7 +541,7 @@ function LearningsIntro({ onContinue }: { onContinue: () => void }) {
         <div className="bg-white rounded-[10px] p-5 flex flex-col gap-5">
           {/* נגן הסרטון */}
           <div
-            className="relative w-full aspect-video rounded-[10px] overflow-hidden bg-[#122736]"
+            className="relative w-full md:max-w-[440px] md:mx-auto aspect-video rounded-[10px] overflow-hidden bg-[#122736]"
             style={{
               backgroundImage:
                 "radial-gradient(circle at 78% 22%, rgba(var(--brand-rgb, 0,143,240), 0.55), transparent 55%), radial-gradient(circle at 18% 82%, rgba(105,198,0,0.35), transparent 55%)",
@@ -555,7 +555,7 @@ function LearningsIntro({ onContinue }: { onContinue: () => void }) {
               <span className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center shadow-[0_8px_32px_rgba(18,39,54,0.24)] transition-transform duration-200 group-hover:scale-105">
                 <Play
                   size={26}
-                  className="text-[#008ff0] mr-1"
+                  className="text-[#008ff0] ml-[3px]"
                   fill="currentColor"
                 />
               </span>
@@ -572,7 +572,7 @@ function LearningsIntro({ onContinue }: { onContinue: () => void }) {
             ההתקדמות נשמרת אוטומטית.
           </p>
 
-          <div className="flex justify-start">
+          <div className="flex justify-end">
             <Button onClick={onContinue}>
               מעבר ללומדות
               <ChevronLeft size={16} />
@@ -939,13 +939,21 @@ type View =
 
 export default function LearningsPage({
   initialView = "intro",
+  onHeroChange,
 }: {
   /** "dapar" - כניסה ישירה ללומדה עצמה (למשל מכרטיס המשימה) */
   initialView?: "intro" | "dapar";
+  /** תמונת ה-hero מוצגת רק במסך הסרטון וברשימת הלומדות */
+  onHeroChange?: (visible: boolean) => void;
 }) {
   const [view, setView] = useState<View>(
     initialView === "dapar" ? { kind: "dapar" } : { kind: "intro" },
   );
+
+  // לפני הציור, כדי שהתמונה לא תהבהב במעבר בין המסכים
+  useLayoutEffect(() => {
+    onHeroChange?.(view.kind === "intro" || view.kind === "list");
+  }, [view.kind, onHeroChange]);
 
   if (view.kind === "intro")
     return (

@@ -1967,6 +1967,7 @@ export default function App() {
   >("intro");
   // ערכת נושא - משנה צבע מותג, רקע וגרדיאנטים (הכותרת העליונה לא משתנה)
   const [themeId, setThemeId] = useState(DEFAULT_THEME.id);
+  const [learningsHero, setLearningsHero] = useState(true);
   const theme = getTheme(themeId);
   // בערכה הצבעונית לכל עמוד גוון אקסנט משלו
   const accent = accentFor(theme, page);
@@ -2045,7 +2046,7 @@ export default function App() {
         unreadCount={unreadMessages}
         navGradient={accent.navGradient}
       />
-      {classicVersion && (
+      {classicVersion && (page !== "learnings" || learningsHero) && (
         <PageHero page={page}>
           {page === "profile" && (
             <EnlistmentCard {...ENLISTMENT} onPhoto />
@@ -2057,6 +2058,7 @@ export default function App() {
           <LearningsPage
             key={learningsEntry}
             initialView={learningsEntry}
+            onHeroChange={setLearningsHero}
           />
         ) : page === "tasks" ? (
           <TasksAppointmentsPage

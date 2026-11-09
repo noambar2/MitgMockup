@@ -162,7 +162,7 @@ export function NextSteps({
     });
 
   return (
-    <div className="pt-2">
+    <div className="pt-2 first:pt-0">
       <h2 className="font-bold text-[#122736] text-[28px] sm:text-[34px] tracking-tight text-right mb-3">
         מה מחכה לך<span className="text-[#69c600]">.</span>
       </h2>
