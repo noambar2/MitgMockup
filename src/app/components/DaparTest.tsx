@@ -645,6 +645,68 @@ export function ScoreChips({
 
 type Step = "instructions" | "sample" | "question" | "summary";
 
+/**
+ * תוצאת הבדיקה וההסבר - מוצגים בפוטר הדביק, מעל הכפתורים,
+ * כך שרואים אותם מיד אחרי הבדיקה בלי לגלול.
+ */
+function ExplanationPanel({
+  question,
+  choice,
+}: {
+  question: Question;
+  choice: number | null;
+}) {
+  const right = choice === question.correct;
+  const letter = OPTION_LETTERS[question.correct];
+  const title = right
+    ? "תשובה נכונה!"
+    : choice === null
+      ? `לא נבחרה תשובה · התשובה הנכונה היא ${letter}`
+      : `תשובה שגויה · התשובה הנכונה היא ${letter}`;
+  return (
+    <div
+      role="status"
+      className={`rounded-[10px] px-4 py-3 flex flex-col gap-1.5 max-h-[34vh] overflow-y-auto ${
+        right
+          ? "bg-[rgba(105,198,0,0.1)]"
+          : "bg-[rgba(196,60,60,0.08)]"
+      }`}
+    >
+      <p
+        className={`flex items-center gap-1.5 font-bold text-[15px] text-right ${
+          right ? "text-[#4e9400]" : "text-[#c43c3c]"
+        }`}
+      >
+        {right ? (
+          <CheckCircle2 size={17} className="shrink-0" />
+        ) : (
+          <XCircle size={17} className="shrink-0" />
+        )}
+        {title}
+      </p>
+      <p className="text-[#171c23] text-[14px] leading-relaxed text-right">
+        <span className="font-semibold">הסבר: </span>
+        {question.explanation}
+      </p>
+    </div>
+  );
+}
+
+/**
+ * אחרי בדיקה הפאנל שמעל הכפתורים גדל - גוללים לתחתית
+ * כדי שהתשובות יישארו גלויות מעליו.
+ */
+function revealScroll() {
+  window.setTimeout(
+    () =>
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: "smooth",
+      }),
+    50,
+  );
+}
+
 /** גוף התוכן + פוטר דביק - אותה פריסה של שאלון התחביבים */
 function TestShell({
   children,
@@ -1089,24 +1151,10 @@ export default function DaparTestRunner({
     );
     keysRef.current = { enter: next };
   } else if (step === "sample") {
-    const right = sampleChoice === SAMPLE_QUESTION.correct;
-    const checkSample = () => setSampleChecked(true);
-    const explanation = (
-      <>
-        <p
-          className={`font-semibold text-[15px] md:text-[16px] text-right ${
-            right ? "text-[#4e9400]" : "text-[#c43c3c]"
-          }`}
-        >
-          {right
-            ? "תשובה נכונה!"
-            : `התשובה הנכונה היא ${OPTION_LETTERS[SAMPLE_QUESTION.correct]}`}
-        </p>
-        <p className="text-[#171c23] text-[14px] md:text-[15px] leading-relaxed text-right">
-          {SAMPLE_QUESTION.explanation}
-        </p>
-      </>
-    );
+    const checkSample = () => {
+      setSampleChecked(true);
+      revealScroll();
+    };
     body = (
       <div className="flex flex-col gap-6">
         <div className="text-right">
@@ -1125,19 +1173,14 @@ export default function DaparTestRunner({
           revealed={sampleChecked}
           onPick={setSampleChoice}
         />
-        {/* הסבר - בדסקטופ מתחת לתשובות (במובייל הוא בפוטר) */}
-        {sampleChecked && (
-          <div className="hidden md:flex flex-col gap-2 border-t border-[rgba(23,28,35,0.08)] pt-5">
-            {explanation}
-          </div>
-        )}
       </div>
     );
     if (sampleChecked)
       footerTop = (
-        <div className="md:hidden flex flex-col gap-1 max-h-[34vh] overflow-y-auto border-b border-[rgba(23,28,35,0.08)] pb-3">
-          {explanation}
-        </div>
+        <ExplanationPanel
+          question={SAMPLE_QUESTION}
+          choice={sampleChoice}
+        />
       );
     const canCheck = sampleChoice !== null && !sampleChecked;
     footer = (
@@ -1317,12 +1360,14 @@ export default function DaparTestRunner({
       });
     };
 
-    const submit = () =>
+    const submit = () => {
       setChecked((prev) => {
         const next = [...prev];
         next[index] = true;
         return next;
       });
+      revealScroll();
+    };
 
     body = (
       <div className="flex flex-col gap-6">
@@ -1353,33 +1398,12 @@ export default function DaparTestRunner({
           revealed={revealed}
           onPick={setChoice}
         />
-
-        {/* הסבר - בדסקטופ מתחת לתשובות (במובייל הוא בפוטר) */}
-        {revealed && (
-          <div className="hidden md:flex flex-col gap-2 border-t border-[rgba(23,28,35,0.08)] pt-5">
-            <p className="font-semibold text-[#171c23] text-[16px] text-right">
-              הסבר
-            </p>
-            <p className="text-[#171c23] text-[15px] leading-relaxed text-right">
-              {q.explanation}
-            </p>
-          </div>
-        )}
       </div>
     );
 
-    // ההסבר במובייל - בתוך מיכל הכפתורים כדי שלא צריך לגלול
+    // התוצאה וההסבר - מעל הכפתורים, כך שתמיד רואים אותם בלי לגלול
     if (revealed)
-      footerTop = (
-        <div className="md:hidden flex flex-col gap-1 max-h-[34vh] overflow-y-auto border-b border-[rgba(23,28,35,0.08)] pb-3">
-          <p className="font-semibold text-[#171c23] text-[15px] text-right">
-            הסבר
-          </p>
-          <p className="text-[#171c23] text-[14px] leading-relaxed text-right">
-            {q.explanation}
-          </p>
-        </div>
-      );
+      footerTop = <ExplanationPanel question={q} choice={choice} />;
 
     if (reviewing) {
       footer = (
