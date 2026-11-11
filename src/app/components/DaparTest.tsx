@@ -1,9 +1,12 @@
 import {
+  useEffect,
   useId,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import {
   Check,
   X,
@@ -52,7 +55,8 @@ function Figure({
   size = 62,
 }: {
   spec: FigureSpec;
-  size?: number;
+  /** מספר בפיקסלים, או מחרוזת CSS (למשל "70%") לתצוגה גמישה */
+  size?: number | string;
 }) {
   const uid = useId().replace(/:/g, "");
   const hatchId = `h-${uid}`;
@@ -297,13 +301,23 @@ export function buildQuestions(count: number): Question[] {
 
 // ── תא בגריד ────────────────────────────────────────────────────────────────
 
-function GridCell({ spec }: { spec: FigureSpec | null }) {
+function GridCell({
+  spec,
+  large,
+}: {
+  spec: FigureSpec | null;
+  large?: boolean;
+}) {
   return (
     <div className="aspect-square flex items-center justify-center border border-[rgba(23,28,35,0.25)]">
       {spec ? (
-        <Figure spec={spec} />
+        <Figure spec={spec} size={large ? "80%" : 62} />
       ) : (
-        <span className="font-bold text-[#171c23] text-[30px] leading-none">
+        <span
+          className={`font-bold text-[#171c23] leading-none ${
+            large ? "text-[clamp(30px,8vmin,64px)]" : "text-[30px]"
+          }`}
+        >
           ?
         </span>
       )}
@@ -311,16 +325,109 @@ function GridCell({ spec }: { spec: FigureSpec | null }) {
   );
 }
 
-function QuestionGrid({ question }: { question: Question }) {
+function QuestionGrid({
+  question,
+  large,
+}: {
+  question: Question;
+  large?: boolean;
+}) {
   return (
     <div
       dir="ltr"
-      className="grid grid-cols-3 w-full max-w-[280px] mx-auto"
+      className={`grid grid-cols-3 w-full mx-auto bg-white ${
+        large ? "max-w-[min(88vw,78vh)]" : "max-w-[280px]"
+      }`}
     >
       {question.grid.map((spec, i) => (
-        <GridCell key={i} spec={spec} />
+        <GridCell key={i} spec={spec} large={large} />
       ))}
     </div>
+  );
+}
+
+/**
+ * תצוגת מסך מלא של תמונת השאלה.
+ * נסגרת בלחיצה על ה-X, על Esc או על הרקע.
+ */
+function ImageLightbox({
+  onClose,
+  children,
+}: {
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const prevFocus = document.activeElement as HTMLElement | null;
+    closeRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    // נועלים את גלילת הדף מאחורי התמונה
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+      prevFocus?.focus();
+    };
+  }, [onClose]);
+
+  return createPortal(
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="תמונת השאלה במסך מלא"
+      onClick={onClose}
+      className="fixed inset-0 z-[200] bg-[rgba(18,23,30,0.85)] backdrop-blur-sm flex items-center justify-center p-4 sm:p-8"
+    >
+      <button
+        ref={closeRef}
+        type="button"
+        onClick={onClose}
+        aria-label="סגירת התמונה"
+        className="absolute top-4 left-4 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+      >
+        <X size={24} />
+      </button>
+      {/* לחיצה על התמונה עצמה לא סוגרת - רק הרקע */}
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full flex justify-center"
+      >
+        {children}
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+/** תמונת השאלה - לחיצה פותחת אותה במסך מלא */
+function ZoomableQuestionGrid({ question }: { question: Question }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        data-native-enter
+        aria-label="הגדלת התמונה למסך מלא"
+        className="group relative block w-full max-w-[280px] mx-auto cursor-zoom-in rounded-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008ff0] focus-visible:ring-offset-4"
+      >
+        <QuestionGrid question={question} />
+      </button>
+      {open && (
+        <ImageLightbox onClose={() => setOpen(false)}>
+          <QuestionGrid question={question} large />
+        </ImageLightbox>
+      )}
+    </>
   );
 }
 
@@ -382,6 +489,56 @@ function OptionCard({
     </button>
   );
 }
+
+/** ארבע האפשרויות של שאלה, עם מצב הבדיקה */
+function OptionsGrid({
+  question,
+  choice,
+  revealed,
+  onPick,
+}: {
+  question: Question;
+  choice: number | null;
+  revealed: boolean;
+  onPick: (i: number) => void;
+}) {
+  return (
+    <div dir="rtl" className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {question.options.map((spec, i) => (
+        <OptionCard
+          key={i}
+          spec={spec}
+          letter={OPTION_LETTERS[i]}
+          selected={choice === i}
+          state={
+            !revealed
+              ? "idle"
+              : i === question.correct
+                ? "correct"
+                : choice === i
+                  ? "wrong"
+                  : "idle"
+          }
+          onClick={revealed ? undefined : () => onPick(i)}
+        />
+      ))}
+    </div>
+  );
+}
+
+/** מקשי הבחירה: האות בעברית, אותו מקש בפריסה אנגלית (T C D S), או 1-4 */
+const OPTION_KEY_CODES = ["KeyT", "KeyC", "KeyD", "KeyS"];
+function optionIndexFromKey(e: KeyboardEvent): number {
+  const byLetter = OPTION_LETTERS.indexOf(e.key);
+  if (byLetter >= 0) return byLetter;
+  const byCode = OPTION_KEY_CODES.indexOf(e.code);
+  if (byCode >= 0) return byCode;
+  const digit = Number(e.key);
+  return digit >= 1 && digit <= 4 ? digit - 1 : -1;
+}
+
+/** שאלת הדוגמה שבהוראות המבחן המתוזמן */
+const SAMPLE_QUESTION = countStyleQuestion(1);
 
 // ── רצועת מספרי השאלות ──────────────────────────────────────────────────────
 
@@ -493,11 +650,16 @@ function TestShell({
 }) {
   return (
     <>
-      <div className="flex-1 w-full max-w-[640px] mx-auto py-6">
+      <div
+        data-test-keys
+        className="flex-1 w-full max-w-[640px] mx-auto py-6"
+      >
         {children}
       </div>
       {/* הכפתורים תמיד גלויים בתחתית המסך */}
-      <div className="sticky bottom-0 z-30 -mx-4 sm:-mx-6 md:-mx-10 px-4 sm:px-6 md:px-10 py-3.5 bg-white/95 backdrop-blur-md border-t border-[rgba(23,28,35,0.08)] mt-auto">
+      <div
+        data-test-keys
+        className="sticky bottom-0 z-30 -mx-4 sm:-mx-6 md:-mx-10 px-4 sm:px-6 md:px-10 py-3.5 bg-white/95 backdrop-blur-md border-t border-[rgba(23,28,35,0.08)] mt-auto">
         <div className="max-w-[640px] mx-auto flex flex-col gap-3">
           {footerTop}
           <div className="flex items-center justify-between gap-3">
@@ -548,6 +710,52 @@ function ExitActions({ onConfirm }: { onConfirm: () => void }) {
       >
         יציאה
       </Button>
+    </div>
+  );
+}
+
+/** טיימר לשאלה - ספירה לאחור עם פס התקדמות, אדום ב-10 השניות האחרונות */
+function QuestionTimer({
+  left,
+  total,
+  timedOut,
+}: {
+  left: number;
+  total: number;
+  timedOut: boolean;
+}) {
+  const urgent = left <= 10;
+  const color = urgent ? "#c43c3c" : "#008ff0";
+  return (
+    <div
+      className="shrink-0 flex flex-col items-stretch gap-1.5 min-w-[96px]"
+      role="timer"
+      aria-live={urgent ? "assertive" : "off"}
+      aria-label={
+        timedOut ? "הזמן נגמר" : `נותרו ${left} שניות`
+      }
+    >
+      <span
+        className="flex items-center justify-center gap-1.5 rounded-full px-3 py-1 text-[14px] font-bold tabular-nums transition-colors"
+        style={{
+          color,
+          background: urgent
+            ? "rgba(196,60,60,0.1)"
+            : "rgba(0,143,240,0.1)",
+        }}
+      >
+        <Timer size={15} className="shrink-0" />
+        {timedOut ? "הזמן נגמר" : fmtDuration(left)}
+      </span>
+      <div className="h-1 w-full rounded-full bg-[rgba(23,28,35,0.08)] overflow-hidden">
+        <div
+          className="h-full rounded-full transition-[width] duration-1000 ease-linear"
+          style={{
+            width: `${(left / total) * 100}%`,
+            background: color,
+          }}
+        />
+      </div>
     </div>
   );
 }
@@ -606,6 +814,7 @@ export default function DaparTestRunner({
   initialDuration,
   /** ניסיונות קודמים להצגה בסיכום */
   attempts = [],
+  secondsPerQuestion,
   onExit,
 }: {
   topicName: string;
@@ -614,6 +823,8 @@ export default function DaparTestRunner({
   initialResults?: AnswerState[];
   initialDuration?: number;
   attempts?: { date: string; score: number }[];
+  /** מגבלת זמן לכל שאלה בשניות - בסיומה השאלה ננעלת ונבדקת */
+  secondsPerQuestion?: number;
   onExit: () => void;
 }) {
   const [exitOpen, setExitOpen] = useState(false);
@@ -656,6 +867,29 @@ export default function DaparTestRunner({
     Array(questionCount).fill(!!initialResults),
   );
 
+  /** הזמן שנותר בכל שאלה - נשמר כשעוברים בין שאלות */
+  const [remaining, setRemaining] = useState<number[]>(() =>
+    Array(questionCount).fill(secondsPerQuestion ?? 0),
+  );
+  const timerActive =
+    !!secondsPerQuestion &&
+    step === "question" &&
+    !reviewing &&
+    !checked[index];
+
+  useEffect(() => {
+    if (!timerActive) return;
+    const id = window.setInterval(() => {
+      setRemaining((prev) => {
+        const next = [...prev];
+        next[index] = Math.max(0, next[index] - 1);
+        return next;
+      });
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [timerActive, index]);
+
+
   // דירוג סופי: כל מה שאינו התשובה הנכונה (כולל ללא מענה) נחשב שגוי לאחר בדיקה
   const graded: AnswerState[] = picked.map((p, i) =>
     p !== null && p === questions[i].correct
@@ -672,6 +906,9 @@ export default function DaparTestRunner({
   const restart = () => {
     setPicked(Array(questionCount).fill(null));
     setChecked(Array(questionCount).fill(false));
+    setRemaining(
+      Array(questionCount).fill(secondsPerQuestion ?? 0),
+    );
     setReviewing(false);
     setIndex(0);
     setStartedAt(Date.now());
@@ -700,6 +937,76 @@ export default function DaparTestRunner({
     setStep("summary");
   };
 
+  const timed = !!secondsPerQuestion;
+  const isLast = index === questionCount - 1;
+
+  /**
+   * מבחן מתוזמן: נועלים את התשובה (בלי לחשוף אותה) ועוברים הלאה.
+   * אין חזרה אחורה, והתשובות נחשפות רק בסיכום.
+   */
+  const advance = () => {
+    setChecked((prev) => {
+      const next = [...prev];
+      next[index] = true;
+      return next;
+    });
+    if (isLast) goSummary();
+    else goNext();
+  };
+
+  // הזמן נגמר - עוברים לשאלה הבאה (שאלה ללא מענה נחשבת שגויה)
+  useEffect(() => {
+    if (timerActive && remaining[index] === 0) advance();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timerActive, remaining, index]);
+
+  /** שאלת הדוגמה בהוראות - שם בלבד אפשר לבדוק תשובה במבחן המתוזמן */
+  const [sampleChoice, setSampleChoice] = useState<number | null>(
+    null,
+  );
+  const [sampleChecked, setSampleChecked] = useState(false);
+
+  /** פעולות המקלדת של המסך הנוכחי - מתעדכנות בכל רינדור */
+  const keysRef = useRef<{
+    select?: (i: number) => void;
+    enter?: () => void;
+  }>({});
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.defaultPrevented || e.repeat) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      // לא בזמן דיאלוג או תמונה במסך מלא
+      if (document.querySelector('[aria-modal="true"]')) return;
+      const t = e.target as HTMLElement | null;
+      if (t?.closest("input, textarea, select, [contenteditable]"))
+        return;
+      const keys = keysRef.current;
+
+      if (e.key === "Enter") {
+        // Enter על כפתור מחוץ לאזור המבחן (למשל X) - פעולה רגילה
+        const inScope =
+          !t ||
+          t === document.body ||
+          (!!t.closest("[data-test-keys]") &&
+            !t.closest("[data-native-enter]"));
+        if (!inScope || !keys.enter) return;
+        e.preventDefault();
+        keys.enter();
+        return;
+      }
+
+      const i = optionIndexFromKey(e);
+      if (i < 0 || !keys.select) return;
+      e.preventDefault();
+      keys.select(i);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  keysRef.current = {};
+
   let body: ReactNode;
   let footer: ReactNode;
   let footerTop: ReactNode;
@@ -718,13 +1025,85 @@ export default function DaparTestRunner({
         </p>
         <ul className="text-[#171c23] text-[15px] leading-relaxed text-right list-disc pr-5 flex flex-col gap-1.5">
           <li>יש רק תשובה אחת נכונה לכל שאלה.</li>
-          <li>אחרי בדיקת התשובה תוצג התשובה הנכונה יחד עם הסבר.</li>
+          {timed ? (
+            <>
+              <li>
+                לכל שאלה {secondsPerQuestion} שניות. כשהזמן נגמר
+                עוברים אוטומטית לשאלה הבאה, ושאלה שלא נענתה נחשבת
+                שגויה.
+              </li>
+              <li>אי אפשר לדלג על שאלה או לחזור לשאלה קודמת.</li>
+              <li>
+                התשובות וההסברים מוצגים רק בסיום המבחן. לפני
+                שמתחילים אפשר לתרגל על שאלת הדוגמה.
+              </li>
+            </>
+          ) : (
+            <>
+              <li>
+                אחרי בדיקת התשובה תוצג התשובה הנכונה יחד עם הסבר.
+              </li>
+              <li>
+                אפשר לדלג בין השאלות ולחזור אליהן בעזרת הכפתורים
+                שבתחתית המסך.
+              </li>
+              <li>
+                המבחן אינו מוגבל בזמן וההתקדמות נשמרת אוטומטית.
+              </li>
+            </>
+          )}
           <li>
-            אפשר לדלג בין השאלות ולחזור אליהן בעזרת הכפתורים
-            שבתחתית המסך.
+            אפשר לבחור תשובה במקלדת (א-ד או 1-4) ולהמשיך עם Enter.
           </li>
-          <li>המבחן אינו מוגבל בזמן וההתקדמות נשמרת אוטומטית.</li>
         </ul>
+
+        {timed && (
+          <div className="flex flex-col gap-5 border-t border-[rgba(23,28,35,0.08)] pt-5 mt-2">
+            <div className="text-right">
+              <p className="font-semibold text-[#171c23] text-[16px]">
+                שאלת דוגמה
+              </p>
+              <p className="text-[#171c23] text-[13px] opacity-50 mt-0.5">
+                ללא הגבלת זמן - בחרו תשובה ובדקו אותה. לחיצה על
+                התמונה מגדילה אותה למסך מלא
+              </p>
+            </div>
+            <ZoomableQuestionGrid question={SAMPLE_QUESTION} />
+            <OptionsGrid
+              question={SAMPLE_QUESTION}
+              choice={sampleChoice}
+              revealed={sampleChecked}
+              onPick={setSampleChoice}
+            />
+            {sampleChecked ? (
+              <div className="flex flex-col gap-2 bg-[#f5f5f7] rounded-[10px] p-4">
+                <p
+                  className={`font-semibold text-[15px] text-right ${
+                    sampleChoice === SAMPLE_QUESTION.correct
+                      ? "text-[#4e9400]"
+                      : "text-[#c43c3c]"
+                  }`}
+                >
+                  {sampleChoice === SAMPLE_QUESTION.correct
+                    ? "תשובה נכונה!"
+                    : `התשובה הנכונה היא ${OPTION_LETTERS[SAMPLE_QUESTION.correct]}`}
+                </p>
+                <p className="text-[#171c23] text-[14px] leading-relaxed text-right">
+                  {SAMPLE_QUESTION.explanation}
+                </p>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() => setSampleChecked(true)}
+                disabled={sampleChoice === null}
+                className="self-center"
+              >
+                בדיקת התשובה
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     );
     footer = (
@@ -735,6 +1114,18 @@ export default function DaparTestRunner({
         <Button onClick={beginTest}>להתחלת המבחן</Button>
       </>
     );
+    keysRef.current = timed
+      ? {
+          select: (i) => {
+            if (!sampleChecked) setSampleChoice(i);
+          },
+          enter: () => {
+            if (sampleChoice !== null && !sampleChecked)
+              setSampleChecked(true);
+            else beginTest();
+          },
+        }
+      : { enter: beginTest };
   } else if (step === "summary") {
     const score = Math.round(
       (correctCount / questionCount) * 100,
@@ -902,41 +1293,33 @@ export default function DaparTestRunner({
 
     body = (
       <div className="flex flex-col gap-6">
-        {/* מספר השאלה + ההוראה, מיושר לימין */}
-        <div className="text-right">
-          <p className="font-semibold text-[#171c23] text-[16px]">
-            {index + 1}. השלם את הצורה
-          </p>
-          <p className="text-[#171c23] text-[13px] opacity-50 mt-0.5">
-            יש רק תשובה אחת נכונה
-          </p>
-        </div>
-
-        <QuestionGrid question={q} />
-
-        <div
-          dir="rtl"
-          className="grid grid-cols-2 md:grid-cols-4 gap-4"
-        >
-          {q.options.map((spec, i) => (
-            <OptionCard
-              key={i}
-              spec={spec}
-              letter={OPTION_LETTERS[i]}
-              selected={choice === i}
-              state={
-                !revealed
-                  ? "idle"
-                  : i === q.correct
-                    ? "correct"
-                    : choice === i
-                      ? "wrong"
-                      : "idle"
-              }
-              onClick={revealed ? undefined : () => setChoice(i)}
+        {/* מספר השאלה + ההוראה, מיושר לימין; הטיימר בצד שמאל */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="text-right">
+            <p className="font-semibold text-[#171c23] text-[16px]">
+              {index + 1}. השלם את הצורה
+            </p>
+            <p className="text-[#171c23] text-[13px] opacity-50 mt-0.5">
+              יש רק תשובה אחת נכונה
+            </p>
+          </div>
+          {secondsPerQuestion && !reviewing && (
+            <QuestionTimer
+              left={remaining[index]}
+              total={secondsPerQuestion}
+              timedOut={remaining[index] === 0}
             />
-          ))}
+          )}
         </div>
+
+        <ZoomableQuestionGrid question={q} />
+
+        <OptionsGrid
+          question={q}
+          choice={choice}
+          revealed={revealed}
+          onPick={setChoice}
+        />
 
         {/* הסבר - בדסקטופ מתחת לתשובות (במובייל הוא בפוטר) */}
         {revealed && (
@@ -995,6 +1378,26 @@ export default function DaparTestRunner({
           </Button>
         </>
       );
+      keysRef.current = { enter: goNext };
+    } else if (timed) {
+      // מבחן מתוזמן: רק קדימה, ורק אחרי שנבחרה תשובה
+      footer = (
+        <>
+          <span className="text-[#171c23] text-[14px] opacity-60 tabular-nums">
+            שאלה {index + 1} מתוך {questionCount}
+          </span>
+          <Button onClick={advance} disabled={choice === null}>
+            {isLast ? "לסיכום השאלון" : "לשאלה הבאה"}
+            {!isLast && <ChevronLeft size={15} />}
+          </Button>
+        </>
+      );
+      keysRef.current = {
+        select: setChoice,
+        enter: () => {
+          if (choice !== null) advance();
+        },
+      };
     } else {
       footer = (
         <>
@@ -1019,6 +1422,15 @@ export default function DaparTestRunner({
           )}
         </>
       );
+      // Enter מבצע את הפעולה הראשית: בדיקה, ואחריה מעבר לשאלה הבאה
+      keysRef.current = {
+        select: setChoice,
+        enter: () => {
+          if (!revealed && choice !== null) submit();
+          else if (isLast) goSummary();
+          else goNext();
+        },
+      };
     }
   }
 

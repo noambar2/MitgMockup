@@ -86,6 +86,8 @@ interface DaparTest {
   duration: number;
   /** ניסיונות קודמים - מהחדש לישן */
   attempts: TestAttempt[];
+  /** מגבלת זמן לכל שאלה בשניות - אם לא מוגדר, המבחן אינו מוגבל בזמן */
+  secondsPerQuestion?: number;
 }
 
 /** פורש את התשובות השגויות של מבחן שהושלם על פני השאלות, לתצוגת הסיכום */
@@ -161,7 +163,10 @@ const daparTopics: DaparTopic[] = [
   {
     id: "shape",
     name: "חשיבה צורנית",
-    tests: buildTests("shape", 2, 8),
+    // מבחן 3 בחשיבה צורנית מוגבל ל-40 שניות לשאלה
+    tests: buildTests("shape", 2, 8).map((t) =>
+      t.id === "shape-3" ? { ...t, secondsPerQuestion: 40 } : t,
+    ),
   },
   {
     id: "verbal-analogies",
@@ -1005,6 +1010,7 @@ export default function LearningsPage({
           }
           initialDuration={test.duration}
           attempts={test.attempts}
+          secondsPerQuestion={test.secondsPerQuestion}
           onExit={() => setView({ kind: "topic", id: topic.id })}
         />
       );
