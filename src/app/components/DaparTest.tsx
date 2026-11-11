@@ -311,7 +311,7 @@ function GridCell({
   return (
     <div className="aspect-square flex items-center justify-center border border-[rgba(23,28,35,0.25)]">
       {spec ? (
-        <Figure spec={spec} size={large ? "80%" : 62} />
+        <Figure spec={spec} size={large ? "80%" : "67%"} />
       ) : (
         <span
           className={`font-bold text-[#171c23] leading-none ${
@@ -325,6 +325,14 @@ function GridCell({
   );
 }
 
+/**
+ * גודל תמונת השאלה נגזר מגובה המסך, כך שהתשובות תמיד נכנסות מעל
+ * שורת הכפתורים. המספרים הם הגובה של כל שאר התוכן (כותרות, תשובות,
+ * פוטר); במובייל התשובות בשתי שורות והכותרת נמוכה יותר.
+ */
+const GRID_MAX_W =
+  "max-w-[clamp(150px,calc(100dvh_-_530px),420px)] md:max-w-[clamp(150px,calc(100dvh_-_450px),420px)]";
+
 function QuestionGrid({
   question,
   large,
@@ -336,7 +344,7 @@ function QuestionGrid({
     <div
       dir="ltr"
       className={`grid grid-cols-3 w-full mx-auto bg-white ${
-        large ? "max-w-[min(88vw,78vh)]" : "max-w-[280px]"
+        large ? "max-w-[min(88vw,78vh)]" : GRID_MAX_W
       }`}
     >
       {question.grid.map((spec, i) => (
@@ -418,7 +426,7 @@ function ZoomableQuestionGrid({ question }: { question: Question }) {
         onClick={() => setOpen(true)}
         data-native-enter
         aria-label="הגדלת התמונה למסך מלא"
-        className="group relative block w-full max-w-[280px] mx-auto cursor-zoom-in rounded-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008ff0] focus-visible:ring-offset-4"
+        className={`group relative block w-full ${GRID_MAX_W} mx-auto cursor-zoom-in rounded-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008ff0] focus-visible:ring-offset-4`}
       >
         <QuestionGrid question={question} />
       </button>
@@ -635,7 +643,7 @@ export function ScoreChips({
 
 // ── מסך המבחן ───────────────────────────────────────────────────────────────
 
-type Step = "instructions" | "question" | "summary";
+type Step = "instructions" | "sample" | "question" | "summary";
 
 /** גוף התוכן + פוטר דביק - אותה פריסה של שאלון התחביבים */
 function TestShell({
@@ -916,7 +924,13 @@ export default function DaparTestRunner({
     setStep("question");
   };
 
+  const goSample = () => {
+    window.scrollTo({ top: 0 });
+    setStep("sample");
+  };
+
   const beginTest = () => {
+    window.scrollTo({ top: 0 });
     setStartedAt(Date.now());
     setStep("question");
   };
@@ -1035,7 +1049,8 @@ export default function DaparTestRunner({
               <li>אי אפשר לדלג על שאלה או לחזור לשאלה קודמת.</li>
               <li>
                 התשובות וההסברים מוצגים רק בסיום המבחן. לפני
-                שמתחילים אפשר לתרגל על שאלת הדוגמה.
+                שמתחילים תוצג שאלת דוגמה לתרגול, שבה אפשר לבדוק את
+                התשובה.
               </li>
             </>
           ) : (
@@ -1057,75 +1072,93 @@ export default function DaparTestRunner({
           </li>
         </ul>
 
-        {timed && (
-          <div className="flex flex-col gap-5 border-t border-[rgba(23,28,35,0.08)] pt-5 mt-2">
-            <div className="text-right">
-              <p className="font-semibold text-[#171c23] text-[16px]">
-                שאלת דוגמה
-              </p>
-              <p className="text-[#171c23] text-[13px] opacity-50 mt-0.5">
-                ללא הגבלת זמן - בחרו תשובה ובדקו אותה. לחיצה על
-                התמונה מגדילה אותה למסך מלא
-              </p>
-            </div>
-            <ZoomableQuestionGrid question={SAMPLE_QUESTION} />
-            <OptionsGrid
-              question={SAMPLE_QUESTION}
-              choice={sampleChoice}
-              revealed={sampleChecked}
-              onPick={setSampleChoice}
-            />
-            {sampleChecked ? (
-              <div className="flex flex-col gap-2 bg-[#f5f5f7] rounded-[10px] p-4">
-                <p
-                  className={`font-semibold text-[15px] text-right ${
-                    sampleChoice === SAMPLE_QUESTION.correct
-                      ? "text-[#4e9400]"
-                      : "text-[#c43c3c]"
-                  }`}
-                >
-                  {sampleChoice === SAMPLE_QUESTION.correct
-                    ? "תשובה נכונה!"
-                    : `התשובה הנכונה היא ${OPTION_LETTERS[SAMPLE_QUESTION.correct]}`}
-                </p>
-                <p className="text-[#171c23] text-[14px] leading-relaxed text-right">
-                  {SAMPLE_QUESTION.explanation}
-                </p>
-              </div>
-            ) : (
-              <Button
-                variant="outline"
-                onClick={() => setSampleChecked(true)}
-                disabled={sampleChoice === null}
-                className="self-center"
-              >
-                בדיקת התשובה
-              </Button>
-            )}
-          </div>
-        )}
       </div>
     );
+    // במבחן המתוזמן ההוראות מובילות לשאלת דוגמה בעמוד נפרד
+    const next = timed ? goSample : beginTest;
     footer = (
       <>
         <Button variant="outline" onClick={onExit}>
           חזרה לנושא
         </Button>
-        <Button onClick={beginTest}>להתחלת המבחן</Button>
+        <Button onClick={next}>
+          {timed ? "לשאלת הדוגמה" : "להתחלת המבחן"}
+          {timed && <ChevronLeft size={15} />}
+        </Button>
       </>
     );
-    keysRef.current = timed
-      ? {
-          select: (i) => {
-            if (!sampleChecked) setSampleChoice(i);
-          },
-          enter: () => {
-            if (sampleChoice !== null && !sampleChecked)
-              setSampleChecked(true);
-            else beginTest();
-          },
-        }
-      : { enter: beginTest };
+    keysRef.current = { enter: next };
+  } else if (step === "sample") {
+    const right = sampleChoice === SAMPLE_QUESTION.correct;
+    const checkSample = () => setSampleChecked(true);
+    const explanation = (
+      <>
+        <p
+          className={`font-semibold text-[15px] md:text-[16px] text-right ${
+            right ? "text-[#4e9400]" : "text-[#c43c3c]"
+          }`}
+        >
+          {right
+            ? "תשובה נכונה!"
+            : `התשובה הנכונה היא ${OPTION_LETTERS[SAMPLE_QUESTION.correct]}`}
+        </p>
+        <p className="text-[#171c23] text-[14px] md:text-[15px] leading-relaxed text-right">
+          {SAMPLE_QUESTION.explanation}
+        </p>
+      </>
+    );
+    body = (
+      <div className="flex flex-col gap-6">
+        <div className="text-right">
+          <p className="font-semibold text-[#171c23] text-[16px]">
+            שאלת דוגמה
+          </p>
+          <p className="text-[#171c23] text-[13px] opacity-50 mt-0.5">
+            ללא הגבלת זמן - בחרו תשובה ובדקו אותה. לחיצה על התמונה
+            מגדילה אותה למסך מלא
+          </p>
+        </div>
+        <ZoomableQuestionGrid question={SAMPLE_QUESTION} />
+        <OptionsGrid
+          question={SAMPLE_QUESTION}
+          choice={sampleChoice}
+          revealed={sampleChecked}
+          onPick={setSampleChoice}
+        />
+        {/* הסבר - בדסקטופ מתחת לתשובות (במובייל הוא בפוטר) */}
+        {sampleChecked && (
+          <div className="hidden md:flex flex-col gap-2 border-t border-[rgba(23,28,35,0.08)] pt-5">
+            {explanation}
+          </div>
+        )}
+      </div>
+    );
+    if (sampleChecked)
+      footerTop = (
+        <div className="md:hidden flex flex-col gap-1 max-h-[34vh] overflow-y-auto border-b border-[rgba(23,28,35,0.08)] pb-3">
+          {explanation}
+        </div>
+      );
+    const canCheck = sampleChoice !== null && !sampleChecked;
+    footer = (
+      <>
+        <Button variant="outline" onClick={() => setStep("instructions")}>
+          <ChevronRight size={15} />
+          חזרה להוראות
+        </Button>
+        {canCheck ? (
+          <Button onClick={checkSample}>בדיקה</Button>
+        ) : (
+          <Button onClick={beginTest}>להתחלת המבחן</Button>
+        )}
+      </>
+    );
+    keysRef.current = {
+      select: (i) => {
+        if (!sampleChecked) setSampleChoice(i);
+      },
+      enter: canCheck ? checkSample : beginTest,
+    };
   } else if (step === "summary") {
     const score = Math.round(
       (correctCount / questionCount) * 100,
