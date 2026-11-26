@@ -25,6 +25,10 @@ import {
   ProgressBar,
   ProgressRing,
 } from "./primitives";
+import {
+  ExportPdfButton,
+  type PdfCell,
+} from "./pdfExport";
 
 /**
  * מבחן חשיבה צורנית - "השלם את הצורה".
@@ -1206,6 +1210,35 @@ export default function DaparTestRunner({
     const score = Math.round(
       (correctCount / questionCount) * 100,
     );
+
+    /** כל תשובות המלש"ב במבחן - שורה לשאלה, לייצוא ל-PDF */
+    const answerRows: PdfCell[][] = questions.map((q, i) => {
+      const choice = picked[i];
+      const row: PdfCell[] = [
+        i + 1,
+        "השלם את הצורה",
+        choice === null ? "ללא מענה" : OPTION_LETTERS[choice],
+        OPTION_LETTERS[q.correct],
+        graded[i] === "correct"
+          ? "נכונה"
+          : graded[i] === "wrong"
+            ? "שגויה"
+            : "ללא מענה",
+      ];
+      // במבחן מתוזמן מוסיפים את הזמן שנדרש לשאלה
+      if (secondsPerQuestion)
+        row.push(secondsPerQuestion - remaining[i]);
+      return row;
+    });
+
+    const answerColumns = [
+      "מספר שאלה",
+      "סוג השאלה",
+      'תשובת המלש"ב',
+      "התשובה הנכונה",
+      "תוצאה",
+      ...(secondsPerQuestion ? ["זמן מענה (שניות)"] : []),
+    ];
     body = (
       <div className="flex flex-col gap-4">
         {/* כרטיס ראשי: טבעת הציון ופעולות ההמשך */}
@@ -1238,6 +1271,35 @@ export default function DaparTestRunner({
               <Eye size={15} className="shrink-0" />
               צפה בשאלות
             </Button>
+            {/* ייצוא כל תשובות המלש"ב במבחן */}
+            <ExportPdfButton
+              questionnaire={testName}
+              columns={answerColumns}
+              rows={answerRows}
+              meta={[
+                ["נושא", topicName],
+                ["ציון משוקלל", score],
+                ["תשובות נכונות", correctCount],
+                ["תשובות שגויות", wrongCount],
+                [
+                  "זמן ביצוע",
+                  duration !== undefined
+                    ? fmtDuration(duration)
+                    : "—",
+                ],
+              ]}
+              extraTables={
+                attempts.length > 0
+                  ? [
+                      {
+                        title: "ביצועים קודמים",
+                        columns: ["תאריך", "ציון"],
+                        rows: attempts.map((a) => [a.date, a.score]),
+                      },
+                    ]
+                  : []
+              }
+            />
           </div>
         </div>
 

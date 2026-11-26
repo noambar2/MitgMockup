@@ -13,6 +13,10 @@ import {
   Check,
   Send,
 } from "lucide-react";
+import {
+  ExportPdfButton,
+  type PdfCell,
+} from "./pdfExport";
 
 // ── Options ─────────────────────────────────────────────────────────────────
 
@@ -42,6 +46,10 @@ const DOMAIN_OPTIONS = [
 ];
 
 type YesNo = "כן" | "לא";
+
+/** תחילית "ב" - לפני מילה לועזית נוסף מקף: ב-Office */
+const withB = (word: string) =>
+  /^[\u0590-\u05ff]/.test(word) ? `ב${word}` : `ב-${word}`;
 
 // ── Form primitives ──────────────────────────────────────────────────────────
 
@@ -220,7 +228,11 @@ function IntroContent() {
   );
 }
 
-function SuccessContent() {
+function SuccessContent({
+  answers,
+}: {
+  answers: PdfCell[][];
+}) {
   return (
     <div className="flex flex-col items-center gap-4 py-14 text-center">
       <IconCircle size={64} bg="rgba(105,198,0,0.12)" color="#69c600">
@@ -234,6 +246,14 @@ function SuccessContent() {
         תודה על שיתוף הפעולה! התשובות שלך נשמרו ויועברו לגורמי
         המיון והשיבוץ
       </p>
+      {/* ייצוא התשובות שנשלחו - לשמירה אצל המלש"ב */}
+      <ExportPdfButton
+        questionnaire="שאלון תחביבים"
+        columns={["#", "שאלה", "תשובה"]}
+        rows={answers}
+        variant="tint"
+        label="ייצוא התשובות ל-PDF"
+      />
     </div>
   );
 }
@@ -263,10 +283,24 @@ export default function HobbiesQuestionnairePage({
   const [volunteered, setVolunteered] = useState<YesNo | null>(
     null,
   );
-  const [domain, setDomain] = useState<string | null>(null);
-  const [controlLevel, setControlLevel] = useState<number | null>(
-    null,
-  );
+  /** ניתן לבחור כמה תחומי שליטה, ולכל אחד רמת שליטה משלו */
+  const [domains, setDomains] = useState<string[]>([]);
+  const [controlLevels, setControlLevels] = useState<
+    Record<string, number>
+  >({});
+
+  const setDomainLevel = (domain: string, level: number) =>
+    setControlLevels((prev) => ({ ...prev, [domain]: level }));
+
+  /** שינוי הבחירה - רמות של תחומים שהוסרו נמחקות */
+  const changeDomains = (next: string[]) => {
+    setDomains(next);
+    setControlLevels((prev) =>
+      Object.fromEntries(
+        Object.entries(prev).filter(([name]) => next.includes(name)),
+      ),
+    );
+  };
 
   const step1Valid =
     hobby !== null &&
@@ -276,10 +310,50 @@ export default function HobbiesQuestionnairePage({
 
   const step2Valid =
     volunteered !== null &&
-    domain !== null &&
-    controlLevel !== null;
+    domains.length > 0 &&
+    domains.every((name) => controlLevels[name] !== undefined);
 
   const showProgress = step === 1 || step === 2;
+
+  /** כל תשובות המלש"ב בשאלון, לייצוא ל-PDF - שאלות שלא הוצגו מושמטות */
+  const answerRows: PdfCell[][] = (
+    [
+      ["מה את/ה אוהב/ת לעשות בשעות הפנאי?", hobby],
+      hobby
+        ? [
+            `שנות ניסיון ${withB(hobby === "אחר" ? "תחביב" : hobby)}`,
+            experience,
+          ]
+        : null,
+      [
+        "האם היית מדריך/ה בתנועת נוער במשך שנה ומעלה?",
+        wasCounselor,
+      ],
+      wasCounselor === "כן"
+        ? ["מספר שנים כמדריך/ה", counselorYears]
+        : null,
+      ["האם התנדבת או מילאת תפקידים בקהילה?", volunteered],
+      [
+        "תחומי שליטה",
+        domains.length ? domains.join(", ") : null,
+      ],
+      ...domains.map(
+        (name) =>
+          [
+            `רמת שליטה ${withB(name)} (1-5)`,
+            controlLevels[name] ?? null,
+          ] as [string, PdfCell],
+      ),
+    ] as ([string, PdfCell] | null)[]
+  )
+    .filter((row): row is [string, PdfCell] => row !== null)
+    .map(([question, value], i) => [
+      i + 1,
+      question,
+      value === null || value === undefined || value === ""
+        ? "לא נענה"
+        : value,
+    ]);
 
   return (
     // ה-section נמתח (flex-1) עד תחתית הדף, כך שכפתורי הניווט הדביקים תמיד בתחתית המסך
@@ -396,29 +470,33 @@ export default function HobbiesQuestionnairePage({
                 שליטה
               </FieldLabel>
               <SelectField
-                value={domain}
-                placeholder="בחר/י תחום"
+                multiple
+                value={domains}
+                placeholder="בחר/י תחום או יותר"
                 options={DOMAIN_OPTIONS}
-                onChange={(value) => {
-                  setDomain(value);
-                  setControlLevel(null);
-                }}
+                onChange={changeDomains}
               />
+              <p className="text-[#171c23] text-[13px] opacity-55 mt-1.5">
+                ניתן לבחור יותר מתחום אחד
+              </p>
             </div>
 
-            {domain && (
-              <div>
-                <FieldLabel>{domain}</FieldLabel>
+            {/* סולם שליטה נפרד לכל תחום שנבחר */}
+            {domains.map((name) => (
+              <div key={name}>
+                <FieldLabel>{name}</FieldLabel>
                 <ControlScale
-                  value={controlLevel}
-                  onChange={setControlLevel}
+                  value={controlLevels[name] ?? null}
+                  onChange={(level) => setDomainLevel(name, level)}
                 />
               </div>
-            )}
+            ))}
           </div>
         )}
 
-        {step === "success" && <SuccessContent />}
+        {step === "success" && (
+          <SuccessContent answers={answerRows} />
+        )}
       </div>
 
       {/* Sticky footer - כפתורי הניווט תמיד גלויים בתחתית */}

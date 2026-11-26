@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown, LogOut, Megaphone, X } from "lucide-react";
+import { Check, ChevronDown, LogOut, Megaphone, X } from "lucide-react";
 import { useIsMobile } from "./ui/use-mobile";
 
 /**
@@ -473,22 +473,53 @@ export function TextField({
 }
 
 /** בורר בעיצוב המערכת (לא select מובנה) - עם רשימה נפתחת */
-export function SelectField({
-  label,
-  required,
-  value,
-  placeholder,
-  options,
-  onChange,
-}: {
+/**
+ * שדה בחירה - בחירה אחת כברירת מחדל, או בחירה מרובה עם multiple.
+ * בבחירה מרובה הרשימה נשארת פתוחה וכל אפשרות נבחרת מסומנת בוי.
+ */
+export type SelectFieldProps = {
   label?: string;
   required?: boolean;
-  value: string | null;
   placeholder: string;
   options: string[];
-  onChange: (value: string) => void;
-}) {
+} & (
+  | {
+      multiple?: false;
+      value: string | null;
+      onChange: (value: string) => void;
+    }
+  | {
+      multiple: true;
+      value: string[];
+      onChange: (value: string[]) => void;
+    }
+);
+
+export function SelectField(props: SelectFieldProps) {
+  const { label, required, placeholder, options } = props;
+  const multiple = props.multiple === true;
+  /** הערכים הנבחרים - תמיד כמערך, גם בבחירה יחידה */
+  const selected = props.multiple
+    ? props.value
+    : props.value
+      ? [props.value]
+      : [];
+
   const [open, setOpen] = useState(false);
+
+  const pick = (option: string) => {
+    if (props.multiple) {
+      // בחירה מרובה - לחיצה מוסיפה או מסירה, והרשימה נשארת פתוחה
+      props.onChange(
+        props.value.includes(option)
+          ? props.value.filter((v) => v !== option)
+          : [...props.value, option],
+      );
+      return;
+    }
+    props.onChange(option);
+    setOpen(false);
+  };
   const trigger = useRef<HTMLButtonElement>(null);
   /**
    * הרשימה נפתחת ב-portal ובמיקום fixed, ולא בתוך השדה: בתוך חלון
@@ -589,9 +620,9 @@ export function SelectField({
           }`}
         >
           <span
-            className={`text-[15px] ${value ? "text-[#171c23]" : "text-[rgba(23,28,35,0.4)]"}`}
+            className={`text-[15px] truncate ${selected.length ? "text-[#171c23]" : "text-[rgba(23,28,35,0.4)]"}`}
           >
-            {value || placeholder}
+            {selected.length ? selected.join(" · ") : placeholder}
           </span>
           <ChevronDown
             size={18}
@@ -622,25 +653,28 @@ export function SelectField({
                   boxShadow: ELEVATION.overlay,
                 }}
               >
-                {options.map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    role="option"
-                    aria-selected={option === value}
-                    onClick={() => {
-                      onChange(option);
-                      setOpen(false);
-                    }}
-                    className={`w-full text-right px-4 py-2.5 text-[15px] transition-colors hover:bg-[rgba(0,143,240,0.06)] ${
-                      option === value
-                        ? "text-[#008ff0] font-semibold"
-                        : "text-[#171c23]"
-                    }`}
-                  >
-                    {option}
-                  </button>
-                ))}
+                {options.map((option) => {
+                  const isSelected = selected.includes(option);
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      role="option"
+                      aria-selected={isSelected}
+                      onClick={() => pick(option)}
+                      className={`w-full text-right px-4 py-2.5 text-[15px] flex items-center justify-between gap-2 transition-colors hover:bg-[rgba(0,143,240,0.06)] ${
+                        isSelected
+                          ? "text-[#008ff0] font-semibold"
+                          : "text-[#171c23]"
+                      }`}
+                    >
+                      <span className="truncate">{option}</span>
+                      {isSelected && (
+                        <Check size={16} className="shrink-0" />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>,
             document.querySelector("[data-app-root]") ??

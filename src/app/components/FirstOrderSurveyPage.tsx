@@ -14,6 +14,10 @@ import {
   FormTopBar,
   IconCircle,
 } from "./primitives";
+import {
+  ExportPdfButton,
+  type PdfCell,
+} from "./pdfExport";
 
 /**
  * סקר צו ראשון - שלב לכל נושא, ובראש כל תחנה שאלת סינון "האם ביצעת
@@ -647,6 +651,29 @@ export default function FirstOrderSurveyPage({
 
   const last = step === STEPS.length - 1;
 
+  /** כל תשובות המלש"ב בסקר - שורה לשאלה, לייצוא ל-PDF */
+  const answerRows: PdfCell[][] = QUESTIONS.map(
+    (question, index) => {
+      const answer = answers[index] ?? {};
+      const value = answer.value;
+      // בשאלות סולם מוסיפים את משמעות הציון לצד המספר
+      const text =
+        value &&
+        (question.type === "scale1to5" ||
+          question.type === "slider") &&
+        SCALE_LABELS[Number(value)]
+          ? `${value} - ${SCALE_LABELS[Number(value)]}`
+          : (value ?? "לא נענה");
+      return [
+        SPEC_NUMBERS[index] ?? "סינון",
+        question.section,
+        question.text,
+        text,
+        answer.detail ?? "",
+      ];
+    },
+  );
+
   const submit = () => {
     draftStore.answers = {};
     draftStore.step = 0;
@@ -680,6 +707,20 @@ export default function FirstOrderSurveyPage({
               בלשכות הגיוס ואת חוויית הצו הראשון של המתגייסים
               הבאים.
             </p>
+            {/* ייצוא כל התשובות שנשלחו לקובץ PDF */}
+            <ExportPdfButton
+              questionnaire="סקר צו ראשון"
+              columns={[
+                "מספר שאלה",
+                "תחנה",
+                "שאלה",
+                'תשובת המלש"ב',
+                "פירוט",
+              ]}
+              rows={answerRows}
+              variant="tint"
+              label="ייצוא התשובות ל-PDF"
+            />
           </div>
 
           {/* כרטיסי מאמרים - כל שלב בתהליך עם הסבר קצר וקישור לקריאה */}

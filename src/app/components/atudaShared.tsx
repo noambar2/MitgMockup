@@ -1,6 +1,10 @@
 import { Check, ChevronLeft, GraduationCap, Info } from "lucide-react";
-import { IconCircle } from "./primitives";
+import { IconCircle, type ButtonVariant } from "./primitives";
 import { DECLARATIONS } from "./atudaData";
+import {
+  ExportPdfButton,
+  type PdfCell,
+} from "./pdfExport";
 
 /** חלקים משותפים לגרסאות השאלון - מסך הפתיחה, ההצהרות, מסך הסיום וסרגל ההתקדמות */
 
@@ -159,7 +163,68 @@ export function DeclarationsBlock({
   );
 }
 
-export function SuccessScreen() {
+// ── ייצוא התשובות ל-PDF ─────────────────────────────────────────────────────
+
+/** עדיפות אחת בשאלון - מגמה והמוסדות שנבחרו לה לפי סדר */
+export interface AtudaChoiceSummary {
+  name: string;
+  cluster?: string;
+  institutions: string[];
+}
+
+/** שורה לכל מוסד לימודים, תחת העדיפות שבה נבחר */
+export function atudaAnswerRows(
+  choices: AtudaChoiceSummary[],
+): PdfCell[][] {
+  return choices.flatMap((choice, i) =>
+    choice.institutions.map((institution, j) => [
+      i + 1,
+      choice.name,
+      choice.cluster ?? "",
+      j + 1,
+      institution,
+    ]),
+  );
+}
+
+/**
+ * כפתור ייצוא ל-PDF של כל בחירות המלש"ב בשאלון העתודה -
+ * משותף לשלוש גרסאות השאלון, בסיכום ובמסך האישור.
+ */
+export function AtudaExportButton({
+  choices,
+  variant = "outline",
+  label,
+}: {
+  choices: AtudaChoiceSummary[];
+  variant?: ButtonVariant;
+  label?: string;
+}) {
+  return (
+    <ExportPdfButton
+      questionnaire="שאלון עתודה"
+      columns={[
+        "עדיפות",
+        "מגמה",
+        "אשכול",
+        "עדיפות מוסד",
+        "מוסד לימודים",
+      ]}
+      rows={atudaAnswerRows(choices)}
+      countLabel="מספר שורות"
+      meta={[["מספר עדיפויות", choices.length]]}
+      variant={variant}
+      label={label}
+    />
+  );
+}
+
+export function SuccessScreen({
+  choices,
+}: {
+  /** הבחירות שנשלחו - לייצוא ל-PDF ממסך האישור */
+  choices?: AtudaChoiceSummary[];
+}) {
   return (
     <div className="flex flex-col items-center gap-4 py-14 text-center">
       <IconCircle size={72} bg="rgba(105,198,0,0.12)" color="#69c600">
@@ -173,6 +238,13 @@ export function SuccessScreen() {
         הבחירות שלך נשמרו ויועברו לגורמי המיון של מערך העתודה.
         עדכון על המשך התהליך יישלח אליך להודעות באזור האישי.
       </p>
+      {choices && choices.length > 0 && (
+        <AtudaExportButton
+          choices={choices}
+          variant="tint"
+          label="ייצוא התשובות ל-PDF"
+        />
+      )}
     </div>
   );
 }

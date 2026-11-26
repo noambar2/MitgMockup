@@ -27,6 +27,7 @@ import {
   Track,
 } from "./atudaData";
 import {
+  AtudaExportButton,
   DeclarationsBlock,
   IntroScreen,
   ProgressSteps,
@@ -502,6 +503,16 @@ export default function AtudaQuestionnaireSheet({
 
   const allAgreed = agreed.every(Boolean);
 
+  /** הבחירות כפי שהן מיוצאות ל-PDF - עדיפות, מגמה ומוסדות */
+  const summaryChoices = filledSlots.map((slot) => {
+    const track = trackById(slot.trackId!);
+    return {
+      name: track.name,
+      cluster: track.cluster,
+      institutions: slot.institutions,
+    };
+  });
+
   const submit = () => {
     if (!allAgreed) {
       setSummaryError("כדי לשלוח את השאלון יש לאשר את כל ההצהרות");
@@ -697,6 +708,11 @@ export default function AtudaQuestionnaireSheet({
               </p>
             </StepHeading>
 
+            {/* ייצוא כל התשובות לקובץ PDF */}
+            <div className="flex">
+              <AtudaExportButton choices={summaryChoices} />
+            </div>
+
             <div className="flex flex-col gap-3">
               {filledSlots.map((slot, i) => {
                 const track = trackById(slot.trackId!);
@@ -752,7 +768,9 @@ export default function AtudaQuestionnaireSheet({
           </div>
         )}
 
-        {step === "success" && <SuccessScreen />}
+        {step === "success" && (
+          <SuccessScreen choices={summaryChoices} />
+        )}
       </div>
 
       {/* סרגל הניווט התחתון */}

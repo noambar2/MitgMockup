@@ -18,6 +18,7 @@ import {
   MIN_TRACKS,
 } from "./atudaData";
 import {
+  AtudaExportButton,
   DeclarationsBlock,
   IntroScreen,
   ProgressSteps,
@@ -170,6 +171,16 @@ export default function AtudaQuestionnaireSimple({
     filledRows.length >= MIN_TRACKS && partialRows.length === 0;
 
   const allAgreed = agreed.every(Boolean);
+
+  /** הבחירות כפי שהן מיוצאות ל-PDF - עדיפות, מגמה ומוסדות */
+  const summaryChoices = filledRows.map((row) => {
+    const track = trackByName(row.trackName!);
+    return {
+      name: track?.name ?? row.trackName!,
+      cluster: track?.cluster,
+      institutions: row.institutions.filter(Boolean) as string[],
+    };
+  });
 
   const submit = () => {
     if (!allAgreed) {
@@ -377,6 +388,11 @@ export default function AtudaQuestionnaireSimple({
               </p>
             </StepHeading>
 
+            {/* ייצוא כל התשובות לקובץ PDF */}
+            <div className="flex">
+              <AtudaExportButton choices={summaryChoices} />
+            </div>
+
             {/* תצוגת טבלה - מגמה מול מוסדות הלימוד שנבחרו לה */}
             <div className="rounded-[10px] border border-[rgba(23,28,35,0.1)] overflow-hidden">
               <div className="hidden sm:grid grid-cols-[48px_1fr_1.2fr] bg-[#f5f5f7] text-[#171c23] text-[13px] font-semibold">
@@ -447,7 +463,9 @@ export default function AtudaQuestionnaireSimple({
         )}
 
         {/* ── מסך אישור שליחה ── */}
-        {step === "success" && <SuccessScreen />}
+        {step === "success" && (
+          <SuccessScreen choices={summaryChoices} />
+        )}
       </div>
 
       {/* סרגל הניווט התחתון */}

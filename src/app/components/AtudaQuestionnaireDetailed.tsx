@@ -28,6 +28,7 @@ import {
   MIN_TRACKS,
   Track,
 } from "./atudaData";
+import { AtudaExportButton } from "./atudaShared";
 
 
 // ── Shared bits ─────────────────────────────────────────────────────────────
@@ -467,6 +468,16 @@ export default function AtudaQuestionnaireDetailed({
   const trackById = (id: string) =>
     ALL_TRACKS.find((t) => t.id === id)!;
 
+  /** הבחירות כפי שהן מיוצאות ל-PDF - עדיפות, מגמה ומוסדות */
+  const summaryChoices = choices.map((choice) => {
+    const track = trackById(choice.trackId);
+    return {
+      name: track.name,
+      cluster: track.cluster,
+      institutions: choice.institutions,
+    };
+  });
+
   const showProgress = step === 1 || step === 2 || step === 3;
 
   return (
@@ -787,6 +798,11 @@ export default function AtudaQuestionnaireDetailed({
               </p>
             </StepHeading>
 
+            {/* ייצוא כל התשובות לקובץ PDF */}
+            <div className="flex">
+              <AtudaExportButton choices={summaryChoices} />
+            </div>
+
             <div className="flex flex-col gap-3">
               {choices.map((choice, i) => {
                 const track = trackById(choice.trackId);
@@ -887,6 +903,13 @@ export default function AtudaQuestionnaireDetailed({
               העתודה. עדכון על המשך התהליך יישלח אליך להודעות
               באזור האישי.
             </p>
+            {summaryChoices.length > 0 && (
+              <AtudaExportButton
+                choices={summaryChoices}
+                variant="tint"
+                label="ייצוא התשובות ל-PDF"
+              />
+            )}
           </div>
         )}
       </div>
